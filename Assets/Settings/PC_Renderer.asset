@@ -80,7 +80,7 @@ MonoBehaviour:
   m_Name: BlitToRTHandleRendererFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  blitMaterial: {fileID: 2100000, guid: 4a5832e1b9e521e4b9aa0d33324bb745, type: 2}
+  shadowMaterial: {fileID: 2100000, guid: 11e6249b93b108f469757939ea42ea5d, type: 2}
 --- !u!114 &7833122117494664109
 MonoBehaviour:
   m_ObjectHideFlags: 0

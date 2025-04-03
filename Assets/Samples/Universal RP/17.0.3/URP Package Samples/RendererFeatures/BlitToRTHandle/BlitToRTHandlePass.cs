@@ -10,12 +10,15 @@ public class BlitToRTHandlePass : ScriptableRenderPass
 {
     private RTHandle m_InputHandle;
     private RTHandle m_OutputHandle;
+    private Material shadowMaterial;
     private const string k_OutputName = "_CopyColorTexture";
     private static readonly int m_OutputId = Shader.PropertyToID(k_OutputName);
+    private static readonly int LightSpaceMatrix = Shader.PropertyToID("_LightSpaceMatrix");
 
-    public BlitToRTHandlePass(RenderPassEvent evt)
+    public BlitToRTHandlePass(RenderPassEvent evt, Material shadowMaterial)
     {
         renderPassEvent = evt;
+        this.shadowMaterial = shadowMaterial;
     }
 
 
@@ -49,15 +52,33 @@ public class BlitToRTHandlePass : ScriptableRenderPass
         if (!source.IsValid() || !destination.IsValid())
             return;
         
+        float near_plane = 1f, far_plane = 10;
+        Matrix4x4 lightProjection = Matrix4x4.Ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+        Matrix4x4 lightView = Matrix4x4.LookAt(
+            cameraData.camera.transform.position,  // Light position
+            Vector3.forward,    // Look target (origin)
+            cameraData.camera.transform.up     // Up vector
+        );
+
+        Matrix4x4 lightSpaceMatrix = lightProjection * lightView;
+        Shader.SetGlobalMatrix(LightSpaceMatrix, lightSpaceMatrix);
+        
         // Blit the input texture to the destination texture
-        RenderGraphUtils.BlitMaterialParameters para = new(source, destination, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
+        Shader.SetGlobalMatrix("_InverseVP3", cameraData.camera.projectionMatrix.inverse);
+        Shader.SetGlobalMatrix("_CameraWorld3", cameraData.camera.cameraToWorldMatrix);
+        Shader.SetGlobalVector("_ViewDirection3", cameraData.camera.transform.forward);
+        Shader.SetGlobalVector("_ViewPos3", cameraData.camera.transform.position);
+        
+        RenderGraphUtils.BlitMaterialParameters para = new(source, destination, shadowMaterial, 0);
         renderGraph.AddBlitPass(para, "BlitToRTHandle_CopyColor");
         
-        // In this example the pass executes after rendering transparent objects, and the transparent objects are reading the destination texture.
-        // The following code sets the TextureHandle as the camera color target to avoid visual artefacts.
-        resourceData.cameraColor = destination;
+        if(Input.GetKey(KeyCode.F))
+        {
+            Debug.Log($"F");
+            resourceData.cameraColor = destination;
+        }
     }
-
+    
     public void Dispose()
     {
         m_InputHandle?.Release();
