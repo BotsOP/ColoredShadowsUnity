@@ -52,16 +52,41 @@ public class BlitToRTHandlePass : ScriptableRenderPass
         if (!source.IsValid() || !destination.IsValid())
             return;
         
-        float near_plane = 1f, far_plane = 10;
+        float near_plane = 0.1f, far_plane = 7.5f;
         Matrix4x4 lightProjection = Matrix4x4.Ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-        Matrix4x4 lightView = Matrix4x4.LookAt(
-            cameraData.camera.transform.position,  // Light position
-            Vector3.forward,    // Look target (origin)
-            cameraData.camera.transform.up     // Up vector
+        Matrix4x4 lightView = LookAtLH(
+            new Vector3(cameraData.camera.transform.position.x, cameraData.camera.transform.position.y, cameraData.camera.transform.position.z),  // Light position
+            Vector3.zero,    // Look target (origin)
+            Vector3.up     // Up vector
         );
 
         Matrix4x4 lightSpaceMatrix = lightProjection * lightView;
+        // lightView = ShadowUtils.GetLightSpaceMatrix(cameraData.camera.transform.forward, cameraData.camera);
+        cameraData.camera.transform.LookAt(Vector3.zero);
+        // lightSpaceMatrix.m00 = -0.071f;
+        // lightSpaceMatrix.m01 = 0f;
+        // lightSpaceMatrix.m02 = -0.071f;
+        // lightSpaceMatrix.m03 = 0f;
+        //
+        // lightSpaceMatrix.m10 = -0.067f;
+        // lightSpaceMatrix.m11 = 0.033f;
+        // lightSpaceMatrix.m12 = 0.067f;
+        // lightSpaceMatrix.m13 = 0f;
+        //
+        // lightSpaceMatrix.m20 = -0.064f;
+        // lightSpaceMatrix.m21 = -0.255f;
+        // lightSpaceMatrix.m22 = 0.064f;
+        // lightSpaceMatrix.m23 = 0.12f;
+        //
+        // lightSpaceMatrix.m30 = 0f;
+        // lightSpaceMatrix.m31 = 0f;
+        // lightSpaceMatrix.m32 = 0f;
+        // lightSpaceMatrix.m33 = 1f;
+        
         Shader.SetGlobalMatrix(LightSpaceMatrix, lightSpaceMatrix);
+        Debug.Log($"lightSpaceMatrix: {lightSpaceMatrix}");
+        Debug.Log($"lightProjection: {lightProjection}");
+        Debug.Log($"lightView: {lightView}");
         
         // Blit the input texture to the destination texture
         Shader.SetGlobalMatrix("_InverseVP3", cameraData.camera.projectionMatrix.inverse);
@@ -79,9 +104,206 @@ public class BlitToRTHandlePass : ScriptableRenderPass
         }
     }
     
+    public static Matrix4x4 LookAtLH(Vector3 eye, Vector3 center, Vector3 up)
+    {
+        Vector3 f = (center - eye).normalized;        // Forward (Z+)
+        Vector3 s = Vector3.Cross(up, f).normalized;  // Right (X+)
+        Vector3 u = Vector3.Cross(f, s);              // Up (Y+)
+
+        Matrix4x4 result = Matrix4x4.identity;
+
+        result[0, 0] = s.x;
+        result[0, 1] = s.y;
+        result[0, 2] = s.z;
+
+        result[1, 0] = u.x;
+        result[1, 1] = u.y;
+        result[1, 2] = u.z;
+
+        result[2, 0] = f.x;
+        result[2, 1] = f.y;
+        result[2, 2] = f.z;
+
+        result[3, 0] = -Vector3.Dot(s, eye);
+        result[3, 1] = -Vector3.Dot(u, eye);
+        result[2, 3] = -Vector3.Dot(f, eye);
+
+        return result;
+    }
+    
+    public static Matrix4x4 LookAtRH(Vector3 eye, Vector3 center, Vector3 up)
+    {
+        Vector3 f = (center - eye).normalized;        // Forward (Z+)
+        Vector3 s = Vector3.Cross(f, up).normalized;  // Right (X+)
+        Vector3 u = Vector3.Cross(s, f);              // Up (Y+)
+
+        Matrix4x4 result = Matrix4x4.identity;
+
+        result[0, 0] = s.x;
+        result[1, 0] = s.y;
+        result[2, 0] = s.z;
+
+        result[0, 1] = u.x;
+        result[1, 1] = u.y;
+        result[2, 1] = u.z;
+
+        result[0, 2] = -f.x;
+        result[1, 2] = -f.y;
+        result[2, 2] = -f.z;
+
+        result[0, 3] = -Vector3.Dot(s, eye);
+        result[1, 3] = -Vector3.Dot(u, eye);
+        result[2, 3] = Vector3.Dot(f, eye);
+
+        return result;
+    }
+    
     public void Dispose()
     {
         m_InputHandle?.Release();
         m_OutputHandle?.Release();
+    }
+}
+
+public static class ShadowUtils
+{
+    /// <summary>
+    /// Creates a light space matrix based on a directional light for shadow mapping
+    /// </summary>
+    /// <param name="lightDirection">The direction of the light (from light to scene)</param>
+    /// <param name="camera">The camera component that defines the view frustum</param>
+    /// <param name="shadowDistance">Maximum distance for shadows to be rendered</param>
+    /// <returns>A matrix that transforms from world space to light space</returns>
+    public static Matrix4x4 GetLightSpaceMatrix(Vector3 lightDirection, Camera camera, float shadowDistance = 100f)
+    {
+        // Normalize the light direction
+        lightDirection.Normalize();
+        
+        // Calculate camera view center - this is what we'll target
+        Vector3 cameraViewCenter = camera.transform.position + camera.transform.forward * (shadowDistance * 0.5f);
+        
+        // Calculate light position that moves with the camera
+        Vector3 lightPosition = cameraViewCenter - lightDirection * shadowDistance;
+        
+        // Find a suitable up vector (avoid issues when light is perfectly aligned with world up)
+        Vector3 upVector = Vector3.up;
+        if (Mathf.Abs(Vector3.Dot(lightDirection, upVector)) > 0.95f)
+        {
+            upVector = Vector3.forward;
+        }
+        
+        // Create the light's view matrix (light looking at the center of camera's view)
+        Matrix4x4 lightView = BlitToRTHandlePass.LookAtRH(
+            lightPosition, 
+            cameraViewCenter, 
+            upVector
+        );
+        
+        // Calculate bounds for the orthographic projection based on camera frustum
+        CalculateLightSpaceBounds(camera, lightView, out float minX, out float maxX, 
+            out float minY, out float maxY, out float minZ, out float maxZ, shadowDistance);
+        
+        // Create orthographic projection matrix for the light
+        Matrix4x4 lightProjection = Matrix4x4.Ortho(minX, maxX, minY, maxY, minZ, maxZ);
+        
+        // The light space matrix combines both view and projection
+        return lightProjection * lightView;
+    }
+    
+    /// <summary>
+    /// Calculates the bounds for the light's orthographic projection based on the camera frustum
+    /// </summary>
+    private static void CalculateLightSpaceBounds(Camera camera, Matrix4x4 lightView, 
+        out float minX, out float maxX, out float minY, out float maxY, 
+        out float minZ, out float maxZ, float shadowDistance)
+    {
+        // Get frustum corners in world space
+        Vector3[] frustumCorners = GetFrustumCorners(camera, shadowDistance);
+        
+        // Initialize bounds
+        minX = float.MaxValue;
+        maxX = float.MinValue;
+        minY = float.MaxValue;
+        maxY = float.MinValue;
+        minZ = float.MaxValue;
+        maxZ = float.MinValue;
+        
+        // Transform frustum corners to light space and find bounds
+        for (int i = 0; i < frustumCorners.Length; i++)
+        {
+            // Convert corner to light space
+            Vector3 corner = lightView.MultiplyPoint(frustumCorners[i]);
+            
+            // Update bounds
+            minX = Mathf.Min(minX, corner.x);
+            maxX = Mathf.Max(maxX, corner.x);
+            minY = Mathf.Min(minY, corner.y);
+            maxY = Mathf.Max(maxY, corner.y);
+            minZ = Mathf.Min(minZ, corner.z);
+            maxZ = Mathf.Max(maxZ, corner.z);
+        }
+        
+        // Add padding to avoid edge artifacts
+        float padding = 15f;
+        minX -= padding;
+        maxX += padding;
+        minY -= padding;
+        maxY += padding;
+        
+        // Ensure minimum depth is positive
+        minZ = Mathf.Max(1f, minZ);
+        
+        // Optional: Stabilize the shadow by snapping to texel grid
+        // This helps reduce shadow flickering when camera moves
+        float texelSize = (maxX - minX) / 1024f; // Assuming 1024 shadow map resolution
+        float offsetX = minX % texelSize;
+        float offsetY = minY % texelSize;
+        
+        minX -= offsetX;
+        maxX -= offsetX;
+        minY -= offsetY;
+        maxY -= offsetY;
+    }
+    
+    /// <summary>
+    /// Gets the 8 corners of the camera's view frustum
+    /// </summary>
+    private static Vector3[] GetFrustumCorners(Camera camera, float shadowDistance)
+    {
+        Vector3[] corners = new Vector3[8];
+        
+        // Use camera's view frustum to get corners directly
+        float near = camera.nearClipPlane;
+        float far = Mathf.Min(camera.farClipPlane, shadowDistance);
+        
+        // Get frustum corners in view space
+        camera.CalculateFrustumCorners(
+            new Rect(0, 0, 1, 1), 
+            near,
+            Camera.MonoOrStereoscopicEye.Mono, 
+            corners
+        );
+        
+        // Convert near corners to world space
+        for (int i = 0; i < 4; i++)
+        {
+            corners[i] = camera.transform.TransformVector(corners[i]) + camera.transform.position;
+        }
+        
+        // Get frustum corners in view space for far plane
+        camera.CalculateFrustumCorners(
+            new Rect(0, 0, 1, 1), 
+            far,
+            Camera.MonoOrStereoscopicEye.Mono, 
+            corners
+        );
+        
+        // Convert far corners to world space
+        for (int i = 0; i < 4; i++)
+        {
+            corners[i + 4] = camera.transform.TransformVector(corners[i]) + camera.transform.position;
+        }
+        
+        return corners;
     }
 }
