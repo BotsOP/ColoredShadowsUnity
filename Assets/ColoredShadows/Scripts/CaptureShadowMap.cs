@@ -36,9 +36,9 @@ public class CaptureShadowMap : ScriptableRenderPass
 
         // Create the custom RTHandle
         RenderTextureDescriptor desc = cameraData.cameraTargetDescriptor;
-        desc.colorFormat = RenderTextureFormat.RFloat;
+        desc.colorFormat = RenderTextureFormat.ARGBFloat;
+        // desc.colorFormat = RenderTextureFormat.RFloat;
         desc.depthBufferBits = 0;
-        // desc.depthStencilFormat = GraphicsFormat.D32_SFloat;
         desc.msaaSamples = 1;
         RenderingUtils.ReAllocateHandleIfNeeded(ref m_OutputHandle, desc, FilterMode.Trilinear, TextureWrapMode.Clamp, name: k_OutputName );
         
@@ -50,10 +50,9 @@ public class CaptureShadowMap : ScriptableRenderPass
 
         // Set camera color as a texture resource for this render graph instance
         var customData = frameData.Get<ColoredShadowsRenderFeature.MyCustomData>();
+        // TextureHandle source = customData.shadowMapColorFormatted;
+        TextureHandle source = customData.shadowMapID;
         // TextureHandle source = resourceData.activeColorTexture;
-        // TextureHandle source = resourceData.cameraDepthTexture;
-        // TextureHandle source = resourceData.cameraDepth;
-        TextureHandle source = customData.cameraColor3;
 
         // Set RTHandle as a texture resource for this render graph instance
         TextureHandle destination = renderGraph.ImportTexture(m_OutputHandle);
@@ -88,32 +87,8 @@ public class CaptureShadowMap : ScriptableRenderPass
         Shader.SetGlobalVector("_ViewDirection3", cameraData.camera.transform.forward);
         Shader.SetGlobalVector("_ViewPos3", new Vector3(1, 4, 1));
 
-        // using (var builder = renderGraph.AddRasterRenderPass<PassData>("HELLO", out var passData, profilingSampler))
-        // {
-        //     builder.AllowPassCulling(false);
-        //     builder.UseTexture(customData.cameraColor2);
-        //     builder.SetRenderAttachmentDepth(resourceData.activeDepthTexture);
-        //     builder.SetRenderAttachment(destination, 0);
-        //     builder.SetRenderFunc((PassData data, RasterGraphContext context) => ExecutePass(data, context));
-        // }
-
-        // RenderGraphUtils.BlitMaterialParameters para = new(source, destination, new Material(Shader.Find("Unlit/GlobalTest")), 0);
         RenderGraphUtils.BlitMaterialParameters para = new(source, destination, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
         renderGraph.AddBlitPass(para, "CaptureShadows");
-        
-        if(Input.GetKey(KeyCode.F))
-        {
-            Debug.Log($"F");
-            resourceData.cameraColor = destination;
-        }
-    }
-    
-    static void ExecutePass(PassData data, RasterGraphContext context)
-    {
-        // Records a rendering command to copy, or blit, the contents of the source texture
-        // to the color render target of the render pass.
-        Blitter.BlitTexture(context.cmd, data.copySourceTexture,
-            new Vector4(1, 1, 0, 0), 0, false);
     }
     
     public static Matrix4x4 GetViewMatrix(Vector3 cameraPosition, Quaternion cameraRotation)

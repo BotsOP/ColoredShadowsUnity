@@ -53,36 +53,36 @@ public class RendererListRenderFeature : ScriptableRendererFeature
         }
 
         // Sample utility method that showcases how to create a renderer list via the RenderGraph API
-        // private void InitRendererLists(ContextContainer frameData, ref PassData passData, RenderGraph renderGraph)
-        // {
-        //     // Access the relevant frame data from the Universal Render Pipeline
-        //     UniversalRenderingData universalRenderingData = frameData.Get<UniversalRenderingData>();
-        //     UniversalCameraData cameraData = frameData.Get<UniversalCameraData>();
-        //     UniversalLightData lightData = frameData.Get<UniversalLightData>();
-        //     
-        //     var sortFlags = cameraData.defaultOpaqueSortFlags;
-        //     RenderQueueRange renderQueueRange = RenderQueueRange.opaque;
-        //     FilteringSettings filterSettings = new FilteringSettings(renderQueueRange, m_LayerMask);
-        //     
-        //     ShaderTagId[] forwardOnlyShaderTagIds = new ShaderTagId[]
-        //     {
-        //         // new ShaderTagId("UniversalForwardOnly"),
-        //         new ShaderTagId("UniversalForward"),
-        //         // new ShaderTagId("SRPDefaultUnlit"), // Legacy shaders (do not have a gbuffer pass) are considered forward-only for backward compatibility
-        //         // new ShaderTagId("LightweightForward") // Legacy shaders (do not have a gbuffer pass) are considered forward-only for backward compatibility
-        //     };
-        //     
-        //     m_ShaderTagIdList.Clear();
-        //     
-        //     foreach (ShaderTagId sid in forwardOnlyShaderTagIds)
-        //         m_ShaderTagIdList.Add(sid);
-        //     
-        //     DrawingSettings drawSettings = RenderingUtils.CreateDrawingSettings(m_ShaderTagIdList, universalRenderingData, cameraData, lightData, sortFlags);
-        //     drawSettings.overrideMaterial = overrideMaterial;
-        //
-        //     var param = new RendererListParams(universalRenderingData.cullResults, drawSettings, filterSettings);
-        //     passData.rendererListHandle = renderGraph.CreateRendererList(param);
-        // }
+        private void InitRendererLists(ContextContainer frameData, ref PassData passData, RenderGraph renderGraph)
+        {
+            // Access the relevant frame data from the Universal Render Pipeline
+            UniversalRenderingData universalRenderingData = frameData.Get<UniversalRenderingData>();
+            UniversalCameraData cameraData = frameData.Get<UniversalCameraData>();
+            UniversalLightData lightData = frameData.Get<UniversalLightData>();
+            
+            var sortFlags = cameraData.defaultOpaqueSortFlags;
+            RenderQueueRange renderQueueRange = RenderQueueRange.opaque;
+            FilteringSettings filterSettings = new FilteringSettings(renderQueueRange, m_LayerMask);
+            
+            ShaderTagId[] forwardOnlyShaderTagIds = new ShaderTagId[]
+            {
+                // new ShaderTagId("UniversalForwardOnly"),
+                new ShaderTagId("UniversalForward"),
+                // new ShaderTagId("SRPDefaultUnlit"), // Legacy shaders (do not have a gbuffer pass) are considered forward-only for backward compatibility
+                // new ShaderTagId("LightweightForward") // Legacy shaders (do not have a gbuffer pass) are considered forward-only for backward compatibility
+            };
+            
+            m_ShaderTagIdList.Clear();
+            
+            foreach (ShaderTagId sid in forwardOnlyShaderTagIds)
+                m_ShaderTagIdList.Add(sid);
+            
+            DrawingSettings drawSettings = RenderingUtils.CreateDrawingSettings(m_ShaderTagIdList, universalRenderingData, cameraData, lightData, sortFlags);
+            drawSettings.overrideMaterial = overrideMaterial;
+        
+            var param = new RendererListParams(universalRenderingData.cullResults, drawSettings, filterSettings);
+            // passData.rendererListHandle = renderGraph.CreateRendererList(param);
+        }
 
         private void InitRendererLists(UniversalRenderingData renderingData, UniversalLightData lightData,
             ref PassData passData, ScriptableRenderContext context, RenderGraph renderGraph, bool useRenderGraph)

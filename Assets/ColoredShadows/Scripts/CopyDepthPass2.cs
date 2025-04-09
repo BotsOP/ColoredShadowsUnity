@@ -192,7 +192,7 @@ namespace UnityEngine.Rendering.Universal.Internal
             var customData = frameData.Get<ColoredShadowsRenderFeature.MyCustomData>();
             
             // Render(renderGraph, frameData, resourceData.cameraDepthTexture, resourceData.activeDepthTexture, true);
-            Render(renderGraph, frameData, customData.cameraColor3, customData.cameraColor2, true);
+            Render(renderGraph, frameData, customData.shadowMapColorFormatted, customData.shadowMapDepthFormatted, true);
         }
 
         /// <summary>
@@ -244,8 +244,6 @@ namespace UnityEngine.Rendering.Universal.Internal
                 passData.source = source;
                 builder.UseTexture(source, AccessFlags.Read);
 
-                // if (bindAsCameraDepth && destination.IsValid())
-                //     builder.SetGlobalTextureAfterPass(destination, ShaderConstants._CameraDepthTexture);
 
                 // TODO RENDERGRAPH: culling? force culling off for testing
                 builder.AllowPassCulling(false);

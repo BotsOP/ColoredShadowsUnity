@@ -55,7 +55,6 @@ public class CaptureScreenRenderFeature : ScriptableRenderPass
         renderGraph.AddBlitPass(para, passName: m_PassName);
 
         var customData = frameData.Create<ColoredShadowsRenderFeature.MyCustomData>();
-        customData.cameraColor = destination;
-        resourceData.cameraColor = source;
+        customData.colorBeforeShadow = destination;
     }
 }

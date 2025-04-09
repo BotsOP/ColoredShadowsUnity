@@ -78,7 +78,8 @@ MonoBehaviour:
       LayerMask:
         serializedVersion: 2
         m_Bits: 4294967295
-      PassNames: []
+      PassNames:
+      - UniversalForward2
     overrideMaterial: {fileID: 2100000, guid: 4a5832e1b9e521e4b9aa0d33324bb745, type: 2}
     overrideMaterialPassIndex: 0
     overrideShader: {fileID: 0}

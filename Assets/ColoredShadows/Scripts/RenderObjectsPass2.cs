@@ -214,7 +214,7 @@ using UnityEngine.Scripting.APIUpdating;
             }
             else
             {
-                Debug.Log($"no");
+                Debug.LogError($"Not using render graph");
             }
         }
 
@@ -232,21 +232,26 @@ using UnityEngine.Scripting.APIUpdating;
                 cameraData.clearDepth = true;
 
                 InitPassData(cameraData, ref passData);
+                var customData = frameData.Get<ColoredShadowsRenderFeature.MyCustomData>();
 
                 passData.color = resourceData.activeColorTexture;
-                // builder.SetRenderAttachment(resourceData.activeColorTexture, 0, AccessFlags.Write);
+                var sourceColor = resourceData.activeColorTexture;
+                var destinationDescColor = renderGraph.GetTextureDesc(sourceColor);
+                destinationDescColor.name = "SOURCE_COLOR";
+                TextureHandle destinationColor = renderGraph.CreateTexture(destinationDescColor);
+                builder.SetRenderAttachment(destinationColor, 0, AccessFlags.Write);
+                customData.shadowMapID = destinationColor;
                 
                 var sourceDepth = resourceData.activeDepthTexture;
                 var destinationDescDepth = renderGraph.GetTextureDesc(sourceDepth);
                 destinationDescDepth.name = "SOURCE_DEPTH";
                 TextureHandle destination = renderGraph.CreateTexture(destinationDescDepth);
-                var customData = frameData.Get<ColoredShadowsRenderFeature.MyCustomData>();
-                customData.cameraColor2 = destination;
+                customData.shadowMapDepthFormatted = destination;
                 
                 var destinationDescDepth2 = renderGraph.GetTextureDesc(resourceData.cameraDepthTexture);
                 destinationDescDepth2.name = "DESTINATION_DEPTH";
                 TextureHandle destination2 = renderGraph.CreateTexture(destinationDescDepth2);
-                customData.cameraColor3 = destination2;
+                customData.shadowMapColorFormatted = destination2;
                 
                 builder.SetRenderAttachmentDepth(destination, AccessFlags.Write);
 

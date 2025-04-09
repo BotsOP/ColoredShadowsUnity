@@ -100,14 +100,16 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
     }
     
     public class MyCustomData : ContextItem {
-        public TextureHandle cameraColor;
-        public TextureHandle cameraColor2;
-        public TextureHandle cameraColor3;
+        public TextureHandle colorBeforeShadow;
+        public TextureHandle shadowMapDepthFormatted;
+        public TextureHandle shadowMapColorFormatted;
+        public TextureHandle shadowMapID;
         public override void Reset()
         {
-            cameraColor = TextureHandle.nullHandle;
-            cameraColor2 = TextureHandle.nullHandle;
-            cameraColor3 = TextureHandle.nullHandle;
+            colorBeforeShadow = TextureHandle.nullHandle;
+            shadowMapDepthFormatted = TextureHandle.nullHandle;
+            shadowMapColorFormatted = TextureHandle.nullHandle;
+            shadowMapID = TextureHandle.nullHandle;
         }
     }
 
