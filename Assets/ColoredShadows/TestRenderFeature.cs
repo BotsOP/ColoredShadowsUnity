@@ -28,7 +28,6 @@ public class TestRenderFeature : ScriptableRendererFeature
         {
             // Records a rendering command to copy, or blit, the contents of the source texture
             // to the color render target of the render pass.
-            // context.cmd.SetKeyword(GlobalKeyword.Create(ShaderKeywordStrings._OUTPUT_DEPTH), false);
             Blitter.BlitTexture(context.cmd, data.copySourceTexture,
                 new Vector4(1, 1, 0, 0), 0, false);
         }
@@ -100,7 +99,6 @@ public class TestRenderFeature : ScriptableRendererFeature
 
                 builder.SetRenderFunc((PassData data, RasterGraphContext context) => ExecutePass(data, context));
                 builder.SetGlobalTextureAfterPass(destination, Shader.PropertyToID("_InputTexture"));
-                Debug.Log($"rendering");
             }
         }
     }

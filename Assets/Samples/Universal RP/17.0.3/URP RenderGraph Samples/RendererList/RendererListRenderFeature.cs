@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
@@ -10,17 +11,20 @@ using UnityEngine.Rendering.Universal;
 // You can use the frame debugger to inspect the pass output.
 public class RendererListRenderFeature : ScriptableRendererFeature
 {
-    class RendererListPass : ScriptableRenderPass
+    public class RendererListPass : ScriptableRenderPass
     {
         // Layer mask used to filter objects to put in the renderer list
         private LayerMask m_LayerMask;
+        private Material material;
         
         // List of shader tags used to build the renderer list
         private List<ShaderTagId> m_ShaderTagIdList = new List<ShaderTagId>();
 
-        public RendererListPass(LayerMask layerMask)
+        public RendererListPass(RenderPassEvent evt, LayerMask layerMask, Material material)
         {
+            renderPassEvent = evt;
             m_LayerMask = layerMask;
+            this.material = material;
         }
         
         // This class stores the data needed by the pass, passed as parameter to the delegate function that executes the pass
@@ -55,6 +59,7 @@ public class RendererListRenderFeature : ScriptableRendererFeature
                 m_ShaderTagIdList.Add(sid);
             
             DrawingSettings drawSettings = RenderingUtils.CreateDrawingSettings(m_ShaderTagIdList, universalRenderingData, cameraData, lightData, sortFlags);
+            drawSettings.overrideMaterial = material;
 
             var param = new RendererListParams(universalRenderingData.cullResults, drawSettings, filterSettings);
             passData.rendererListHandle = renderGraph.CreateRendererList(param);
@@ -63,7 +68,7 @@ public class RendererListRenderFeature : ScriptableRendererFeature
         // This static method is used to execute the pass and passed as the RenderFunc delegate to the RenderGraph render pass
         static void ExecutePass(PassData data, RasterGraphContext context)
         {
-            context.cmd.ClearRenderTarget(RTClearFlags.Color, Color.green, 1,0);
+            context.cmd.ClearRenderTarget(RTClearFlags.Color, Color.white, 1,0);
             
             context.cmd.DrawRendererList(data.rendererListHandle);
         }
@@ -96,13 +101,21 @@ public class RendererListRenderFeature : ScriptableRendererFeature
                 builder.UseRendererList(passData.rendererListHandle);
                 
                 // Setup as a render target via UseTextureFragment and UseTextureFragmentDepth, which are the equivalent of using the old cmd.SetRenderTarget(color,depth)
+                // var sourceColor = resourceData.cameraColor;
+                // var destinationDescColor = renderGraph.GetTextureDesc(sourceColor);
+                // destinationDescColor.clearBuffer = true;
+                // TextureHandle destinationColor = renderGraph.CreateTexture(destinationDescColor);
                 builder.SetRenderAttachment(resourceData.activeColorTexture, 0);
-                builder.SetRenderAttachmentDepth(resourceData.activeDepthTexture, AccessFlags.Write);
+                
+                var sourceDepth = resourceData.activeDepthTexture;
+                var destinationDescDepth = renderGraph.GetTextureDesc(sourceDepth);
+                TextureHandle destination = renderGraph.CreateTexture(destinationDescDepth);
+                builder.SetRenderAttachmentDepth(destination, AccessFlags.Write);
 
                 // Assign the ExecutePass function to the render pass delegate, which will be called by the render graph when executing the pass
                 builder.SetRenderFunc((PassData data, RasterGraphContext context) => ExecutePass(data, context));
                 
-                builder.SetRenderFunc<PassData>(ExecutePass);
+                // builder.SetRenderFunc<PassData>(ExecutePass);
             }
         }
     }
@@ -110,11 +123,12 @@ public class RendererListRenderFeature : ScriptableRendererFeature
     RendererListPass m_ScriptablePass;
 
     public LayerMask m_LayerMask;
+    public Material material;
 
     /// <inheritdoc/>
     public override void Create()
     {
-        m_ScriptablePass = new RendererListPass(m_LayerMask);
+        m_ScriptablePass = new RendererListPass(RenderPassEvent.AfterRenderingTransparents, m_LayerMask, material);
 
         // Configures where the render pass should be injected.
         m_ScriptablePass.renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
