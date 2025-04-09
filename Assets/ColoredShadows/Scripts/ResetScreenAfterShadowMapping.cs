@@ -25,6 +25,9 @@ public class ResetScreenAfterShadowMapping : ScriptableRenderPass
         }
         
         var customData = frameData.Get<ColoredShadowsRenderFeature.MyCustomData>();
-        resourceData.cameraColor = customData.cameraColor;
+        // resourceData.cameraColor = customData.cameraColor;
+        
+        RenderGraphUtils.BlitMaterialParameters para = new(customData.cameraColor, resourceData.cameraColor, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
+        renderGraph.AddBlitPass(para, passName: m_PassName);
     }
 }

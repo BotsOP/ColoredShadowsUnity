@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.RenderGraphModule.Util;
@@ -18,6 +19,11 @@ public class CaptureShadowMap : ScriptableRenderPass
     {
         renderPassEvent = evt;
     }
+    
+    private class PassData
+    {
+        internal TextureHandle copySourceTexture;
+    }
 
     // Unity calls the RecordRenderGraph method to add and configure one or more render passes in the render graph system.
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
@@ -30,8 +36,9 @@ public class CaptureShadowMap : ScriptableRenderPass
 
         // Create the custom RTHandle
         RenderTextureDescriptor desc = cameraData.cameraTargetDescriptor;
-        desc.colorFormat = RenderTextureFormat.ARGBFloat;
+        desc.colorFormat = RenderTextureFormat.RFloat;
         desc.depthBufferBits = 0;
+        // desc.depthStencilFormat = GraphicsFormat.D32_SFloat;
         desc.msaaSamples = 1;
         RenderingUtils.ReAllocateHandleIfNeeded(ref m_OutputHandle, desc, FilterMode.Trilinear, TextureWrapMode.Clamp, name: k_OutputName );
         
@@ -42,7 +49,11 @@ public class CaptureShadowMap : ScriptableRenderPass
         Shader.SetGlobalTexture(m_OutputId, m_OutputHandle);
 
         // Set camera color as a texture resource for this render graph instance
-        TextureHandle source = resourceData.cameraColor;
+        var customData = frameData.Get<ColoredShadowsRenderFeature.MyCustomData>();
+        // TextureHandle source = resourceData.activeColorTexture;
+        // TextureHandle source = resourceData.cameraDepthTexture;
+        // TextureHandle source = resourceData.cameraDepth;
+        TextureHandle source = customData.cameraColor3;
 
         // Set RTHandle as a texture resource for this render graph instance
         TextureHandle destination = renderGraph.ImportTexture(m_OutputHandle);
@@ -65,7 +76,6 @@ public class CaptureShadowMap : ScriptableRenderPass
         Matrix4x4 lightSpaceMatrix = lightProjection * lightView;
         Matrix4x4 lightSpaceMatrix2 = lightProjection2 * lightView;
         cameraData.camera.transform.LookAt(Vector3.zero);
-        cameraData.camera.depthTextureMode = DepthTextureMode.Depth;
         
         Shader.SetGlobalMatrix(LightSpaceMatrix, lightSpaceMatrix);
         Shader.SetGlobalMatrix(LightSpaceMatrix2, lightSpaceMatrix2);
@@ -77,7 +87,17 @@ public class CaptureShadowMap : ScriptableRenderPass
         Shader.SetGlobalMatrix("_CameraWorld3", cameraData.camera.cameraToWorldMatrix);
         Shader.SetGlobalVector("_ViewDirection3", cameraData.camera.transform.forward);
         Shader.SetGlobalVector("_ViewPos3", new Vector3(1, 4, 1));
-        
+
+        // using (var builder = renderGraph.AddRasterRenderPass<PassData>("HELLO", out var passData, profilingSampler))
+        // {
+        //     builder.AllowPassCulling(false);
+        //     builder.UseTexture(customData.cameraColor2);
+        //     builder.SetRenderAttachmentDepth(resourceData.activeDepthTexture);
+        //     builder.SetRenderAttachment(destination, 0);
+        //     builder.SetRenderFunc((PassData data, RasterGraphContext context) => ExecutePass(data, context));
+        // }
+
+        // RenderGraphUtils.BlitMaterialParameters para = new(source, destination, new Material(Shader.Find("Unlit/GlobalTest")), 0);
         RenderGraphUtils.BlitMaterialParameters para = new(source, destination, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
         renderGraph.AddBlitPass(para, "CaptureShadows");
         
@@ -86,6 +106,14 @@ public class CaptureShadowMap : ScriptableRenderPass
             Debug.Log($"F");
             resourceData.cameraColor = destination;
         }
+    }
+    
+    static void ExecutePass(PassData data, RasterGraphContext context)
+    {
+        // Records a rendering command to copy, or blit, the contents of the source texture
+        // to the color render target of the render pass.
+        Blitter.BlitTexture(context.cmd, data.copySourceTexture,
+            new Vector4(1, 1, 0, 0), 0, false);
     }
     
     public static Matrix4x4 GetViewMatrix(Vector3 cameraPosition, Quaternion cameraRotation)

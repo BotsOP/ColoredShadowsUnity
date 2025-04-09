@@ -42,12 +42,12 @@ public class CaptureScreenRenderFeature : ScriptableRenderPass
         var source = resourceData.activeColorTexture;
 
         var destinationDesc = renderGraph.GetTextureDesc(source);
-        destinationDesc.colorFormat = GraphicsFormat.R32G32B32A32_SFloat;
-        destinationDesc.clearColor = Color.white;
-        destinationDesc.filterMode = FilterMode.Bilinear;
-        destinationDesc.wrapMode = TextureWrapMode.Clamp;
-        destinationDesc.name = $"CameraColor-{m_PassName}";
-        destinationDesc.clearBuffer = true;
+        // destinationDesc.colorFormat = GraphicsFormat.R32G32B32A32_SFloat;
+        // destinationDesc.clearColor = Color.white;
+        // destinationDesc.filterMode = FilterMode.Bilinear;
+        // destinationDesc.wrapMode = TextureWrapMode.Clamp;
+        destinationDesc.name = $"BEFORE_SHADOW_CAPTURE";
+        // destinationDesc.clearBuffer = true;
 
         TextureHandle destination = renderGraph.CreateTexture(destinationDesc);
         
@@ -56,6 +56,6 @@ public class CaptureScreenRenderFeature : ScriptableRenderPass
 
         var customData = frameData.Create<ColoredShadowsRenderFeature.MyCustomData>();
         customData.cameraColor = destination;
-        resourceData.cameraColor = renderGraph.CreateTexture(destinationDesc);
+        resourceData.cameraColor = source;
     }
 }
