@@ -9,15 +9,20 @@ using UnityEngine.Rendering.Universal;
 // The RTHandle is then set as a global texture, which is available to shaders in the scene. The RTHandle is preserved in all frames while the renderer feature is running to create a recursive rendering effect.
 public class CaptureShadowMap : ScriptableRenderPass
 {
-    private RTHandle m_OutputHandle;
-    private const string k_OutputName = "_CustomShadowMap";
-    private static readonly int m_OutputId = Shader.PropertyToID(k_OutputName);
+    private RTHandle shadowMap;
+    private RTHandle shadowMapID;
+    private Transform lightTransform;
+    private const string shadowMapName = "_CustomShadowMap";
+    private const string shadowMapIDName = "_CustomShadowMapID";
+    private static readonly int shadowMapShaderID = Shader.PropertyToID(shadowMapName);
+    private static readonly int shadowMapIDShaderID = Shader.PropertyToID(shadowMapIDName);
     private static readonly int LightSpaceMatrix = Shader.PropertyToID("_LightSpaceMatrix");
     private static readonly int LightSpaceMatrix2 = Shader.PropertyToID("_LightSpaceMatrix2");
 
-    public CaptureShadowMap(RenderPassEvent evt)
+    public CaptureShadowMap(RenderPassEvent evt, Transform lightTransform)
     {
         renderPassEvent = evt;
+        this.lightTransform = lightTransform;
     }
     
     private class PassData
@@ -35,37 +40,43 @@ public class CaptureShadowMap : ScriptableRenderPass
             return;
 
         // Create the custom RTHandle
-        RenderTextureDescriptor desc = cameraData.cameraTargetDescriptor;
-        desc.colorFormat = RenderTextureFormat.ARGBFloat;
-        // desc.colorFormat = RenderTextureFormat.RFloat;
-        desc.depthBufferBits = 0;
-        desc.msaaSamples = 1;
-        RenderingUtils.ReAllocateHandleIfNeeded(ref m_OutputHandle, desc, FilterMode.Trilinear, TextureWrapMode.Clamp, name: k_OutputName );
+        RenderTextureDescriptor shadowMapDesc = cameraData.cameraTargetDescriptor;
+        shadowMapDesc.colorFormat = RenderTextureFormat.RFloat;
+        shadowMapDesc.depthBufferBits = 0;
+        shadowMapDesc.msaaSamples = 1;
+        RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMap, shadowMapDesc, FilterMode.Trilinear, TextureWrapMode.Clamp, name: shadowMapName );
+        
+        RenderTextureDescriptor shadowMapIDDesc = cameraData.cameraTargetDescriptor;
+        shadowMapIDDesc.colorFormat = RenderTextureFormat.ARGBFloat;
+        shadowMapIDDesc.depthBufferBits = 0;
+        shadowMapIDDesc.msaaSamples = 1;
+        RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Trilinear, TextureWrapMode.Clamp, name: shadowMapIDName );
         
         // Make the output texture available for the shaders in the scene.
         // In this sample the output texture is used recursively by the subsequent frames, so it must stay in memory while the renderer feature is running.
         // A TextureHandle object is discarded after each frame, that's why we cannot bind it as a global texture using the RenderGraph API (builder.SetGlobalTextureAfterPass).
         // Instead, we bind the RTHandle as a global texture using the shader API, because the RTHandle is not managed by the render graph system.
-        Shader.SetGlobalTexture(m_OutputId, m_OutputHandle);
+        Shader.SetGlobalTexture(shadowMapShaderID, shadowMap);
+        Shader.SetGlobalTexture(shadowMapIDShaderID, shadowMapID);
 
         // Set camera color as a texture resource for this render graph instance
-        var customData = frameData.Get<ColoredShadowsRenderFeature.MyCustomData>();
-        // TextureHandle source = customData.shadowMapColorFormatted;
-        TextureHandle source = customData.shadowMapID;
+        var customData = frameData.Get<ColoredShadowsRenderFeature.CustomShadowData>();
+        TextureHandle sourceDepth = customData.shadowMapColorFormatted;
+        TextureHandle sourceColor = customData.shadowMapID;
         // TextureHandle source = resourceData.activeColorTexture;
 
         // Set RTHandle as a texture resource for this render graph instance
-        TextureHandle destination = renderGraph.ImportTexture(m_OutputHandle);
+        TextureHandle destinationDepth = renderGraph.ImportTexture(shadowMap);
+        TextureHandle destinationColor = renderGraph.ImportTexture(shadowMapID);
         
-        if (!source.IsValid() || !destination.IsValid())
+        if (!sourceColor.IsValid() || !destinationDepth.IsValid())
             return;
         
         float near_plane = 0.1f, far_plane = 10f, size = 5, size2 = 1;
         Matrix4x4 lightProjection = Matrix4x4.Ortho(-size, size, -size, size, near_plane, far_plane);
         Matrix4x4 lightProjection2 = Matrix4x4.Ortho(-size2, size2, -size2, size2, near_plane, far_plane / 5);
         Matrix4x4 lightView = LookAtLH(
-            new Vector3(1, 4, 1),  // Light position
-            // new Vector3(cameraData.camera.transform.position.x, cameraData.camera.transform.position.y, cameraData.camera.transform.position.z),  // Light position
+            lightTransform.position,  // Light position
             Vector3.zero,    // Look target (origin)
             Vector3.up     // Up vector
         );
@@ -82,13 +93,13 @@ public class CaptureShadowMap : ScriptableRenderPass
         // Debug.Log($"lightProjection: {lightProjection}");
         // Debug.Log($"lightView: {lightView}");
         
-        Shader.SetGlobalMatrix("_InverseVP3", cameraData.camera.projectionMatrix.inverse);
-        Shader.SetGlobalMatrix("_CameraWorld3", cameraData.camera.cameraToWorldMatrix);
-        Shader.SetGlobalVector("_ViewDirection3", cameraData.camera.transform.forward);
-        Shader.SetGlobalVector("_ViewPos3", new Vector3(1, 4, 1));
+        Shader.SetGlobalVector("_ViewPos3", lightTransform.position);
 
-        RenderGraphUtils.BlitMaterialParameters para = new(source, destination, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
-        renderGraph.AddBlitPass(para, "CaptureShadows");
+        RenderGraphUtils.BlitMaterialParameters para = new(sourceDepth, destinationDepth, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
+        renderGraph.AddBlitPass(para, "CaptureShadowsDepth");
+        
+        RenderGraphUtils.BlitMaterialParameters para2 = new(sourceColor, destinationColor, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
+        renderGraph.AddBlitPass(para2, "CaptureShadowsColor");
     }
     
     public static Matrix4x4 GetViewMatrix(Vector3 cameraPosition, Quaternion cameraRotation)
@@ -133,6 +144,7 @@ public class CaptureShadowMap : ScriptableRenderPass
     
     public void Dispose()
     {
-        m_OutputHandle?.Release();
+        shadowMap?.Release();
+        shadowMapID?.Release();
     }
 }

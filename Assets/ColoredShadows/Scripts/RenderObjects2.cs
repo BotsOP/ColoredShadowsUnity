@@ -188,44 +188,45 @@ public class RenderObjects2 : ScriptableRendererFeature
     /// <inheritdoc/>
     public override void Create()
     {
-        FilterSettings filter = settings.filterSettings;
-
-        // Render Objects pass doesn't support events before rendering prepasses.
-        // The camera is not setup before this point and all rendering is monoscopic.
-        // Events before BeforeRenderingPrepasses should be used for input texture passes (shadow map, LUT, etc) that doesn't depend on the camera.
-        // These events are filtering in the UI, but we still should prevent users from changing it from code or
-        // by changing the serialized data.
-        if (settings.Event < RenderPassEvent.BeforeRenderingPrePasses)
-            settings.Event = RenderPassEvent.BeforeRenderingPrePasses;
-
-        renderObjectsPass = new RenderObjectsPass2(settings.passTag, settings.Event, filter.PassNames,
-            filter.RenderQueueType, filter.LayerMask, settings.cameraSettings);
-
-        switch (settings.overrideMode)
-        {
-            case RenderObjectsSettings.OverrideMaterialMode.None:
-                renderObjectsPass.overrideMaterial = null;
-                renderObjectsPass.overrideShader = null;
-                break;
-            case RenderObjectsSettings.OverrideMaterialMode.Material:
-                renderObjectsPass.overrideMaterial = settings.overrideMaterial;
-                renderObjectsPass.overrideMaterialPassIndex = settings.overrideMaterialPassIndex;
-                renderObjectsPass.overrideShader = null;
-                break;
-            case RenderObjectsSettings.OverrideMaterialMode.Shader:
-                renderObjectsPass.overrideMaterial = null;
-                renderObjectsPass.overrideShader = settings.overrideShader;
-                renderObjectsPass.overrideShaderPassIndex = settings.overrideShaderPassIndex;
-                break;
-        }
-
-        if (settings.overrideDepthState)
-            renderObjectsPass.SetDepthState(settings.enableWrite, settings.depthCompareFunction);
-
-        if (settings.stencilSettings.overrideStencilState)
-            renderObjectsPass.SetStencilState(settings.stencilSettings.stencilReference,
-                settings.stencilSettings.stencilCompareFunction, settings.stencilSettings.passOperation,
-                settings.stencilSettings.failOperation, settings.stencilSettings.zFailOperation);
+        Debug.LogError($"renderfeature not implemented");
+        // FilterSettings filter = settings.filterSettings;
+        //
+        // // Render Objects pass doesn't support events before rendering prepasses.
+        // // The camera is not setup before this point and all rendering is monoscopic.
+        // // Events before BeforeRenderingPrepasses should be used for input texture passes (shadow map, LUT, etc) that doesn't depend on the camera.
+        // // These events are filtering in the UI, but we still should prevent users from changing it from code or
+        // // by changing the serialized data.
+        // if (settings.Event < RenderPassEvent.BeforeRenderingPrePasses)
+        //     settings.Event = RenderPassEvent.BeforeRenderingPrePasses;
+        //
+        // renderObjectsPass = new RenderObjectsPass2(settings.passTag, settings.Event, filter.PassNames,
+        //     filter.RenderQueueType, filter.LayerMask, settings.cameraSettings);
+        //
+        // switch (settings.overrideMode)
+        // {
+        //     case RenderObjectsSettings.OverrideMaterialMode.None:
+        //         renderObjectsPass.overrideMaterial = null;
+        //         renderObjectsPass.overrideShader = null;
+        //         break;
+        //     case RenderObjectsSettings.OverrideMaterialMode.Material:
+        //         renderObjectsPass.overrideMaterial = settings.overrideMaterial;
+        //         renderObjectsPass.overrideMaterialPassIndex = settings.overrideMaterialPassIndex;
+        //         renderObjectsPass.overrideShader = null;
+        //         break;
+        //     case RenderObjectsSettings.OverrideMaterialMode.Shader:
+        //         renderObjectsPass.overrideMaterial = null;
+        //         renderObjectsPass.overrideShader = settings.overrideShader;
+        //         renderObjectsPass.overrideShaderPassIndex = settings.overrideShaderPassIndex;
+        //         break;
+        // }
+        //
+        // if (settings.overrideDepthState)
+        //     renderObjectsPass.SetDepthState(settings.enableWrite, settings.depthCompareFunction);
+        //
+        // if (settings.stencilSettings.overrideStencilState)
+        //     renderObjectsPass.SetStencilState(settings.stencilSettings.stencilReference,
+        //         settings.stencilSettings.stencilCompareFunction, settings.stencilSettings.passOperation,
+        //         settings.stencilSettings.failOperation, settings.stencilSettings.zFailOperation);
     }
 
     /// <inheritdoc/>

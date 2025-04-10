@@ -20,7 +20,7 @@ public class CaptureScreenRenderFeature : ScriptableRenderPass
         //The pass will read the current color texture. That needs to be an intermediate texture. It's not supported to use the BackBuffer as input texture. 
         //By setting this property, URP will automatically create an intermediate texture. 
         //It's good practice to set it here and not from the RenderFeature. This way, the pass is selfcontaining and you can use it to directly enqueue the pass from a monobehaviour without a RenderFeature.
-        requiresIntermediateTexture = true;
+        // requiresIntermediateTexture = true;
     }
 
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
@@ -51,10 +51,10 @@ public class CaptureScreenRenderFeature : ScriptableRenderPass
 
         TextureHandle destination = renderGraph.CreateTexture(destinationDesc);
         
-        RenderGraphUtils.BlitMaterialParameters para = new(source, destination, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
-        renderGraph.AddBlitPass(para, passName: m_PassName);
+        // RenderGraphUtils.BlitMaterialParameters para = new(source, destination, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
+        // renderGraph.AddBlitPass(para, passName: m_PassName);
 
-        var customData = frameData.Create<ColoredShadowsRenderFeature.MyCustomData>();
-        customData.colorBeforeShadow = destination;
+        // var customData = frameData.Create<ColoredShadowsRenderFeature.MyCustomData>();
+        // customData.colorBeforeShadow = destination;
     }
 }

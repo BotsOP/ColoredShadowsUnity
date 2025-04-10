@@ -189,7 +189,7 @@ namespace UnityEngine.Rendering.Universal.Internal
         {
             UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
 
-            var customData = frameData.Get<ColoredShadowsRenderFeature.MyCustomData>();
+            var customData = frameData.Get<ColoredShadowsRenderFeature.CustomShadowData>();
             
             // Render(renderGraph, frameData, resourceData.cameraDepthTexture, resourceData.activeDepthTexture, true);
             Render(renderGraph, frameData, customData.shadowMapColorFormatted, customData.shadowMapDepthFormatted, true);

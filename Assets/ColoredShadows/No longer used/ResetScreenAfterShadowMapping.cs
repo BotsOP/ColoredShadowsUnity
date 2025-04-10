@@ -24,9 +24,9 @@ public class ResetScreenAfterShadowMapping : ScriptableRenderPass
             return;
         }
         
-        var customData = frameData.Get<ColoredShadowsRenderFeature.MyCustomData>();
+        var customData = frameData.Get<ColoredShadowsRenderFeature.CustomShadowData>();
         
-        RenderGraphUtils.BlitMaterialParameters para = new(customData.colorBeforeShadow, resourceData.activeColorTexture, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
-        renderGraph.AddBlitPass(para, passName: m_PassName);
+        // RenderGraphUtils.BlitMaterialParameters para = new(customData.colorBeforeShadow, resourceData.activeColorTexture, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
+        // renderGraph.AddBlitPass(para, passName: m_PassName);
     }
 }

@@ -14,67 +14,20 @@ using UnityEngine.Scripting.APIUpdating;
     [MovedFrom(true, "UnityEngine.Experimental.Rendering.Universal")]
     public class RenderObjectsPass2 : ScriptableRenderPass
     {
+        public Material overrideMaterial { get; set; }
+        public int overrideMaterialPassIndex { get; set; }
+        private bool renderDepth;
+        private float shadowID;
         RenderQueueType renderQueueType;
         FilteringSettings m_FilteringSettings;
-        RenderObjects2.CustomCameraSettings m_CameraSettings;
-
-
-        /// <summary>
-        /// The override material to use.
-        /// </summary>
-        public Material overrideMaterial { get; set; }
-
-        /// <summary>
-        /// The pass index to use with the override material.
-        /// </summary>
-        public int overrideMaterialPassIndex { get; set; }
-
-        /// <summary>
-        /// The override shader to use.
-        /// </summary>
-        public Shader overrideShader { get; set; }
-
-        /// <summary>
-        /// The pass index to use with the override shader.
-        /// </summary>
-        public int overrideShaderPassIndex { get; set; }
-
         List<ShaderTagId> m_ShaderTagIdList = new List<ShaderTagId>();
-
-        /// <summary>
-        /// Sets the write and comparison function for depth.
-        /// </summary>
-        /// <param name="writeEnabled">Sets whether it should write to depth or not.</param>
-        /// <param name="function">The depth comparison function to use.</param>
+        RenderStateBlock m_RenderStateBlock;
         public void SetDepthState(bool writeEnabled, CompareFunction function = CompareFunction.Less)
         {
             m_RenderStateBlock.mask |= RenderStateMask.Depth;
             m_RenderStateBlock.depthState = new DepthState(writeEnabled, function);
         }
 
-        /// <summary>
-        /// Sets up the stencil settings for the pass.
-        /// </summary>
-        /// <param name="reference">The stencil reference value.</param>
-        /// <param name="compareFunction">The comparison function to use.</param>
-        /// <param name="passOp">The stencil operation to use when the stencil test passes.</param>
-        /// <param name="failOp">The stencil operation to use when the stencil test fails.</param>
-        /// <param name="zFailOp">The stencil operation to use when the stencil test fails because of depth.</param>
-        public void SetStencilState(int reference, CompareFunction compareFunction, StencilOp passOp, StencilOp failOp, StencilOp zFailOp)
-        {
-            StencilState stencilState = StencilState.defaultValue;
-            stencilState.enabled = true;
-            stencilState.SetCompareFunction(compareFunction);
-            stencilState.SetPassOperation(passOp);
-            stencilState.SetFailOperation(failOp);
-            stencilState.SetZFailOperation(zFailOp);
-
-            m_RenderStateBlock.mask |= RenderStateMask.Stencil;
-            m_RenderStateBlock.stencilReference = reference;
-            m_RenderStateBlock.stencilState = stencilState;
-        }
-
-        RenderStateBlock m_RenderStateBlock;
 
         /// <summary>
         /// The constructor for render objects pass.
@@ -85,26 +38,21 @@ using UnityEngine.Scripting.APIUpdating;
         /// <param name="renderQueueType">The queue type for the objects to render.</param>
         /// <param name="layerMask">The layer mask to use for creating filtering settings that control what objects get rendered.</param>
         /// <param name="cameraSettings">The settings for custom cameras values.</param>
-        public RenderObjectsPass2(string profilerTag, RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, int layerMask, RenderObjects2.CustomCameraSettings cameraSettings)            
+        public RenderObjectsPass2(string profilerTag, RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, int layerMask, 
+            bool renderDepth, Material overrideMaterial, int overrideMaterialPassIndex = 0, float shadowID = 1)            
         {
             profilingSampler = new ProfilingSampler(profilerTag);
-            Init(renderPassEvent, shaderTags, renderQueueType, layerMask, cameraSettings);
+            this.renderDepth = renderDepth;
+            this.overrideMaterial = overrideMaterial;
+            this.overrideMaterialPassIndex = overrideMaterialPassIndex;
+            this.shadowID = shadowID;
+            Init(renderPassEvent, shaderTags, renderQueueType, layerMask);
         }
 
-        internal RenderObjectsPass2(URPProfileId profileId, RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, int layerMask, RenderObjects2.CustomCameraSettings cameraSettings)
-        {
-            profilingSampler = ProfilingSampler.Get(profileId);
-            Init(renderPassEvent, shaderTags, renderQueueType, layerMask, cameraSettings);
-        }
-
-        internal void Init(RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, int layerMask, RenderObjects2.CustomCameraSettings cameraSettings)
+        internal void Init(RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, int layerMask)
         {
             this.renderPassEvent = renderPassEvent;
             this.renderQueueType = renderQueueType;
-            this.overrideMaterial = null;
-            this.overrideMaterialPassIndex = 0;
-            this.overrideShader = null;
-            this.overrideShaderPassIndex = 0;
             RenderQueueRange renderQueueRange = (renderQueueType == RenderQueueType.Transparent)
                 ? RenderQueueRange.transparent
                 : RenderQueueRange.opaque;
@@ -122,62 +70,44 @@ using UnityEngine.Scripting.APIUpdating;
                 m_ShaderTagIdList.Add(new ShaderTagId("UniversalForwardOnly"));
             }
 
+            
             m_RenderStateBlock = new RenderStateBlock(RenderStateMask.Nothing);
-            m_CameraSettings = cameraSettings;
         }
 
         private static void ExecutePass(PassData passData, RasterCommandBuffer cmd, RendererList rendererList, bool isYFlipped)
         {
-            Camera camera = passData.cameraData.camera;
-
-            // In case of camera stacking we need to take the viewport rect from base camera
+            // Camera camera = passData.cameraData.camera;
             // Rect pixelRect = passData.cameraData.pixelRect;
             // float cameraAspect = (float)pixelRect.width / (float)pixelRect.height;
-            float cameraAspect = (float)1;
-           
-            if (passData.cameraSettings.overrideCamera)
-            {
-                if (passData.cameraData.xr.enabled)
-                {
-                    Debug.LogWarning("RenderObjects pass is configured to override camera matrices. While rendering in stereo camera matrices cannot be overridden.");
-                }
-                else
-                {
-                    Matrix4x4 projectionMatrix = Matrix4x4.Perspective(passData.cameraSettings.cameraFieldOfView, cameraAspect,
-                        camera.nearClipPlane, camera.farClipPlane);
-                    projectionMatrix = GL.GetGPUProjectionMatrix(projectionMatrix, isYFlipped);
-
-                    Matrix4x4 viewMatrix = passData.cameraData.GetViewMatrix();
-                    Vector4 cameraTranslation = viewMatrix.GetColumn(3);
-                    viewMatrix.SetColumn(3, cameraTranslation + passData.cameraSettings.offset);
-
-                    SetViewAndProjectionMatrices(cmd, viewMatrix, projectionMatrix, false);
-                }
-            }
-
-            float near_plane = 0.1f, far_plane = 10f, size = 5, size2 = 1;
-            Matrix4x4 lightProjection = Matrix4x4.Ortho(-size, size, -size, size, near_plane, far_plane);
-            Matrix4x4 lightView = CaptureShadowMap.LookAtLH(
-                new Vector3(1, 4, 1),  // Light position
-                // new Vector3(cameraData.camera.transform.position.x, cameraData.camera.transform.position.y, cameraData.camera.transform.position.z),  // Light position
-                Vector3.zero,    // Look target (origin)
-                Vector3.up     // Up vector
-            );
+            // float cameraAspect = (float)1;
+            // Matrix4x4 projectionMatrix = Matrix4x4.Perspective(passData.cameraSettings.cameraFieldOfView, cameraAspect,
+            //     camera.nearClipPlane, camera.farClipPlane);
+            // projectionMatrix = GL.GetGPUProjectionMatrix(projectionMatrix, isYFlipped);
+            //
+            // Matrix4x4 viewMatrix = passData.cameraData.GetViewMatrix();
+            // Vector4 cameraTranslation = viewMatrix.GetColumn(3);
+            // viewMatrix.SetColumn(3, cameraTranslation + passData.cameraSettings.offset);
+            //
+            // SetViewAndProjectionMatrices(cmd, viewMatrix, projectionMatrix, false);
+            // float near_plane = 0.1f, far_plane = 10f, size = 5, size2 = 1;
+            // Matrix4x4 lightProjection = Matrix4x4.Ortho(-size, size, -size, size, near_plane, far_plane);
+            // Matrix4x4 lightView = CaptureShadowMap.LookAtLH(
+            //     new Vector3(1, 4, 1),  // Light position
+            //     // new Vector3(cameraData.camera.transform.position.x, cameraData.camera.transform.position.y, cameraData.camera.transform.position.z),  // Light position
+            //     Vector3.zero,    // Look target (origin)
+            //     Vector3.up     // Up vector
+            // );
             // SetViewAndProjectionMatrices(cmd, lightView, lightProjection, false);
             
+            cmd.SetGlobalFloat("_ShadowID", passData.shadowID);
             cmd.DrawRendererList(rendererList);
-
-            if (passData.cameraSettings.overrideCamera && passData.cameraSettings.restoreCamera && !passData.cameraData.xr.enabled)
-            {
-                SetViewAndProjectionMatrices(cmd, passData.cameraData.GetViewMatrix(), GL.GetGPUProjectionMatrix(passData.cameraData.GetProjectionMatrix(0), isYFlipped), false);
-            }            
         }
 
         private class PassData
         {
-            internal RenderObjects2.CustomCameraSettings cameraSettings;
             internal RenderPassEvent renderPassEvent;
 
+            internal float shadowID;
             internal TextureHandle color;
             internal RendererListHandle rendererListHdl;
 
@@ -189,7 +119,6 @@ using UnityEngine.Scripting.APIUpdating;
 
         private void InitPassData(UniversalCameraData cameraData, ref PassData passData)
         {
-            passData.cameraSettings = m_CameraSettings;
             passData.renderPassEvent = renderPassEvent;
             passData.cameraData = cameraData;
         }
@@ -204,8 +133,6 @@ using UnityEngine.Scripting.APIUpdating;
                 passData.cameraData, lightData, sortingCriteria);
             drawingSettings.overrideMaterial = overrideMaterial;
             drawingSettings.overrideMaterialPassIndex = overrideMaterialPassIndex;
-            drawingSettings.overrideShader = overrideShader;
-            drawingSettings.overrideShaderPassIndex = overrideShaderPassIndex;
 
             if (useRenderGraph)
             {
@@ -224,57 +151,58 @@ using UnityEngine.Scripting.APIUpdating;
             UniversalCameraData cameraData = frameData.Get<UniversalCameraData>();
             UniversalRenderingData renderingData = frameData.Get<UniversalRenderingData>();
             UniversalLightData lightData = frameData.Get<UniversalLightData>();
-
-            using (var builder = renderGraph.AddRasterRenderPass<PassData>(passName, out var passData, profilingSampler))
+            
+            UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
+            
+            
+            TextureHandle destinationColor;
+            TextureHandle destination;
+            if (renderDepth)
             {
-                UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
+                var customData = frameData.Create<ColoredShadowsRenderFeature.CustomShadowData>();
 
-                cameraData.clearDepth = true;
-
-                InitPassData(cameraData, ref passData);
-                var customData = frameData.Get<ColoredShadowsRenderFeature.MyCustomData>();
-
-                passData.color = resourceData.activeColorTexture;
-                var sourceColor = resourceData.activeColorTexture;
-                var destinationDescColor = renderGraph.GetTextureDesc(sourceColor);
+                var destinationDescColor = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
                 destinationDescColor.name = "SOURCE_COLOR";
-                TextureHandle destinationColor = renderGraph.CreateTexture(destinationDescColor);
-                builder.SetRenderAttachment(destinationColor, 0, AccessFlags.Write);
+                destinationColor = renderGraph.CreateTexture(destinationDescColor);
                 customData.shadowMapID = destinationColor;
                 
-                var sourceDepth = resourceData.activeDepthTexture;
-                var destinationDescDepth = renderGraph.GetTextureDesc(sourceDepth);
+                var destinationDescDepth = renderGraph.GetTextureDesc(resourceData.activeDepthTexture);
                 destinationDescDepth.name = "SOURCE_DEPTH";
-                TextureHandle destination = renderGraph.CreateTexture(destinationDescDepth);
+                destination = renderGraph.CreateTexture(destinationDescDepth);
                 customData.shadowMapDepthFormatted = destination;
                 
                 var destinationDescDepth2 = renderGraph.GetTextureDesc(resourceData.cameraDepthTexture);
                 destinationDescDepth2.name = "DESTINATION_DEPTH";
-                TextureHandle destination2 = renderGraph.CreateTexture(destinationDescDepth2);
-                customData.shadowMapColorFormatted = destination2;
-                
-                builder.SetRenderAttachmentDepth(destination, AccessFlags.Write);
+                customData.shadowMapColorFormatted = renderGraph.CreateTexture(destinationDescDepth2);
+            }
+            else
+            {
+                var customData = frameData.Get<ColoredShadowsRenderFeature.CustomShadowData>();
+                destinationColor = customData.shadowMapID;
+                destination = customData.shadowMapDepthFormatted;
+            }
+            
 
-                TextureHandle mainShadowsTexture = resourceData.mainShadowsTexture;
-                TextureHandle additionalShadowsTexture = resourceData.additionalShadowsTexture;
+            using (var builder = renderGraph.AddRasterRenderPass<PassData>(passName, out var passData, profilingSampler))
+            {
+                // UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
 
-                if (mainShadowsTexture.IsValid())
-                    builder.UseTexture(mainShadowsTexture, AccessFlags.Read);
+                cameraData.clearDepth = true;
 
-                if (additionalShadowsTexture.IsValid())
-                    builder.UseTexture(additionalShadowsTexture, AccessFlags.Read);
+                InitPassData(cameraData, ref passData);
 
-                TextureHandle[] dBufferHandles = resourceData.dBuffer;
-                for (int i = 0; i < dBufferHandles.Length; ++i)
+                if (renderDepth)
                 {
-                    TextureHandle dBuffer = dBufferHandles[i];
-                    if (dBuffer.IsValid())
-                        builder.UseTexture(dBuffer, AccessFlags.Read);
+                    passData.color = destinationColor;
+                    builder.SetRenderAttachmentDepth(destination, AccessFlags.Write);
                 }
-
-                TextureHandle ssaoTexture = resourceData.ssaoTexture;
-                if (ssaoTexture.IsValid())
-                    builder.UseTexture(ssaoTexture, AccessFlags.Read);
+                else
+                {
+                    passData.shadowID = shadowID;
+                    // overrideMaterial.SetFloat("_ShadowID", shadowID);
+                    passData.color = destinationColor;
+                    builder.SetRenderAttachment(destinationColor, 0, AccessFlags.Write);
+                }
 
                 InitRendererLists(renderingData, lightData, ref passData, default(ScriptableRenderContext), renderGraph, true);
 
@@ -328,30 +256,6 @@ using UnityEngine.Scripting.APIUpdating;
             //     cmd.SetGlobalMatrix(ShaderPropertyId.inverseProjectionMatrix, inverseProjectionMatrix);
             //     cmd.SetGlobalMatrix(ShaderPropertyId.inverseViewAndProjectionMatrix, inverseViewProjection);
             // }
-        }
-        
-        [System.Serializable]
-        public class CustomCameraSettings
-        {
-            /// <summary>
-            /// Used to mark whether camera values should be changed or not.
-            /// </summary>
-            public bool overrideCamera = false;
-
-            /// <summary>
-            /// Should the values be reverted after rendering the objects?
-            /// </summary>
-            public bool restoreCamera = true;
-
-            /// <summary>
-            /// Changes the camera offset.
-            /// </summary>
-            public Vector4 offset;
-
-            /// <summary>
-            /// Changes the camera field of view.
-            /// </summary>
-            public float cameraFieldOfView = 60.0f;
         }
         
         internal enum URPProfileId
