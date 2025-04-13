@@ -131,8 +131,12 @@ using UnityEngine.Scripting.APIUpdating;
                 : passData.cameraData.defaultOpaqueSortFlags;
             DrawingSettings drawingSettings = RenderingUtils.CreateDrawingSettings(m_ShaderTagIdList, renderingData,
                 passData.cameraData, lightData, sortingCriteria);
-            drawingSettings.overrideMaterial = overrideMaterial;
-            drawingSettings.overrideMaterialPassIndex = overrideMaterialPassIndex;
+            // drawingSettings.overrideMaterial = overrideMaterial;
+            // drawingSettings.overrideMaterialPassIndex = overrideMaterialPassIndex;
+            drawingSettings.enableInstancing = true;
+            // drawingSettings.enableDynamicBatching = true;
+            drawingSettings.overrideShader = overrideMaterial.shader;
+            drawingSettings.overrideShaderPassIndex = overrideMaterialPassIndex;
 
             if (useRenderGraph)
             {
@@ -153,7 +157,6 @@ using UnityEngine.Scripting.APIUpdating;
             UniversalLightData lightData = frameData.Get<UniversalLightData>();
             
             UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
-            
             
             TextureHandle destinationColor;
             TextureHandle destination;

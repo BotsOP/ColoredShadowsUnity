@@ -37,7 +37,8 @@ Shader "NedMakesGames/MyLit" {
         // Each pass has it's own vertex and fragment function and shader variant keywords
         Pass {
             Name "ForwardLit" // For debugging
-            Tags{"LightMode" = "UniversalForward2"} // Pass specific tags. 
+            Tags{"LightMode" = "UniversalForward" "TageName1" = "Value1"} // Pass specific tags. 
+//            Tags{"LightMode" = "UniversalForward"} // Pass specific tags. 
             // "UniversalForward" tells Unity this is the main lighting pass of this shader
 
             HLSLPROGRAM // Begin HLSL code

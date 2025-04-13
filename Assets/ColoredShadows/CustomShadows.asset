@@ -76,7 +76,7 @@ MonoBehaviour:
     RenderQueueType: 0
     LayerMask:
       serializedVersion: 2
-      m_Bits: 16
+      m_Bits: 8
     PassNames: []
   shadowID: 1
   filterSettingsID2:
