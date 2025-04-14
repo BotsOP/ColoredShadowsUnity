@@ -25,10 +25,8 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
     public Vector2Int shadowIDimension = new Vector2Int(1024, 1024);
 
     private CaptureShadowMap captureShadows;
-    private RenderObjectsPass2 renderObjectsPass;
-    private RenderObjectsPass2 renderObjectsPassID;
-    private RenderObjectsPass2 renderObjectsPassID2;
-    private RenderObjectsPass2 renderObjectsPassID3;
+    private RenderShadowObjects renderShadowObjectsPass;
+    private RenderShadowObjectsID renderShadowObjectsPassID;
     private CopyDepthPass2 copyDepthPass2;
     public override void Create()
     {
@@ -38,14 +36,10 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
 
         copyDepthPass2 = new CopyDepthPass2(injectionPoint, Shader.Find("Hidden/Universal Render Pipeline/CopyDepth"), false, false, false, "Copy Shadow Depth");
         
-        renderObjectsPass = new RenderObjectsPass2("Render Custom Shadows depth", injectionPoint, filterSettings.PassNames,
-            filterSettings.RenderQueueType, filterSettings.LayerMask, true, lightTransform, lightData, depthDimensions, shadowIDimension, shadowOverrideMaterial);
-        renderObjectsPassID = new RenderObjectsPass2("Render Custom Shadows ID", injectionPoint, filterSettingsID.PassNames,
-            filterSettingsID.RenderQueueType, filterSettingsID.LayerMask, false, lightTransform, lightData, depthDimensions, shadowIDimension, shadowOverrideMaterial, 0, shadowID);
-        renderObjectsPassID2 = new RenderObjectsPass2("Render Custom Shadows ID2", injectionPoint, filterSettingsID2.PassNames,
-            filterSettingsID2.RenderQueueType, filterSettingsID2.LayerMask, false, lightTransform, lightData, depthDimensions, shadowIDimension, shadowOverrideMaterial, 0, shadowID2);
-        renderObjectsPassID3 = new RenderObjectsPass2("Render Custom Shadows ID3", injectionPoint, filterSettingsID3.PassNames,
-            filterSettingsID3.RenderQueueType, filterSettingsID3.LayerMask, false, lightTransform, lightData, depthDimensions, shadowIDimension, shadowOverrideMaterial, 0, shadowID3);
+        renderShadowObjectsPass = new RenderShadowObjects("Render Custom Shadows depth", injectionPoint, filterSettings.PassNames,
+            filterSettings.RenderQueueType, filterSettings.LayerMask, lightTransform, lightData, depthDimensions, shadowIDimension, shadowOverrideMaterial);
+        renderShadowObjectsPassID = new RenderShadowObjectsID("Render Custom Shadows ID", injectionPoint, filterSettingsID.PassNames,
+            filterSettingsID.RenderQueueType, filterSettingsID.LayerMask, lightTransform, lightData, depthDimensions, shadowIDimension, shadowOverrideMaterial, 0, shadowID);
     }
     
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -57,10 +51,8 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
         if (renderingData.cameraData.cameraType != CameraType.Game)
             return;
         
-        renderer.EnqueuePass(renderObjectsPass);
-        renderer.EnqueuePass(renderObjectsPassID);
-        // renderer.EnqueuePass(renderObjectsPassID2);
-        // renderer.EnqueuePass(renderObjectsPassID3);
+        renderer.EnqueuePass(renderShadowObjectsPass);
+        renderer.EnqueuePass(renderShadowObjectsPassID);
         renderer.EnqueuePass(copyDepthPass2);
         renderer.EnqueuePass(captureShadows);
     }
@@ -90,6 +82,17 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
         public float nearPlane, farPlane;
         public float horizontalSize, verticalSize;
         public float fov, aspectRatio;
+
+        public CustomLightData(LightMode lightMode, float nearPlane, float farPlane, float horizontalSize, float verticalSize, float fov, float aspectRatio)
+        {
+            this.lightMode = lightMode;
+            this.nearPlane = nearPlane;
+            this.farPlane = farPlane;
+            this.horizontalSize = horizontalSize;
+            this.verticalSize = verticalSize;
+            this.fov = fov;
+            this.aspectRatio = aspectRatio;
+        }
     }
 
     protected override void Dispose(bool disposing)

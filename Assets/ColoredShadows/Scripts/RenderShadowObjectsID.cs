@@ -6,11 +6,10 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.Universal;
 
-public class RenderObjectsPass2 : ScriptableRenderPass
+public class RenderShadowObjectsID : ScriptableRenderPass
 {
     private Material overrideMaterial;
     private int overrideMaterialPassIndex;
-    private bool renderDepth;
     private float shadowID;
     private Transform lightTransform;
     private Vector2Int depthDimensions, shadowIdDimensions;
@@ -22,7 +21,6 @@ public class RenderObjectsPass2 : ScriptableRenderPass
     private RenderStateBlock renderStateBlock;
     
     private static readonly int LightSpaceMatrix = Shader.PropertyToID("_LightSpaceMatrix");
-    private static readonly int LightSpaceMatrix2 = Shader.PropertyToID("_LightSpaceMatrix2");
     
     public void SetDepthState(bool writeEnabled, CompareFunction function = CompareFunction.Less)
     {
@@ -30,21 +28,9 @@ public class RenderObjectsPass2 : ScriptableRenderPass
         renderStateBlock.depthState = new DepthState(writeEnabled, function);
     }
 
-
-    /// <summary>
-    /// The constructor for render objects pass.
-    /// </summary>
-    /// <param name="profilerTag">The profiler tag used with the pass.</param>
-    /// <param name="renderPassEvent">Controls when the render pass executes.</param>
-    /// <param name="shaderTags">List of shader tags to render with.</param>
-    /// <param name="renderQueueType">The queue type for the objects to render.</param>
-    /// <param name="layerMask">The layer mask to use for creating filtering settings that control what objects get rendered.</param>
-    /// <param name="cameraSettings">The settings for custom cameras values.</param>
-    public RenderObjectsPass2(string profilerTag, RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, int layerMask, 
-        bool renderDepth, Transform lightTransform, ColoredShadowsRenderFeature.CustomLightData lightData, Vector2Int depthDimensions, Vector2Int shadowIdDimensions, Material overrideMaterial, int overrideMaterialPassIndex = 0, float shadowID = 1)            
+    public RenderShadowObjectsID(string profilerTag, RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, int layerMask, Transform lightTransform, ColoredShadowsRenderFeature.CustomLightData lightData, Vector2Int depthDimensions, Vector2Int shadowIdDimensions, Material overrideMaterial, int overrideMaterialPassIndex = 0, float shadowID = 1)            
     {
         profilingSampler = new ProfilingSampler(profilerTag);
-        this.renderDepth = renderDepth;
         this.overrideMaterial = overrideMaterial;
         this.overrideMaterialPassIndex = overrideMaterialPassIndex;
         this.shadowID = shadowID;
@@ -90,12 +76,10 @@ public class RenderObjectsPass2 : ScriptableRenderPass
         SetViewAndProjectionMatrices(cmd, viewMatrix, projectionMatrix, false);
         cmd.SetGlobalMatrix(LightSpaceMatrix, projectionMatrix * passData.viewMatrix2);
         
-        cmd.SetGlobalFloat("_ShadowID", passData.shadowID);
         cmd.SetViewport(viewport);
         cmd.DrawRendererList(rendererList);
         cmd.SetViewport(new Rect(0, 0, 1024, 1024));
     }
-    
     
 
     private void InitPassData(UniversalCameraData cameraData, ref PassData passData)
@@ -112,8 +96,6 @@ public class RenderObjectsPass2 : ScriptableRenderPass
             : passData.cameraData.defaultOpaqueSortFlags;
         DrawingSettings drawingSettings = RenderingUtils.CreateDrawingSettings(shaderTagIdList, renderingData,
             passData.cameraData, lightData, sortingCriteria);
-        // drawingSettings.overrideMaterial = overrideMaterial;
-        // drawingSettings.overrideMaterialPassIndex = overrideMaterialPassIndex;
         drawingSettings.enableInstancing = true;
         drawingSettings.enableDynamicBatching = true;
         drawingSettings.overrideShader = overrideMaterial.shader;
@@ -137,40 +119,10 @@ public class RenderObjectsPass2 : ScriptableRenderPass
         UniversalRenderingData renderingData = frameData.Get<UniversalRenderingData>();
         UniversalLightData universalLightData = frameData.Get<UniversalLightData>();
         
-        UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
         
         TextureHandle destinationColor;
-        TextureHandle destination;
-        if (renderDepth)
-        {
-            var customData = frameData.Create<ColoredShadowsRenderFeature.CustomShadowData>();
-
-            var destinationDescColor = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
-            destinationDescColor.name = "SOURCE_COLOR";
-            destinationDescColor.width = shadowIdDimensions.x;
-            destinationDescColor.height = shadowIdDimensions.y;
-            destinationColor = renderGraph.CreateTexture(destinationDescColor);
-            customData.shadowMapID = destinationColor;
-            
-            var destinationDescDepth = renderGraph.GetTextureDesc(resourceData.activeDepthTexture);
-            destinationDescDepth.name = "SOURCE_DEPTH";
-            destinationDescDepth.width = depthDimensions.x;
-            destinationDescDepth.height = depthDimensions.y;
-            destination = renderGraph.CreateTexture(destinationDescDepth);
-            customData.shadowMapDepthFormatted = destination;
-            
-            var destinationDescDepth2 = renderGraph.GetTextureDesc(resourceData.cameraDepthTexture);
-            destinationDescDepth2.name = "DESTINATION_DEPTH";
-            destinationDescDepth2.width = depthDimensions.x;
-            destinationDescDepth2.height = depthDimensions.y;
-            customData.shadowMapColorFormatted = renderGraph.CreateTexture(destinationDescDepth2);
-        }
-        else
-        {
-            var customData = frameData.Get<ColoredShadowsRenderFeature.CustomShadowData>();
-            destinationColor = customData.shadowMapID;
-            destination = customData.shadowMapDepthFormatted;
-        }
+        var customData = frameData.Get<ColoredShadowsRenderFeature.CustomShadowData>();
+        destinationColor = customData.shadowMapID;
         
 
         using (var builder = renderGraph.AddRasterRenderPass<PassData>(passName, out var passData, profilingSampler))
@@ -181,18 +133,10 @@ public class RenderObjectsPass2 : ScriptableRenderPass
 
             InitPassData(cameraData, ref passData);
 
-            if (renderDepth)
-            {
-                passData.color = destinationColor;
-                builder.SetRenderAttachmentDepth(destination, AccessFlags.Write);
-            }
-            else
-            {
-                passData.shadowID = shadowID;
-                // overrideMaterial.SetFloat("_ShadowID", shadowID);
-                passData.color = destinationColor;
-                builder.SetRenderAttachment(destinationColor, 0, AccessFlags.Write);
-            }
+            passData.shadowID = shadowID;
+            // overrideMaterial.SetFloat("_ShadowID", shadowID);
+            passData.color = destinationColor;
+            builder.SetRenderAttachment(destinationColor, 0, AccessFlags.Write);
 
             if (lightData.lightMode == ColoredShadowsRenderFeature.CustomLightData.LightMode.Ortho)
             {

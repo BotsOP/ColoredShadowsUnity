@@ -183,7 +183,7 @@ public class RenderObjects2 : ScriptableRendererFeature
     /// </summary>
     public RenderObjectsSettings settings = new RenderObjectsSettings();
 
-    RenderObjectsPass2 renderObjectsPass;
+    RenderShadowObjects renderShadowObjectsPass;
 
     /// <inheritdoc/>
     public override void Create()
@@ -235,7 +235,7 @@ public class RenderObjects2 : ScriptableRendererFeature
         if (renderingData.cameraData.cameraType == CameraType.Preview
             || UniversalRenderer.IsOffscreenDepthTexture(ref renderingData.cameraData))
             return;
-        renderer.EnqueuePass(renderObjectsPass);
+        renderer.EnqueuePass(renderShadowObjectsPass);
     }
     //
     // internal override bool SupportsNativeRenderPass()
