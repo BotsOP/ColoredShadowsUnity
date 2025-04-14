@@ -20,6 +20,10 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
 
     public Material shadowOverrideMaterial;
 
+    public CustomLightData lightData;
+    public Vector2Int depthDimensions = new Vector2Int(1024, 1024);
+    public Vector2Int shadowIDimension = new Vector2Int(1024, 1024);
+
     private CaptureShadowMap captureShadows;
     private RenderObjectsPass2 renderObjectsPass;
     private RenderObjectsPass2 renderObjectsPassID;
@@ -28,19 +32,20 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
     private CopyDepthPass2 copyDepthPass2;
     public override void Create()
     {
+        Debug.Log($"Create");
         Transform lightTransform = FindAnyObjectByType<Light>().transform;
-        captureShadows = new CaptureShadowMap(injectionPoint, lightTransform);
+        captureShadows = new CaptureShadowMap(injectionPoint, depthDimensions, shadowIDimension);
 
         copyDepthPass2 = new CopyDepthPass2(injectionPoint, Shader.Find("Hidden/Universal Render Pipeline/CopyDepth"), false, false, false, "Copy Shadow Depth");
         
         renderObjectsPass = new RenderObjectsPass2("Render Custom Shadows depth", injectionPoint, filterSettings.PassNames,
-            filterSettings.RenderQueueType, filterSettings.LayerMask, true, shadowOverrideMaterial);
+            filterSettings.RenderQueueType, filterSettings.LayerMask, true, lightTransform, lightData, depthDimensions, shadowIDimension, shadowOverrideMaterial);
         renderObjectsPassID = new RenderObjectsPass2("Render Custom Shadows ID", injectionPoint, filterSettingsID.PassNames,
-            filterSettingsID.RenderQueueType, filterSettingsID.LayerMask, false, shadowOverrideMaterial, 0, shadowID);
+            filterSettingsID.RenderQueueType, filterSettingsID.LayerMask, false, lightTransform, lightData, depthDimensions, shadowIDimension, shadowOverrideMaterial, 0, shadowID);
         renderObjectsPassID2 = new RenderObjectsPass2("Render Custom Shadows ID2", injectionPoint, filterSettingsID2.PassNames,
-            filterSettingsID2.RenderQueueType, filterSettingsID2.LayerMask, false, shadowOverrideMaterial, 0, shadowID2);
+            filterSettingsID2.RenderQueueType, filterSettingsID2.LayerMask, false, lightTransform, lightData, depthDimensions, shadowIDimension, shadowOverrideMaterial, 0, shadowID2);
         renderObjectsPassID3 = new RenderObjectsPass2("Render Custom Shadows ID3", injectionPoint, filterSettingsID3.PassNames,
-            filterSettingsID3.RenderQueueType, filterSettingsID3.LayerMask, false, shadowOverrideMaterial, 0, shadowID3);
+            filterSettingsID3.RenderQueueType, filterSettingsID3.LayerMask, false, lightTransform, lightData, depthDimensions, shadowIDimension, shadowOverrideMaterial, 0, shadowID3);
     }
     
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -54,8 +59,8 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
         
         renderer.EnqueuePass(renderObjectsPass);
         renderer.EnqueuePass(renderObjectsPassID);
-        renderer.EnqueuePass(renderObjectsPassID2);
-        renderer.EnqueuePass(renderObjectsPassID3);
+        // renderer.EnqueuePass(renderObjectsPassID2);
+        // renderer.EnqueuePass(renderObjectsPassID3);
         renderer.EnqueuePass(copyDepthPass2);
         renderer.EnqueuePass(captureShadows);
     }
@@ -70,6 +75,21 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
             shadowMapColorFormatted = TextureHandle.nullHandle;
             shadowMapID = TextureHandle.nullHandle;
         }
+    }
+
+    [System.Serializable]
+    public struct CustomLightData
+    {
+        public enum LightMode
+        {
+            Ortho,
+            FOV,
+        }
+
+        public LightMode lightMode;
+        public float nearPlane, farPlane;
+        public float horizontalSize, verticalSize;
+        public float fov, aspectRatio;
     }
 
     protected override void Dispose(bool disposing)
