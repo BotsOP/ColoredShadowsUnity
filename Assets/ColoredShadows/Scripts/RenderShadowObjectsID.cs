@@ -70,10 +70,10 @@ public class RenderShadowObjectsID : ScriptableRenderPass
         Matrix4x4 viewMatrix = passData.viewMatrix;
         Rect viewport = new Rect(0, 0, 4096, 4096);
         
-        passData.camera.allowMSAA = false;
-        cmd.SetupCameraProperties(passData.camera);
-        // SetViewAndProjectionMatrices(cmd, viewMatrix, projectionMatrix);
-        // cmd.SetGlobalMatrix(LightSpaceMatrix, projectionMatrix * passData.viewMatrix2);
+        // passData.camera.allowMSAA = false;
+        // cmd.SetupCameraProperties(passData.camera);
+        SetViewAndProjectionMatrices(cmd, viewMatrix, projectionMatrix);
+        cmd.SetGlobalMatrix(LightSpaceMatrix, projectionMatrix * passData.viewMatrix2);
 
         cmd.SetViewport(viewport);
         cmd.DrawRendererList(rendererList);
@@ -90,6 +90,7 @@ public class RenderShadowObjectsID : ScriptableRenderPass
     private void InitRendererLists(UniversalRenderingData renderingData, UniversalLightData lightData,
         ref PassData passData, ScriptableRenderContext context, RenderGraph renderGraph, bool useRenderGraph)
     {
+        // context.SetupCameraProperties(passData.camera);
         SortingCriteria sortingCriteria = (renderQueueType == RenderQueueType.Transparent)
             ? SortingCriteria.CommonTransparent
             : passData.cameraData.defaultOpaqueSortFlags;

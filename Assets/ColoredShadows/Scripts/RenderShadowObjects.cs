@@ -72,8 +72,8 @@ public class RenderShadowObjects : ScriptableRenderPass
         Matrix4x4 viewMatrix = passData.viewMatrix;
         Rect viewport = new Rect(0, 0, 4096, 4096);
         
-        // SetViewAndProjectionMatrices(cmd, viewMatrix, projectionMatrix);
-        // cmd.SetGlobalMatrix(LightSpaceMatrix, projectionMatrix * passData.viewMatrix2);
+        SetViewAndProjectionMatrices(cmd, viewMatrix, projectionMatrix);
+        cmd.SetGlobalMatrix(LightSpaceMatrix, projectionMatrix * passData.viewMatrix2);
         
         cmd.SetViewport(viewport);
         cmd.DrawRendererList(rendererList);

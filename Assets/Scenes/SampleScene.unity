@@ -1360,8 +1360,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 410087039}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.1365309, y: 0.8595625, z: -0.3012546, w: -0.3895604}
-  m_LocalPosition: {x: 9.89, y: 10.51, z: 8.67}
+  m_LocalRotation: {x: 0.10424365, y: 0.8956516, z: -0.31288353, w: 0.29840496}
+  m_LocalPosition: {x: -4.1, y: 5.44, z: 5.47}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4727,7 +4727,7 @@ Camera:
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1
-  m_AllowMSAA: 0
+  m_AllowMSAA: 1
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
@@ -4741,8 +4741,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1480207101}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.03939803, y: 0.94565505, z: -0.12495214, w: -0.29760948}
-  m_LocalPosition: {x: 21.991114, y: 5.042389, z: 2.3700218}
+  m_LocalRotation: {x: -0.07802409, y: 0.90429217, z: -0.18791041, w: -0.37531006}
+  m_LocalPosition: {x: 24.63, y: 13.61, z: 3.85}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
