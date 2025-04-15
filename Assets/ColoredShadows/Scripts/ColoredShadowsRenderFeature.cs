@@ -12,11 +12,6 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
 
     public RenderObjects2.FilterSettings filterSettings;
     public RenderObjects2.FilterSettings filterSettingsID;
-    public float shadowID;
-    public RenderObjects2.FilterSettings filterSettingsID2;
-    public float shadowID2;
-    public RenderObjects2.FilterSettings filterSettingsID3;
-    public float shadowID3;
 
     public Material shadowOverrideMaterial;
 
@@ -39,7 +34,7 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
         renderShadowObjectsPass = new RenderShadowObjects("Render Custom Shadows depth", injectionPoint, filterSettings.PassNames,
             filterSettings.RenderQueueType, filterSettings.LayerMask, lightTransform, lightData, depthDimensions, shadowIDimension, shadowOverrideMaterial);
         renderShadowObjectsPassID = new RenderShadowObjectsID("Render Custom Shadows ID", injectionPoint, filterSettingsID.PassNames,
-            filterSettingsID.RenderQueueType, filterSettingsID.LayerMask, lightTransform, lightData, depthDimensions, shadowIDimension, shadowOverrideMaterial, 0, shadowID);
+            filterSettingsID.RenderQueueType, filterSettingsID.LayerMask, lightTransform, lightData, depthDimensions, shadowIDimension, shadowOverrideMaterial, 0);
     }
     
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)

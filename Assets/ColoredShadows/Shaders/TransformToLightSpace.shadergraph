@@ -566,7 +566,7 @@
     "m_Type": "UnityEditor.ShaderGraph.Matrix4MaterialSlot",
     "m_ObjectId": "4d100aef0d2a4b79a8af3126835c9863",
     "m_Id": 0,
-    "m_DisplayName": "_LightSpaceMatrix2",
+    "m_DisplayName": "_LightSpaceMatrix",
     "m_SlotType": 1,
     "m_Hidden": false,
     "m_ShaderOutputName": "Out",
@@ -999,10 +999,10 @@
     "m_Guid": {
         "m_GuidSerialized": "ff374571-172f-4fdf-82a8-58d8007df0a4"
     },
-    "m_Name": "_LightSpaceMatrix2",
+    "m_Name": "_LightSpaceMatrix",
     "m_DefaultRefNameVersion": 1,
-    "m_RefNameGeneratedByDisplayName": "_LightSpaceMatrix2",
-    "m_DefaultReferenceName": "_LightSpaceMatrix2",
+    "m_RefNameGeneratedByDisplayName": "_LightSpaceMatrix",
+    "m_DefaultReferenceName": "_LightSpaceMatrix",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": false,
     "m_UseCustomSlotLabel": false,

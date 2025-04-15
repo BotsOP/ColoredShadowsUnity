@@ -78,28 +78,13 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 8
     PassNames: []
-  shadowID: 1
-  filterSettingsID2:
-    RenderQueueType: 0
-    LayerMask:
-      serializedVersion: 2
-      m_Bits: 32
-    PassNames: []
-  shadowID2: 0.5
-  filterSettingsID3:
-    RenderQueueType: 0
-    LayerMask:
-      serializedVersion: 2
-      m_Bits: 8
-    PassNames: []
-  shadowID3: 0.3
   shadowOverrideMaterial: {fileID: 2100000, guid: 4a5832e1b9e521e4b9aa0d33324bb745, type: 2}
   lightData:
     lightMode: 0
     nearPlane: 0.1
     farPlane: 50
     horizontalSize: 25.61
-    verticalSize: 40.7
+    verticalSize: 41.89
     fov: 90
     aspectRatio: 1
   depthDimensions: {x: 4096, y: 4096}

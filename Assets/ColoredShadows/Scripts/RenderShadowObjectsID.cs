@@ -12,7 +12,6 @@ public class RenderShadowObjectsID : ScriptableRenderPass
     private int overrideMaterialPassIndex;
     private float shadowID;
     private Transform lightTransform;
-    private Vector2Int depthDimensions, shadowIdDimensions;
     private ColoredShadowsRenderFeature.CustomLightData lightData;
     
     private RenderQueueType renderQueueType;
@@ -28,16 +27,14 @@ public class RenderShadowObjectsID : ScriptableRenderPass
         renderStateBlock.depthState = new DepthState(writeEnabled, function);
     }
 
-    public RenderShadowObjectsID(string profilerTag, RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, int layerMask, Transform lightTransform, ColoredShadowsRenderFeature.CustomLightData lightData, Vector2Int depthDimensions, Vector2Int shadowIdDimensions, Material overrideMaterial, int overrideMaterialPassIndex = 0, float shadowID = 1)            
+    public RenderShadowObjectsID(string profilerTag, RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, int layerMask, 
+        Transform lightTransform, ColoredShadowsRenderFeature.CustomLightData lightData, Vector2Int depthDimensions, Vector2Int shadowIdDimensions, Material overrideMaterial, int overrideMaterialPassIndex = 0)            
     {
         profilingSampler = new ProfilingSampler(profilerTag);
         this.overrideMaterial = overrideMaterial;
         this.overrideMaterialPassIndex = overrideMaterialPassIndex;
-        this.shadowID = shadowID;
         this.lightTransform = lightTransform;
         this.lightData = lightData;
-        this.depthDimensions = depthDimensions;
-        this.shadowIdDimensions = shadowIdDimensions;
         Init(renderPassEvent, shaderTags, renderQueueType, layerMask);
     }
 
@@ -73,9 +70,11 @@ public class RenderShadowObjectsID : ScriptableRenderPass
         Matrix4x4 viewMatrix = passData.viewMatrix;
         Rect viewport = new Rect(0, 0, 4096, 4096);
         
-        SetViewAndProjectionMatrices(cmd, viewMatrix, projectionMatrix, false);
-        cmd.SetGlobalMatrix(LightSpaceMatrix, projectionMatrix * passData.viewMatrix2);
-        
+        passData.camera.allowMSAA = false;
+        cmd.SetupCameraProperties(passData.camera);
+        // SetViewAndProjectionMatrices(cmd, viewMatrix, projectionMatrix);
+        // cmd.SetGlobalMatrix(LightSpaceMatrix, projectionMatrix * passData.viewMatrix2);
+
         cmd.SetViewport(viewport);
         cmd.DrawRendererList(rendererList);
         cmd.SetViewport(new Rect(0, 0, 1024, 1024));
@@ -119,7 +118,6 @@ public class RenderShadowObjectsID : ScriptableRenderPass
         UniversalRenderingData renderingData = frameData.Get<UniversalRenderingData>();
         UniversalLightData universalLightData = frameData.Get<UniversalLightData>();
         
-        
         TextureHandle destinationColor;
         var customData = frameData.Get<ColoredShadowsRenderFeature.CustomShadowData>();
         destinationColor = customData.shadowMapID;
@@ -127,14 +125,9 @@ public class RenderShadowObjectsID : ScriptableRenderPass
 
         using (var builder = renderGraph.AddRasterRenderPass<PassData>(passName, out var passData, profilingSampler))
         {
-            // UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
-
-            cameraData.clearDepth = true;
-
             InitPassData(cameraData, ref passData);
 
             passData.shadowID = shadowID;
-            // overrideMaterial.SetFloat("_ShadowID", shadowID);
             passData.color = destinationColor;
             builder.SetRenderAttachment(destinationColor, 0, AccessFlags.Write);
 
@@ -160,6 +153,7 @@ public class RenderShadowObjectsID : ScriptableRenderPass
             }
             Matrix4x4 passDataViewMatrix = GetViewMatrix(lightTransform.position, lightTransform.rotation);
             
+            passData.camera = cameraData.camera;
             passData.viewMatrix = passDataViewMatrix;
             passData.viewMatrix2 = LookAtLH(new Vector3(-lightTransform.position.x, lightTransform.position.y, -lightTransform.position.z), Vector3.zero, Vector3.up);
             // Debug.Log($"new viewMatrix {passData.viewMatrix}");
@@ -205,22 +199,12 @@ public class RenderShadowObjectsID : ScriptableRenderPass
     public static readonly int projectionMatrixID = Shader.PropertyToID("glstate_matrix_projection");
     public static readonly int viewAndProjectionMatrixID = Shader.PropertyToID("unity_MatrixVP");
 
-    static void SetViewAndProjectionMatrices(RasterCommandBuffer cmd, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, bool setInverseMatrices)
+    static void SetViewAndProjectionMatrices(RasterCommandBuffer cmd, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
     {
         Matrix4x4 viewAndProjectionMatrix = projectionMatrix * viewMatrix;
         cmd.SetGlobalMatrix(viewMatrixID, viewMatrix);
         cmd.SetGlobalMatrix(projectionMatrixID, projectionMatrix);
         cmd.SetGlobalMatrix(viewAndProjectionMatrixID, viewAndProjectionMatrix);
-
-        // if (setInverseMatrices)
-        // {
-        //     Matrix4x4 inverseViewMatrix = Matrix4x4.Inverse(viewMatrix);
-        //     Matrix4x4 inverseProjectionMatrix = Matrix4x4.Inverse(projectionMatrix);
-        //     Matrix4x4 inverseViewProjection = inverseViewMatrix * inverseProjectionMatrix;
-        //     cmd.SetGlobalMatrix(ShaderPropertyId.inverseViewMatrix, inverseViewMatrix);
-        //     cmd.SetGlobalMatrix(ShaderPropertyId.inverseProjectionMatrix, inverseProjectionMatrix);
-        //     cmd.SetGlobalMatrix(ShaderPropertyId.inverseViewAndProjectionMatrix, inverseViewProjection);
-        // }
     }
     
     public static Matrix4x4 GetViewMatrix(Vector3 cameraPosition, Quaternion cameraRotation)
@@ -276,6 +260,7 @@ public class RenderShadowObjectsID : ScriptableRenderPass
         internal RendererListHandle rendererListHdl;
 
         internal UniversalCameraData cameraData;
+        internal Camera camera;
 
         // Required for code sharing purpose between RG and non-RG.
         internal RendererList rendererList;
