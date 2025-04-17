@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5567579989464413918}
   - component: {fileID: 3886273968985804489}
   - component: {fileID: 8084658329988419252}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Winged_Victory 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}

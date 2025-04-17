@@ -8,33 +8,29 @@ using UnityEngine.Rendering.Universal.Internal;
 public class ColoredShadowsRenderFeature : ScriptableRendererFeature
 {
     public RenderPassEvent injectionPoint = RenderPassEvent.AfterRenderingTransparents;
-    [Header("test")]
 
-    public RenderObjects2.FilterSettings filterSettings;
-    public RenderObjects2.FilterSettings filterSettingsID;
+    public FilterSettings filterSettings;
 
     public Material shadowOverrideMaterial;
-
-    public CustomLightData lightData;
-    public Vector2Int depthDimensions = new Vector2Int(1024, 1024);
-    public Vector2Int shadowIDimension = new Vector2Int(1024, 1024);
+    
 
     private CaptureShadowMap captureShadows;
     private RenderShadowObjects renderShadowObjectsPass;
-    private RenderShadowObjectsID renderShadowObjectsPassID;
     private CopyDepthPass2 copyDepthPass2;
     public override void Create()
     {
         Debug.Log($"Create");
-        Transform lightTransform = FindAnyObjectByType<Light>().transform;
-        captureShadows = new CaptureShadowMap(injectionPoint, depthDimensions, shadowIDimension);
+        CustomLight customLight = FindAnyObjectByType<CustomLight>();
+        Camera mainCamera = customLight.GetComponent<Camera>();
+        mainCamera.allowMSAA = false;
 
+        
         copyDepthPass2 = new CopyDepthPass2(injectionPoint, Shader.Find("Hidden/Universal Render Pipeline/CopyDepth"), false, false, false, "Copy Shadow Depth");
         
         renderShadowObjectsPass = new RenderShadowObjects("Render Custom Shadows depth", injectionPoint, filterSettings.PassNames,
-            filterSettings.RenderQueueType, filterSettings.LayerMask, lightTransform, lightData, depthDimensions, shadowIDimension, shadowOverrideMaterial);
-        renderShadowObjectsPassID = new RenderShadowObjectsID("Render Custom Shadows ID", injectionPoint, filterSettingsID.PassNames,
-            filterSettingsID.RenderQueueType, filterSettingsID.LayerMask, lightTransform, lightData, depthDimensions, shadowIDimension, shadowOverrideMaterial, 0);
+            filterSettings.RenderQueueType, filterSettings.LayerMask, filterSettings.LayerMaskID, customLight, shadowOverrideMaterial);
+        
+        captureShadows = new CaptureShadowMap(injectionPoint, customLight.shadowTextureSize, customLight.shadowTextureSize);
     }
     
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -47,7 +43,6 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
             return;
         
         renderer.EnqueuePass(renderShadowObjectsPass);
-        renderer.EnqueuePass(renderShadowObjectsPassID);
         renderer.EnqueuePass(copyDepthPass2);
         renderer.EnqueuePass(captureShadows);
     }
@@ -87,6 +82,38 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
             this.verticalSize = verticalSize;
             this.fov = fov;
             this.aspectRatio = aspectRatio;
+        }
+    }
+    
+    [System.Serializable]
+    public class FilterSettings
+    {
+        // TODO: expose opaque, transparent, all ranges as drop down
+
+        /// <summary>
+        /// The queue type for the objects to render.
+        /// </summary>
+        public RenderQueueType RenderQueueType;
+
+        /// <summary>
+        /// The layer mask to use.
+        /// </summary>
+        public LayerMask LayerMask;
+        public LayerMask LayerMaskID;
+
+        /// <summary>
+        /// The passes to render.
+        /// </summary>
+        public string[] PassNames;
+
+        /// <summary>
+        /// The constructor for the filter settings.
+        /// </summary>
+        public FilterSettings()
+        {
+            RenderQueueType = RenderQueueType.Opaque;
+            LayerMask = 0;
+            LayerMaskID = 0;
         }
     }
 

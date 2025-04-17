@@ -29,14 +29,14 @@ MonoBehaviour:
   m_RendererFeatureMap: 860c75bc70b74e64
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
-  postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
+  postProcessData: {fileID: 0}
   m_AssetVersion: 2
   m_OpaqueLayerMask:
     serializedVersion: 2
-    m_Bits: 125
+    m_Bits: 4294967295
   m_TransparentLayerMask:
     serializedVersion: 2
-    m_Bits: 125
+    m_Bits: 4294967295
   m_DefaultStencilState:
     overrideStencilState: 0
     stencilReference: 0
@@ -44,7 +44,7 @@ MonoBehaviour:
     passOperation: 2
     failOperation: 0
     zFailOperation: 0
-  m_ShadowTransparentReceive: 1
+  m_ShadowTransparentReceive: 0
   m_RenderingMode: 0
   m_DepthPrimingMode: 0
   m_CopyDepthMode: 0
@@ -76,16 +76,6 @@ MonoBehaviour:
     RenderQueueType: 0
     LayerMask:
       serializedVersion: 2
-      m_Bits: 8
+      m_Bits: 4294967295
     PassNames: []
   shadowOverrideMaterial: {fileID: 2100000, guid: 4a5832e1b9e521e4b9aa0d33324bb745, type: 2}
-  lightData:
-    lightMode: 0
-    nearPlane: 0.1
-    farPlane: 50
-    horizontalSize: 25.61
-    verticalSize: 41.89
-    fov: 90
-    aspectRatio: 1
-  depthDimensions: {x: 4096, y: 4096}
-  shadowIDimension: {x: 4096, y: 4096}

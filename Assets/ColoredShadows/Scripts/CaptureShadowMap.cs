@@ -40,7 +40,7 @@ public class CaptureShadowMap : ScriptableRenderPass
         shadowMapDesc.height = depthDimensions.y;
         shadowMapDesc.depthBufferBits = 0;
         shadowMapDesc.msaaSamples = 1;
-        RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMap, shadowMapDesc, FilterMode.Trilinear, TextureWrapMode.Clamp, name: shadowMapName );
+        RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMap, shadowMapDesc, FilterMode.Point, TextureWrapMode.Clamp, name: shadowMapName );
         
         RenderTextureDescriptor shadowMapIDDesc = cameraData.cameraTargetDescriptor;
         shadowMapIDDesc.colorFormat = RenderTextureFormat.RFloat;
@@ -48,7 +48,7 @@ public class CaptureShadowMap : ScriptableRenderPass
         shadowMapIDDesc.height = shadowIdDimensions.y;
         shadowMapIDDesc.depthBufferBits = 0;
         shadowMapIDDesc.msaaSamples = 1;
-        RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Trilinear, TextureWrapMode.Clamp, name: shadowMapIDName );
+        RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Point, TextureWrapMode.Clamp, name: shadowMapIDName );
         
         // Make the output texture available for the shaders in the scene.
         // In this sample the output texture is used recursively by the subsequent frames, so it must stay in memory while the renderer feature is running.

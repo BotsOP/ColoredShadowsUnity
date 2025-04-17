@@ -101,7 +101,6 @@ namespace UnityEngine.Rendering.Universal.Internal
             var msaaSamples = passData.msaaSamples;
             var copyResolvedDepth = passData.copyResolvedDepth;
             var copyToDepth = passData.copyToDepth;
-            passData.cameraData.camera.allowMSAA = true;
 
             if (copyDepthMaterial == null)
             {
