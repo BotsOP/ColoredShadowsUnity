@@ -16,21 +16,25 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
 
     private CaptureShadowMap captureShadows;
     private RenderShadowObjects renderShadowObjectsPass;
+    private RenderShadowObjectsPoint renderShadowObjectsPassPoint;
     private CopyDepthPass2 copyDepthPass2;
     public override void Create()
     {
         Debug.Log($"Create");
-        CustomLight customLight = FindAnyObjectByType<CustomLight>();
-        Camera mainCamera = customLight.GetComponent<Camera>();
-        mainCamera.allowMSAA = false;
+        // CustomLight customLight = FindAnyObjectByType<CustomLight>();
+        CustomPointLight customPointLight = FindAnyObjectByType<CustomPointLight>();
+        // Camera mainCamera = customLight.GetComponent<Camera>();
+        // mainCamera.allowMSAA = false;
 
         
-        copyDepthPass2 = new CopyDepthPass2(injectionPoint, Shader.Find("Hidden/Universal Render Pipeline/CopyDepth"), false, false, false, "Copy Shadow Depth");
+        // copyDepthPass2 = new CopyDepthPass2(injectionPoint, Shader.Find("Hidden/Universal Render Pipeline/CopyDepth"), false, false, false, "Copy Shadow Depth");
         
-        renderShadowObjectsPass = new RenderShadowObjects("Render Custom Shadows depth", injectionPoint, filterSettings.PassNames,
-            filterSettings.RenderQueueType, filterSettings.LayerMask, filterSettings.LayerMaskID, customLight, shadowOverrideMaterial);
+        // renderShadowObjectsPass = new RenderShadowObjects("Render Custom Shadows depth", injectionPoint, filterSettings.PassNames,
+            // filterSettings.RenderQueueType, filterSettings.LayerMask, filterSettings.LayerMaskID, customLight, shadowOverrideMaterial);
+        renderShadowObjectsPassPoint = new RenderShadowObjectsPoint("Render Custom Point Shadows depth", injectionPoint, filterSettings.PassNames,
+            filterSettings.RenderQueueType, filterSettings.LayerMask, filterSettings.LayerMaskID, customPointLight, shadowOverrideMaterial);
         
-        captureShadows = new CaptureShadowMap(injectionPoint, customLight.shadowTextureSize, customLight.shadowTextureSize);
+        // captureShadows = new CaptureShadowMap(injectionPoint, customLight.shadowTextureSize, customLight.shadowTextureSize);
     }
     
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -42,9 +46,11 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
         if (renderingData.cameraData.cameraType != CameraType.Game)
             return;
         
-        renderer.EnqueuePass(renderShadowObjectsPass);
-        renderer.EnqueuePass(copyDepthPass2);
-        renderer.EnqueuePass(captureShadows);
+        
+        renderer.EnqueuePass(renderShadowObjectsPassPoint);
+        // renderer.EnqueuePass(renderShadowObjectsPass);
+        // renderer.EnqueuePass(copyDepthPass2);
+        // renderer.EnqueuePass(captureShadows);
     }
     
     public class CustomShadowData : ContextItem {
