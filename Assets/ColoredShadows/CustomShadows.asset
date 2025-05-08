@@ -65,7 +65,7 @@ MonoBehaviour:
   m_Name: BlitToRTHandleRendererFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  injectionPoint: 500
+  injectionPoint: 100
   filterSettings:
     RenderQueueType: 0
     LayerMask:
@@ -73,6 +73,6 @@ MonoBehaviour:
       m_Bits: 4294967295
     LayerMaskID:
       serializedVersion: 2
-      m_Bits: 0
+      m_Bits: 4294967295
     PassNames: []
   shadowOverrideMaterial: {fileID: 2100000, guid: 4a5832e1b9e521e4b9aa0d33324bb745, type: 2}

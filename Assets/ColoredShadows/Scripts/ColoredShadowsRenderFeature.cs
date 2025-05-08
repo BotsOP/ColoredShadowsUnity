@@ -8,9 +8,7 @@ using UnityEngine.Rendering.Universal.Internal;
 public class ColoredShadowsRenderFeature : ScriptableRendererFeature
 {
     public RenderPassEvent injectionPoint = RenderPassEvent.AfterRenderingTransparents;
-
     public FilterSettings filterSettings;
-
     public Material shadowOverrideMaterial;
     
 
