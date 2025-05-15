@@ -57,7 +57,6 @@ public class RenderShadowObjects : ScriptableRenderPass
 
     private static void ExecutePass(PassData passData, RasterCommandBuffer cmd, RendererList rendererList, bool isYFlipped)
     {
-        
         Matrix4x4 projectionMatrix = passData.projectionMatrix;
         projectionMatrix = GL.GetGPUProjectionMatrix(projectionMatrix, isYFlipped);
         Rect viewport = new Rect(0, 0, passData.textureSize.x, passData.textureSize.y);

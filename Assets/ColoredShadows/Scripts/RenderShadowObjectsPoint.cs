@@ -6,6 +6,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.RenderGraphModule.Util;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering.Universal.Internal;
 
 public class RenderShadowObjectsPoint : ScriptableRenderPass
 {
@@ -27,6 +28,8 @@ public class RenderShadowObjectsPoint : ScriptableRenderPass
     private RenderStateBlock renderStateBlock;
     
     private static readonly int LightSpaceMatrix = Shader.PropertyToID("_LightSpaceMatrix");
+
+    private CopyDepthPass3 copyDepthPass3;
     
     public RenderShadowObjectsPoint(string profilerTag, RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, int layerMask, int layerMaskID, 
         CustomPointLight customLight, Material overrideMaterial, int overrideMaterialPassIndex = 0)            
@@ -36,6 +39,7 @@ public class RenderShadowObjectsPoint : ScriptableRenderPass
         this.overrideMaterialPassIndex = overrideMaterialPassIndex;
         this.customLight = customLight;
         Init(renderPassEvent, shaderTags, renderQueueType, layerMask, layerMaskID);
+        copyDepthPass3 = new CopyDepthPass3(renderPassEvent, Shader.Find("Hidden/Universal Render Pipeline/CopyDepth"));
     }
 
     internal void Init(RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, int layerMask, int layerMaskID)
@@ -60,39 +64,44 @@ public class RenderShadowObjectsPoint : ScriptableRenderPass
             shaderTagIdList.Add(new ShaderTagId("UniversalForwardOnly"));
         }
         
-        renderStateBlock = new RenderStateBlock(RenderStateMask.Nothing);
+        renderStateBlock = new RenderStateBlock(RenderStateMask.Depth);
+        renderStateBlock.depthState = new DepthState(true, CompareFunction.Less);
     }
 
     private static void ExecutePass(PassData passData, RasterCommandBuffer cmd, RendererList rendererLists, bool isYFlipped)
     {
         Matrix4x4 projectionMatrix = passData.projectionMatrix;
-        projectionMatrix = GL.GetGPUProjectionMatrix(projectionMatrix, !isYFlipped);
-        SetViewAndProjectionMatrices(cmd, passData.viewMatrix2, projectionMatrix);
+        Matrix4x4 projectionMatrix2 = GL.GetGPUProjectionMatrix(projectionMatrix, !isYFlipped);
+        projectionMatrix2 = projectionMatrix;
+        float m23 = projectionMatrix2.m23;
+        float m22 = projectionMatrix2.m22;
+        // projectionMatrix2.m23 = -0.5f;
+        // projectionMatrix2.m22 = 0.5f;
         cmd.DisableScissorRect();
         float resolutionSize = passData.textureSize;
         
         cmd.SetViewport(new Rect(0, 0, resolutionSize, resolutionSize));
-        cmd.SetViewProjectionMatrices(passData.viewMatrix2, projectionMatrix);
+        cmd.SetViewProjectionMatrices(passData.viewMatrix2, projectionMatrix2);
         cmd.DrawRendererList(passData.rendererListHdl1);
         
         cmd.SetViewport(new Rect(resolutionSize * 1, 0, resolutionSize, resolutionSize));
-        cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * passData.viewMatrix2, projectionMatrix);
+        cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * passData.viewMatrix2, projectionMatrix2);
         cmd.DrawRendererList(passData.rendererListHdl2);
         
         cmd.SetViewport(new Rect(resolutionSize * 2, 0, resolutionSize, resolutionSize));
-        cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0)) * passData.viewMatrix2, projectionMatrix);
+        cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0)) * passData.viewMatrix2, projectionMatrix2);
         cmd.DrawRendererList(passData.rendererListHdl3);
         
         cmd.SetViewport(new Rect(resolutionSize * 3, 0, resolutionSize, resolutionSize));
-        cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 270, 0)) * passData.viewMatrix2, projectionMatrix);
+        cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 270, 0)) * passData.viewMatrix2, projectionMatrix2);
         cmd.DrawRendererList(passData.rendererListHdl4);
         
         cmd.SetViewport(new Rect(resolutionSize * 4, 0, resolutionSize, resolutionSize));
-        cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(90, 0, 0)) * passData.viewMatrix2, projectionMatrix);
+        cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(90, 0, 0)) * passData.viewMatrix2, projectionMatrix2);
         cmd.DrawRendererList(passData.rendererListHdl5);
         
         cmd.SetViewport(new Rect(resolutionSize * 5, 0, resolutionSize, resolutionSize));
-        cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(270, 0, 0)) * passData.viewMatrix2, projectionMatrix);
+        cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(270, 0, 0)) * passData.viewMatrix2, projectionMatrix2);
         cmd.DrawRendererList(passData.rendererListHdl6);
     }
 
@@ -142,7 +151,7 @@ public class RenderShadowObjectsPoint : ScriptableRenderPass
         cameraData.camera.cullingMatrix = projectionCullingMatrix * viewCullingMatrix;
         
         Matrix4x4 viewMatrix = GetViewMatrix(customLight.transform.position, customLight.transform.rotation);
-        Matrix4x4 projectionMatrix = Matrix4x4.Perspective(90, 1, 0.1f, lightRadius);
+        Matrix4x4 projectionMatrix = Matrix4x4.Perspective(90, 1, 0.1f, lightRadius * 2);
         
         UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
         
@@ -166,7 +175,7 @@ public class RenderShadowObjectsPoint : ScriptableRenderPass
         destination = renderGraph.CreateTexture(destinationDescDepth);
         
         RenderTextureDescriptor shadowMapIDDesc = cameraData.cameraTargetDescriptor;
-        shadowMapIDDesc.colorFormat = RenderTextureFormat.ARGBFloat;
+        shadowMapIDDesc.colorFormat = RenderTextureFormat.RFloat;
         shadowMapIDDesc.width = customLight.textureSize * 6;
         shadowMapIDDesc.height = customLight.textureSize;
         shadowMapIDDesc.depthBufferBits = 0;
@@ -174,6 +183,13 @@ public class RenderShadowObjectsPoint : ScriptableRenderPass
         RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Point, TextureWrapMode.Clamp, name: shadowMapIDName );
         TextureHandle destinationColorRT = renderGraph.ImportTexture(shadowMapID);
         Shader.SetGlobalTexture(shadowMapIDShaderID, shadowMapID);
+            
+        // TextureDesc destinationDescDepth2 = renderGraph.GetTextureDesc(resourceData.cameraDepthTexture);
+        // destinationDescDepth2.name = "DESTINATION_DEPTH";
+        // destinationDescDepth2.filterMode = FilterMode.Point;
+        // destinationDescDepth2.width = customLight.textureSize * 6;
+        // destinationDescDepth2.height = customLight.textureSize;
+        // TextureHandle destinationDepth = renderGraph.CreateTexture(destinationDescDepth2);
         
         // var destinationDescDepth = renderGraph.GetTextureDesc(resourceData.activeDepthTexture);
         // destinationDescDepth.name = "SOURCE_DEPTH";
@@ -244,13 +260,18 @@ public class RenderShadowObjectsPoint : ScriptableRenderPass
         
             builder.SetRenderFunc((PassData data, RasterGraphContext rgContext) =>
             {
-                var isYFlipped = data.cameraData.IsRenderTargetProjectionMatrixFlipped(data.color);
+                // var isYFlipped = data.cameraData.IsRenderTargetProjectionMatrixFlipped(data.color);
                 ExecutePass(data, rgContext.cmd, passData.rendererListHdl1, true);
             });
         }
         
+        // copyDepthPass3.Render(renderGraph, frameData, destinationDepth, destination);
+        
         RenderGraphUtils.BlitMaterialParameters para2 = new(destinationColor, destinationColorRT, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
         renderGraph.AddBlitPass(para2, "CaptureShadowsColor");
+        
+        // RenderGraphUtils.BlitMaterialParameters para2 = new(destinationColor, destinationColorRT, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
+        // renderGraph.AddBlitPass(para2, "CaptureShadowsColor");
     }
     
     static ShaderTagId[] s_ShaderTagValues = new ShaderTagId[1];
