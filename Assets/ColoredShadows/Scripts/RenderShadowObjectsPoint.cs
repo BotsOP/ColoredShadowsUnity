@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.RenderGraphModule.Util;
@@ -183,7 +184,7 @@ public class RenderShadowObjectsPoint : ScriptableRenderPass
         RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Point, TextureWrapMode.Clamp, name: shadowMapIDName );
         TextureHandle destinationColorRT = renderGraph.ImportTexture(shadowMapID);
         Shader.SetGlobalTexture(shadowMapIDShaderID, shadowMapID);
-            
+        
         // TextureDesc destinationDescDepth2 = renderGraph.GetTextureDesc(resourceData.cameraDepthTexture);
         // destinationDescDepth2.name = "DESTINATION_DEPTH";
         // destinationDescDepth2.filterMode = FilterMode.Point;
@@ -269,7 +270,16 @@ public class RenderShadowObjectsPoint : ScriptableRenderPass
         
         RenderGraphUtils.BlitMaterialParameters para2 = new(destinationColor, destinationColorRT, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
         renderGraph.AddBlitPass(para2, "CaptureShadowsColor");
-        
+
+        // GraphicsTextureDescriptor descriptor = new GraphicsTextureDescriptor();
+        // descriptor.dimension = TextureDimension.Cube;
+        // descriptor.width = customLight.textureSize;
+        // descriptor.height = customLight.textureSize;
+        // descriptor.format = GraphicsFormat.R32_SFloat;
+        // GraphicsTexture graphicsTexture = new GraphicsTexture(descriptor);
+        // Texture cubemap = new Texture2D(customLight.textureSize, customLight.textureSize);
+        // Graphics.CopyTexture(destinationColorRT, 0, 0, 0, 0, 0, 0, cubemap, 0, 0, 0, 0);
+        //
         // RenderGraphUtils.BlitMaterialParameters para2 = new(destinationColor, destinationColorRT, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
         // renderGraph.AddBlitPass(para2, "CaptureShadowsColor");
     }
