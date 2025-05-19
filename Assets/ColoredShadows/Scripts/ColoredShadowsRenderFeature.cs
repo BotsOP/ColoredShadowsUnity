@@ -18,7 +18,6 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
     private CopyDepthPass2 copyDepthPass2;
     public override void Create()
     {
-        Debug.Log($"Create");
         // CustomLight customLight = FindAnyObjectByType<CustomLight>();
         CustomPointLight customPointLight = FindAnyObjectByType<CustomPointLight>();
         // Camera mainCamera = customLight.GetComponent<Camera>();
@@ -44,11 +43,7 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
         if (renderingData.cameraData.cameraType != CameraType.Game)
             return;
         
-        
         renderer.EnqueuePass(renderShadowObjectsPassPoint);
-        // renderer.EnqueuePass(renderShadowObjectsPass);
-        // renderer.EnqueuePass(copyDepthPass2);
-        // renderer.EnqueuePass(captureShadows);
     }
     
     public class CustomShadowData : ContextItem {

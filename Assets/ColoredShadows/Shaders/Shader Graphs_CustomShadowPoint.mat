@@ -51,9 +51,15 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _Float: 0
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ShadowID: 0
-    m_Colors: []
+    - _ZFar: 10
+    - _ZNear: 0.1
+    - _test: 10
+    m_Colors:
+    - _CustomLightPos: {r: 8.04, g: 2.47, b: -14.59, a: 0}
+    - _CustomPointLightPos0: {r: 8.04, g: 2.47, b: -14.59, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
