@@ -1,5 +1,29 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-2303747479660714366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f798dd743999e24799c43f39ed23bdf, type: 3}
+  m_Name: ColoredDirectionalShadowsRenderFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  injectionPoint: 500
+  filterSettings:
+    RenderQueueType: 0
+    LayerMask:
+      serializedVersion: 2
+      m_Bits: 0
+    LayerMaskID:
+      serializedVersion: 2
+      m_Bits: 0
+    PassNames: []
+  shadowOverrideMaterial: {fileID: 2100000, guid: 4a5832e1b9e521e4b9aa0d33324bb745, type: 2}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10,7 +34,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: de640fe3d0db1804a85f9fc8f5cadab6, type: 3}
-  m_Name: CustomShadows
+  m_Name: ColoredShadowDirectional
   m_EditorClassIdentifier: 
   debugShaders:
     debugReplacementPS: {fileID: 4800000, guid: cf852408f2e174538bcd9b7fda1c5ae7, type: 3}
@@ -25,18 +49,18 @@ MonoBehaviour:
     probeSamplingDebugTexture: {fileID: 0}
     probeVolumeBlendStatesCS: {fileID: 0}
   m_RendererFeatures:
-  - {fileID: 7227916146802232454}
-  m_RendererFeatureMap: 860c75bc70b74e64
+  - {fileID: -2303747479660714366}
+  m_RendererFeatureMap: 82269f7edf7107e0
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 0}
   m_AssetVersion: 2
   m_OpaqueLayerMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 4294967295
   m_TransparentLayerMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 4294967295
   m_DefaultStencilState:
     overrideStencilState: 0
     stencilReference: 0
@@ -52,27 +76,3 @@ MonoBehaviour:
   m_DepthTextureFormat: 93
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1
---- !u!114 &7227916146802232454
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 46824562ce563744988c2c558478d92b, type: 3}
-  m_Name: BlitToRTHandleRendererFeature
-  m_EditorClassIdentifier: 
-  m_Active: 1
-  injectionPoint: 100
-  filterSettings:
-    RenderQueueType: 0
-    LayerMask:
-      serializedVersion: 2
-      m_Bits: 4294967295
-    LayerMaskID:
-      serializedVersion: 2
-      m_Bits: 4294967295
-    PassNames: []
-  shadowOverrideMaterial: {fileID: 2100000, guid: 4a5832e1b9e521e4b9aa0d33324bb745, type: 2}

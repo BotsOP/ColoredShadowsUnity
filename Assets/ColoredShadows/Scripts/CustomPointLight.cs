@@ -8,14 +8,13 @@ public class CustomPointLight : MonoBehaviour
         Gizmos.color = Color.gray;
         Gizmos.DrawWireCube(transform.position, new Vector3(radius * 2, radius * 2, radius * 2));
         Color faceColor = Color.gray;
-        faceColor.a = 0.1f;
+        faceColor.a = 0.01f;
         Gizmos.color = faceColor;
         Gizmos.DrawCube(transform.position, new Vector3(radius * 2, radius * 2, radius * 2));
     }
 
     public Color color;
-    public float test;
-    public int pointLightIndex;
+    public int lightIndex;
     public float radius = 5;
     public int textureSize = 1024;
 }

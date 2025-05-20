@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-[CustomPropertyDrawer(typeof(ColoredShadowsRenderFeature.CustomLightData))]
+[CustomPropertyDrawer(typeof(CustomLightData))]
 public class CustomLightDataDrawer : PropertyDrawer
 {
     // Amount of extra space to add where needed
@@ -13,6 +13,7 @@ public class CustomLightDataDrawer : PropertyDrawer
 
         // Get references to all properties
         SerializedProperty lightModeProperty = property.FindPropertyRelative("lightMode");
+        SerializedProperty radiusProperty = property.FindPropertyRelative("radius");
         SerializedProperty nearPlaneProperty = property.FindPropertyRelative("nearPlane");
         SerializedProperty farPlaneProperty = property.FindPropertyRelative("farPlane");
         SerializedProperty horizontalSizeProperty = property.FindPropertyRelative("horizontalSize");
@@ -57,14 +58,13 @@ public class CustomLightDataDrawer : PropertyDrawer
         );
 
         // Get the current light mode enum value (0 = Ortho, 1 = FOV)
-        ColoredShadowsRenderFeature.CustomLightData.LightMode currentMode = (ColoredShadowsRenderFeature.CustomLightData.LightMode)lightModeProperty.enumValueIndex;
-
-        // Draw grey box background
-        EditorGUI.DrawRect(greyBoxRect, new Color(0.7f, 0.7f, 0.7f, 0.3f));
+        CustomLightData.LightMode currentMode = (CustomLightData.LightMode)lightModeProperty.enumValueIndex;
 
         // Draw conditional properties based on light mode
-        if (currentMode == ColoredShadowsRenderFeature.CustomLightData.LightMode.Ortho)
+        if (currentMode == CustomLightData.LightMode.Directional)
         {
+            EditorGUI.DrawRect(greyBoxRect, new Color(0.7f, 0.7f, 0.7f, 0.3f));
+
             // Draw label for the section
             EditorGUI.LabelField(
                 new Rect(greyBoxRect.x + 3, greyBoxRect.y - lineHeight, position.width, lineHeight),
@@ -75,9 +75,22 @@ public class CustomLightDataDrawer : PropertyDrawer
             // Display Ortho-specific fields
             EditorGUI.PropertyField(firstConditionalRect, horizontalSizeProperty, new GUIContent("Horizontal Size"));
             EditorGUI.PropertyField(secondConditionalRect, verticalSizeProperty, new GUIContent("Vertical Size"));
+            
+            currentY = secondConditionalRect.y + lineHeight + spacing + EXTRA_SPACING;
+        
+            // Add near and far plane fields
+            Rect nearPlaneRect = new Rect(position.x, currentY, position.width, lineHeight);
+            EditorGUI.PropertyField(nearPlaneRect, nearPlaneProperty, new GUIContent("Near Plane"));
+        
+            currentY = nearPlaneRect.y + lineHeight + spacing;
+        
+            Rect farPlaneRect = new Rect(position.x, currentY, position.width, lineHeight);
+            EditorGUI.PropertyField(farPlaneRect, farPlaneProperty, new GUIContent("Far Plane"));
         }
-        else // FOV mode
+        else if(currentMode == CustomLightData.LightMode.Spot)
         {
+            EditorGUI.DrawRect(greyBoxRect, new Color(0.7f, 0.7f, 0.7f, 0.3f));
+
             // Draw label for the section
             EditorGUI.LabelField(
                 new Rect(greyBoxRect.x + 3, greyBoxRect.y - lineHeight, position.width, lineHeight),
@@ -88,18 +101,27 @@ public class CustomLightDataDrawer : PropertyDrawer
             // Display FOV-specific fields
             EditorGUI.PropertyField(firstConditionalRect, fovProperty, new GUIContent("Field of View"));
             EditorGUI.PropertyField(secondConditionalRect, aspectRatioProperty, new GUIContent("Aspect Ratio"));
+            
+            currentY = secondConditionalRect.y + lineHeight + spacing + EXTRA_SPACING;
+        
+            // Add near and far plane fields
+            Rect nearPlaneRect = new Rect(position.x, currentY, position.width, lineHeight);
+            EditorGUI.PropertyField(nearPlaneRect, nearPlaneProperty, new GUIContent("Near Plane"));
+        
+            currentY = nearPlaneRect.y + lineHeight + spacing;
+        
+            Rect farPlaneRect = new Rect(position.x, currentY, position.width, lineHeight);
+            EditorGUI.PropertyField(farPlaneRect, farPlaneProperty, new GUIContent("Far Plane"));
         }
-        
-        currentY = secondConditionalRect.y + lineHeight + spacing + EXTRA_SPACING;
-        
-        // Add near and far plane fields
-        Rect nearPlaneRect = new Rect(position.x, currentY, position.width, lineHeight);
-        EditorGUI.PropertyField(nearPlaneRect, nearPlaneProperty, new GUIContent("Near Plane"));
-        
-        currentY = nearPlaneRect.y + lineHeight + spacing;
-        
-        Rect farPlaneRect = new Rect(position.x, currentY, position.width, lineHeight);
-        EditorGUI.PropertyField(farPlaneRect, farPlaneProperty, new GUIContent("Far Plane"));
+        else
+        {
+            EditorGUI.LabelField(
+                new Rect(greyBoxRect.x + 3, greyBoxRect.y - lineHeight, position.width, lineHeight),
+                "Point Properties",
+                EditorStyles.boldLabel
+            );
+            EditorGUI.PropertyField(firstConditionalRect, radiusProperty, new GUIContent("Radius"));
+        }
 
         EditorGUI.EndProperty();
     }

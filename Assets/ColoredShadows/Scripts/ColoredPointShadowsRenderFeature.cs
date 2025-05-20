@@ -5,33 +5,25 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering.Universal.Internal;
 
 // This Renderer Feature sets up the BlitToRTHandlePass pass.
-public class ColoredShadowsRenderFeature : ScriptableRendererFeature
+public class ColoredPointShadowsRenderFeature : ScriptableRendererFeature
 {
     public RenderPassEvent injectionPoint = RenderPassEvent.AfterRenderingTransparents;
     public FilterSettings filterSettings;
     public Material shadowOverrideMaterial;
     
 
-    private CaptureShadowMap captureShadows;
-    private RenderShadowObjects renderShadowObjectsPass;
+    private RenderShadowObjectsDirectional renderShadowObjectsDirectionalPass;
     private RenderShadowObjectsPoint renderShadowObjectsPassPoint;
-    private CopyDepthPass2 copyDepthPass2;
     public override void Create()
     {
-        // CustomLight customLight = FindAnyObjectByType<CustomLight>();
+        CustomDirectionalLight customDirectionalLight = FindAnyObjectByType<CustomDirectionalLight>();
         CustomPointLight customPointLight = FindAnyObjectByType<CustomPointLight>();
-        // Camera mainCamera = customLight.GetComponent<Camera>();
-        // mainCamera.allowMSAA = false;
-
-        
         // copyDepthPass2 = new CopyDepthPass2(injectionPoint, Shader.Find("Hidden/Universal Render Pipeline/CopyDepth"), false, false, false, "Copy Shadow Depth");
         
         // renderShadowObjectsPass = new RenderShadowObjects("Render Custom Shadows depth", injectionPoint, filterSettings.PassNames,
             // filterSettings.RenderQueueType, filterSettings.LayerMask, filterSettings.LayerMaskID, customLight, shadowOverrideMaterial);
         renderShadowObjectsPassPoint = new RenderShadowObjectsPoint("Render Custom Point Shadows depth", injectionPoint, filterSettings.PassNames,
-            filterSettings.RenderQueueType, filterSettings.LayerMask, filterSettings.LayerMaskID, customPointLight, shadowOverrideMaterial);
-        
-        // captureShadows = new CaptureShadowMap(injectionPoint, customLight.shadowTextureSize, customLight.shadowTextureSize);
+            filterSettings.RenderQueueType, filterSettings.LayerMask, filterSettings.LayerMaskID, customDirectionalLight, shadowOverrideMaterial);
     }
     
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -58,31 +50,7 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
         }
     }
 
-    [System.Serializable]
-    public struct CustomLightData
-    {
-        public enum LightMode
-        {
-            Ortho,
-            FOV,
-        }
-
-        public LightMode lightMode;
-        public float nearPlane, farPlane;
-        public float horizontalSize, verticalSize;
-        public float fov, aspectRatio;
-
-        public CustomLightData(LightMode lightMode, float nearPlane, float farPlane, float horizontalSize, float verticalSize, float fov, float aspectRatio)
-        {
-            this.lightMode = lightMode;
-            this.nearPlane = nearPlane;
-            this.farPlane = farPlane;
-            this.horizontalSize = horizontalSize;
-            this.verticalSize = verticalSize;
-            this.fov = fov;
-            this.aspectRatio = aspectRatio;
-        }
-    }
+    
     
     [System.Serializable]
     public class FilterSettings
@@ -118,7 +86,7 @@ public class ColoredShadowsRenderFeature : ScriptableRendererFeature
 
     protected override void Dispose(bool disposing)
     {
-        captureShadows?.Dispose();
-        captureShadows = null;
+        renderShadowObjectsPassPoint?.Dispose();
+        renderShadowObjectsPassPoint = null;
     }
 }
