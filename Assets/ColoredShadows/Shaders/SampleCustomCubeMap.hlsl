@@ -1,13 +1,6 @@
 #ifndef SAMPLE_CUSTOM_CUBEMAP_INCLUDED
 #define SAMPLE_CUSTOM_CUBEMAP_INCLUDED
 
-float2 GetCubemapUV(float3 dir, int face) {
-    float2 uv;
-
-    // Adjust direction per face
-    
-}
-
 // The function signature must match exactly what you define in the Custom Function node
 void SampleCubeMap_float(float3 direction, out float2 uv, out float faceIndex)
 {

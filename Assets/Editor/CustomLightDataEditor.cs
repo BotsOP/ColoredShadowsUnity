@@ -1,3 +1,4 @@
+using ColoredShadows.Scripts;
 using UnityEngine;
 using UnityEditor;
 
@@ -132,7 +133,15 @@ public class CustomLightDataDrawer : PropertyDrawer
         float spacing = EditorGUIUtility.standardVerticalSpacing;
         float padding = 5f;
         
+        CustomLightData.LightMode currentMode = (CustomLightData.LightMode)property.FindPropertyRelative("lightMode").enumValueIndex;
         // Calculate total height including extra spacing
+        if (currentMode == CustomLightData.LightMode.Point)
+        {
+            return (lineHeight * 3) + // Three base fields
+                   (spacing * 3) + // Standard spacing between those fields 
+            (EXTRA_SPACING); // Extra space after light mode and before grey box
+            // ((lineHeight * 2) + spacing + (padding * 2)); // Grey box with content
+        }
         return (lineHeight * 3) + // Three base fields
                (spacing * 3) +    // Standard spacing between those fields 
                (EXTRA_SPACING * 2) + // Extra space after light mode and before grey box
