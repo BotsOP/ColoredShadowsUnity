@@ -36,7 +36,8 @@ namespace ColoredShadows.Scripts
                 MAX_AMOUNT_CUSTOM_LIGHTS,
                 sizeof(int) * 2 +
                 sizeof(float) * 16 +
-                sizeof(float) * 3
+                sizeof(float) * 3 +
+                sizeof(float) * 2
             );
         
             renderShadowObjectsPassPoint = new RenderColoredShadows("Render Custom Point Shadows depth", injectionPoint, filterSettings.PassNames,
@@ -62,7 +63,8 @@ namespace ColoredShadows.Scripts
             renderer.EnqueuePass(renderShadowObjectsPassPoint);
         }
     
-        public class CustomShadowData : ContextItem {
+        public class CustomShadowData : ContextItem 
+        {
             public TextureHandle shadowMapDepthFormatted;
             public TextureHandle shadowMapColorFormatted;
             public TextureHandle shadowMapID;
@@ -73,8 +75,6 @@ namespace ColoredShadows.Scripts
                 shadowMapID = TextureHandle.nullHandle;
             }
         }
-
-    
     
         [System.Serializable]
         public class FilterSettings

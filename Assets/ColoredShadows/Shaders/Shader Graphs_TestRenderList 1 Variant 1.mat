@@ -39,7 +39,7 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _ShadowID: 0.6
+    - _ShadowID: 3
     m_Colors: []
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.RenderGraphModule.Util;
@@ -78,9 +79,12 @@ namespace ColoredShadows.Scripts
             cmd.SetViewport(new Rect(0, 0, resolutionSizeX, resolutionSizeY));
             cmd.SetViewProjectionMatrices(passData.viewMatrix, projectionMatrix);
             cmd.DrawRendererList(passData.rendererListHdl1);
-
+            
             if (passData.lightMode == CustomLightData.LightMode.Point)
             {
+                cmd.SetGlobalVector("_ColoredLightPos", passData.lightPos);
+                cmd.SetGlobalFloat("_ColoredLightFarPlane", passData.farPlane);
+                
                 cmd.SetViewport(new Rect(resolutionSizeX * 1, 0, resolutionSizeX, resolutionSizeY));
                 cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * passData.viewMatrix, projectionMatrix);
                 cmd.DrawRendererList(passData.rendererListHdl2);
@@ -141,9 +145,9 @@ namespace ColoredShadows.Scripts
 
             Matrix4x4 viewMatrix = Matrix4x4.zero;
             Matrix4x4 projectionMatrix = Matrix4x4.zero;
-            TextureHandle destinationColor = new TextureHandle();
-            TextureHandle destinationDepth = new TextureHandle();
-            TextureHandle destinationColorRT = new TextureHandle();
+            TextureHandle destinationColor;
+            TextureHandle destinationDepth;
+            TextureHandle destinationColorRT;
             int textureXMultiplier = 1;
         
             CustomLightData lightData = customLight.lightData;
@@ -183,27 +187,31 @@ namespace ColoredShadows.Scripts
             }
         
             var destinationDescColor = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
+            // destinationDescColor.colorFormat = GraphicsFormat.R32G32B32A32_SInt;
+            destinationDescColor.format = GraphicsFormat.R32G32B32A32_SInt;
+            // destinationDescColor.colorFormat = GraphicsFormat.R32G32B32A32_SFloat;
             destinationDescColor.name = "SOURCE_COLOR";
-            destinationDescColor.filterMode = FilterMode.Point;
+            // destinationDescColor.filterMode = FilterMode.Point;
             destinationDescColor.width = customLight.shadowTextureSize.x * textureXMultiplier;
             destinationDescColor.height = customLight.shadowTextureSize.y;
             destinationColor = renderGraph.CreateTexture(destinationDescColor);
         
             var destinationDescDepth = renderGraph.GetTextureDesc(resourceData.activeDepthTexture);
             destinationDescDepth.name = "SOURCE_DEPTH";
-            destinationDescDepth.filterMode = FilterMode.Point;
+            // destinationDescDepth.filterMode = FilterMode.Point;
             destinationDescDepth.width = customLight.shadowTextureSize.x * textureXMultiplier;
             destinationDescDepth.height = customLight.shadowTextureSize.y;
             destinationDescDepth.isShadowMap = true;
             destinationDepth = renderGraph.CreateTexture(destinationDescDepth);
         
             RenderTextureDescriptor shadowMapIDDesc = cameraData.cameraTargetDescriptor;
-            shadowMapIDDesc.colorFormat = RenderTextureFormat.RGFloat;
+            shadowMapIDDesc.colorFormat = RenderTextureFormat.ARGBInt;
+            shadowMapIDDesc.colorFormat = RenderTextureFormat.ARGBFloat;
             shadowMapIDDesc.width = customLight.shadowTextureSize.x * textureXMultiplier;
             shadowMapIDDesc.height = customLight.shadowTextureSize.y;
             shadowMapIDDesc.depthBufferBits = 0;
             shadowMapIDDesc.msaaSamples = 1;
-            RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Point, TextureWrapMode.Clamp, name: shadowMapIDName + customLight.lightIndex );
+            RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: shadowMapIDName + customLight.lightIndex );
             destinationColorRT = renderGraph.ImportTexture(shadowMapID);
         
             using (var builder = renderGraph.AddRasterRenderPass<PassData>(passName, out var passData, profilingSampler))
@@ -218,6 +226,8 @@ namespace ColoredShadows.Scripts
                 passData.textureSize = customLight.shadowTextureSize;
                 passData.projectionMatrix = projectionMatrix;
                 passData.viewMatrix = viewMatrix;
+                passData.lightPos = customLight.transform.position;
+                passData.farPlane = customLight.lightData.farPlane;
             
                 InitRendererLists(renderingData, universalLightData, ref passData, renderGraph, filteringSettingsID);
             
@@ -245,14 +255,15 @@ namespace ColoredShadows.Scripts
             renderGraph.AddBlitPass(para2, "CaptureShadowsColor");
 
             Shader.SetGlobalTexture("_ColoredShadowMap" + customLight.lightIndex, shadowMapID);
-            Shader.SetGlobalVector("_ColoredLightPos" + customLight.lightIndex, customLight.transform.position);
-            Shader.SetGlobalMatrix("_ColoredShadowMatrix" + customLight.lightIndex, projectionMatrix * viewMatrix);
+            Shader.SetGlobalVector("_ColoredLightPos", customLight.transform.position);
 
             lightInformations[customLight.lightIndex] = new LightInformation(
                 customLight.lightIndex,
-                customLight.lightData.lightMode,
+                (int)customLight.lightData.lightMode,
                 projectionMatrix * viewMatrix,
-                customLight.transform.position
+                customLight.transform.position,
+                customLight.lightData.fallOffRange,
+                customLight.lightData.farPlane
             );
             if (customLight.lightIndex == 0)
             {
@@ -284,6 +295,8 @@ namespace ColoredShadows.Scripts
             internal Matrix4x4 viewMatrix;
             internal Matrix4x4 projectionMatrix;
             internal CustomLightData.LightMode lightMode;
+            internal Vector3 lightPos;
+            internal float farPlane;
 
             internal RendererListHandle rendererListHdl1;
             internal RendererListHandle rendererListHdl2;
@@ -306,13 +319,16 @@ namespace ColoredShadows.Scripts
             public int lightMode;
             public Matrix4x4 lightMatrix;
             public Vector3 lightPos;
-
-            public LightInformation(int index, CustomLightData.LightMode lightMode, Matrix4x4 lightMatrix, Vector3 lightPos)
+            public float fallOffRange;
+            public float farPlane;
+            public LightInformation(int index, int lightMode, Matrix4x4 lightMatrix, Vector3 lightPos, float fallOffRange, float farPlane)
             {
                 this.index = index;
-                this.lightMode = (int)lightMode;
+                this.lightMode = lightMode;
                 this.lightMatrix = lightMatrix;
                 this.lightPos = lightPos;
+                this.fallOffRange = fallOffRange;
+                this.farPlane = farPlane;
             }
         }
 

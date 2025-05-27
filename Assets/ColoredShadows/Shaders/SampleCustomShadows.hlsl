@@ -1,7 +1,7 @@
 #ifndef SAMPLE_CUSTOM_CUBEMAP_INCLUDED
 #define SAMPLE_CUSTOM_CUBEMAP_INCLUDED
 
-void SampleCustomCubeMap(float3 direction, out float2 uv)
+void SampleCustomCubeMap(float3 direction, out float2 uv, out int faceIndex)
 {
     uv = float2(-1, -1);
     float forward = dot(direction, float3(0.0f, 0.0f, 1.0f));
@@ -11,7 +11,7 @@ void SampleCustomCubeMap(float3 direction, out float2 uv)
     float down = dot(direction, float3(0.0f, -1.0f, 0.0f));
     float up = dot(direction, float3(0.0f, 1.0f, 0.0f));
     float closestDir = min(up,min(down,min(min(min(forward, right), back), left)));
-    int faceIndex = -1;
+    faceIndex = -1;
     if (closestDir == forward)
     {
         faceIndex = 0;
@@ -58,11 +58,13 @@ void SampleCustomCubeMap(float3 direction, out float2 uv)
     }
     uv = uv * 0.5 + 0.5;
     uv = float2(1 - uv.x, uv.y);
-    uv = float2((uv.x / 6.0) + ((1.0/6.0) * faceIndex), uv.y);
-    // uv.x = faceIndex;
+    // uv = float2((uv.x / 6.0) + ((1.0/6.0) * faceIndex), uv.y);
 }
 
-sampler2D _ColoredShadowMap0;
+// sampler2D _ColoredShadowMap0;
+Texture2D _ColoredShadowMap0;
+SamplerState my_linear_clamp_sampler;
+SamplerState my_point_clamp_sampler;
 sampler2D _ColoredShadowMap1;
 sampler2D _ColoredShadowMap2;
 sampler2D _ColoredShadowMap3;
@@ -74,14 +76,26 @@ sampler2D _ColoredShadowMap8;
 sampler2D _ColoredShadowMap9;
 sampler2D _ColoredShadowMap10;
 
-float2 SampleColoredShadowMap(float2 uv, int mapIndex)
+float4 SampleColoredShadowMap(float2 uv, int mapIndex, out float mask)
 {
-    float2 output = float2(0, 0); // Default value if no case matches
+    float4 output = float4(0, 0, 0, 0); // Default value if no case matches
+    mask = 0;
     
     switch (mapIndex)
     {
     case 0:
-        output = tex2D(_ColoredShadowMap0, uv);
+        // output = tex2D(_ColoredShadowMap0, uv);
+        output = _ColoredShadowMap0.Sample(my_point_clamp_sampler, uv);
+        // float4 xplus = _ColoredShadowMap0.Sample(my_linear_clamp_sampler, uv + float2((1.0 / 1024 / 6), 0));
+        // float4 xnegative = _ColoredShadowMap0.Sample(my_linear_clamp_sampler, uv - float2((1.0 / 1024 / 6), 0));
+        // float4 yplus = _ColoredShadowMap0.Sample(my_linear_clamp_sampler, uv + float2(0, (1.0 / 1024)));
+        // float4 ynegative = _ColoredShadowMap0.Sample(my_linear_clamp_sampler, uv - float2(0, (1.0 / 1024)));
+        // mask += xplus.r;
+        // mask += yplus.r;
+        // mask += xnegative.r;
+        // mask += ynegative.r;
+        mask += _ColoredShadowMap0.Sample(my_linear_clamp_sampler, uv).r;
+        mask /= 5;
         break;
     case 1:
         output = tex2D(_ColoredShadowMap1, uv);
@@ -124,31 +138,94 @@ struct LightInformation
     int lightMode;
     float4x4 lightMatrix;
     float3 lightPos;
+    float fallOffRange;
+    float farPlane;
 };
+
+float invLerp(float from, float to, float value){
+    return (value - from) / (to - from);
+}
+
+float remap(float origFrom, float origTo, float targetFrom, float targetTo, float value){
+    float rel = invLerp(origFrom, origTo, value);
+    return lerp(targetFrom, targetTo, rel);
+}
 
 int CurrentAmountCustomLights;
 StructuredBuffer<LightInformation> ColoredShadowLightInformation;
-// The function signature must match exactly what you define in the Custom Function node
-void SampleColoredShadows_float(float3 worldPos, out float2 output)
+void SampleColoredShadows_float(float3 worldPos, out float4 output, out float2 finalUV, out float3 lightPos, out float fallOffRange, out float mask)
 {
-    output = float2(0, 0);
+    output = float4(0, 0, 0, 0);
+    lightPos = float3(-999999999, -999999999, -999999999);
+    fallOffRange = 0;
+    float lowestDist = 99999999;
+    finalUV = float2(0, 0);
     for (int i = 0; i < CurrentAmountCustomLights; ++i)
     {
         LightInformation lightInformation = ColoredShadowLightInformation[i];
-        float3 dir = normalize(lightInformation.lightPos - worldPos);
         float2 uv = float2(0, 0);
-        SampleCustomCubeMap(dir, uv);
-        output = max(SampleColoredShadowMap(uv, lightInformation.index), output);
+        float4 tempOutput;
+        float4 lightSpace;
+        float3 lightUv;
+        float dist = distance(worldPos, lightInformation.lightPos) / lightInformation.fallOffRange;
+        switch (lightInformation.lightMode)
+        {
+        case 0: // Directional
+            lightSpace = mul(lightInformation.lightMatrix, float4(worldPos.x, worldPos.y * -1, worldPos.z, 1));
+            lightUv = lightSpace.rgb / lightSpace.a;
+            lightUv *= 0.5;
+            lightUv += 0.5;
+            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, mask);
+            tempOutput.y = dist;
+            if (tempOutput.x > 0 && lightUv.x > 0 && lightUv.x < 1 && lightUv.y > 0 && lightUv.y < 1)
+            {
+                output = tempOutput;
+                lightPos = lightInformation.lightPos;
+                fallOffRange = -1;
+                finalUV = lightUv.rg;
+            }
+            break;
+        case 1: // Spot
+            lightSpace = mul(lightInformation.lightMatrix, float4(worldPos.x, worldPos.y * -1, worldPos.z, 1));
+            lightUv = lightSpace.rgb / lightSpace.a;
+            lightUv *= 0.5;
+            lightUv += 0.5;
+            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, mask);
+            tempOutput.y = dist;
+            if (tempOutput.x > 0 && lightUv.x > 0 && lightUv.x < 1 && lightUv.y > 0 && lightUv.y < 1 && distance(worldPos, lightInformation.lightPos) < lightInformation.fallOffRange)
+            {
+                output = tempOutput;
+                lightPos = lightInformation.lightPos;
+                fallOffRange = lightInformation.fallOffRange;
+                finalUV = lightUv.rg;
+            }
+            break;
+        case 2: //Point
+            float3 dir = normalize(lightInformation.lightPos - worldPos);
+            int faceIndex;
+            SampleCustomCubeMap(dir, uv, faceIndex);
+            float2 cubemapUV = float2((uv.x / 6.0) + ((1.0/6.0) * faceIndex), uv.y);
+            tempOutput = SampleColoredShadowMap(cubemapUV, lightInformation.index, mask);
+            finalUV = uv;
+            lowestDist = dist;
+            output = tempOutput;
+            lightPos = lightInformation.lightPos;
+            fallOffRange = lightInformation.fallOffRange;
+            // if (tempOutput.x > 0 && dist < lowestDist && dist < 1)
+            // {
+            //     finalUV = uv;
+            //     lowestDist = dist;
+            //     output = tempOutput;
+            //     lightPos = lightInformation.lightPos;
+            //     fallOffRange = lightInformation.fallOffRange;
+            // }
+            break;
+        }
     }
 }
 
-
-
-
-
-// Half precision version for mobile platforms
-// void ProceduralWave_half(half2 UV, half Time, half WaveCount, half WaveSpeed, half WaveAmplitude, out half3 Displacement, out half3 Normal)
-// {
-// }
+void SampleColoredShadows_half(float3 worldPos, out float4 output, out float2 finalUV, out float3 lightPos, out float fallOffRange)
+{
+}
 
 #endif 

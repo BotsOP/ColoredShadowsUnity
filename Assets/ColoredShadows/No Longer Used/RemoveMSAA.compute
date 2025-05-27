@@ -1,0 +1,15 @@
+#pragma kernel RemoveMSAA
+
+RWTexture2D<float> ShadowIDTex;
+
+[numthreads(8,8,1)]
+void RemoveMSAA (uint2 id : SV_DispatchThreadID)
+{
+    float sampleTop = ShadowIDTex[id + uint2(0, 1)];
+    float sampleBottom = ShadowIDTex[id + uint2(0, -1)];
+    float sampleLeft = ShadowIDTex[id + uint2(-1, 0)];
+    float sampleRight = ShadowIDTex[id + uint2(1, 0)];
+    float sampleMiddle = ShadowIDTex[id];
+    float uniqueSample = 0;
+    // if (sampleTop != sampleBottom)
+}
