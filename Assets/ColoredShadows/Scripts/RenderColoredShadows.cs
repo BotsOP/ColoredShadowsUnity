@@ -260,7 +260,7 @@ namespace ColoredShadows.Scripts
             lightInformations[customLight.lightIndex] = new LightInformation(
                 customLight.lightIndex,
                 (int)customLight.lightData.lightMode,
-                projectionMatrix * viewMatrix,
+                GL.GetGPUProjectionMatrix(projectionMatrix, false) * cameraData.GetViewMatrix(),
                 customLight.transform.position,
                 customLight.lightData.fallOffRange,
                 customLight.lightData.farPlane

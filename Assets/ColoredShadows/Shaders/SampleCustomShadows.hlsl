@@ -73,8 +73,6 @@ sampler2D _ColoredShadowMap5;
 sampler2D _ColoredShadowMap6;
 sampler2D _ColoredShadowMap7;
 sampler2D _ColoredShadowMap8;
-sampler2D _ColoredShadowMap9;
-sampler2D _ColoredShadowMap10;
 
 float4 SampleColoredShadowMap(float2 uv, int mapIndex, out float mask)
 {
@@ -86,14 +84,14 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, out float mask)
     case 0:
         // output = tex2D(_ColoredShadowMap0, uv);
         output = _ColoredShadowMap0.Sample(my_point_clamp_sampler, uv);
-        // float4 xplus = _ColoredShadowMap0.Sample(my_linear_clamp_sampler, uv + float2((1.0 / 1024 / 6), 0));
-        // float4 xnegative = _ColoredShadowMap0.Sample(my_linear_clamp_sampler, uv - float2((1.0 / 1024 / 6), 0));
-        // float4 yplus = _ColoredShadowMap0.Sample(my_linear_clamp_sampler, uv + float2(0, (1.0 / 1024)));
-        // float4 ynegative = _ColoredShadowMap0.Sample(my_linear_clamp_sampler, uv - float2(0, (1.0 / 1024)));
-        // mask += xplus.r;
-        // mask += yplus.r;
-        // mask += xnegative.r;
-        // mask += ynegative.r;
+        float4 xplus = _ColoredShadowMap0.Sample(my_linear_clamp_sampler, uv + float2((1.0 / 1024 / 6), 0));
+        float4 xnegative = _ColoredShadowMap0.Sample(my_linear_clamp_sampler, uv - float2((1.0 / 1024 / 6), 0));
+        float4 yplus = _ColoredShadowMap0.Sample(my_linear_clamp_sampler, uv + float2(0, (1.0 / 1024)));
+        float4 ynegative = _ColoredShadowMap0.Sample(my_linear_clamp_sampler, uv - float2(0, (1.0 / 1024)));
+        mask += xplus.r;
+        mask += yplus.r;
+        mask += xnegative.r;
+        mask += ynegative.r;
         mask += _ColoredShadowMap0.Sample(my_linear_clamp_sampler, uv).r;
         mask /= 5;
         break;
@@ -120,12 +118,6 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, out float mask)
         break;
     case 8:
         output = tex2D(_ColoredShadowMap8, uv);
-        break;
-    case 9:
-        output = tex2D(_ColoredShadowMap9, uv);
-        break;
-    case 10:
-        output = tex2D(_ColoredShadowMap10, uv);
         break;
     }
     
@@ -179,10 +171,11 @@ void SampleColoredShadows_float(float3 worldPos, out float4 output, out float2 f
             tempOutput.y = dist;
             if (tempOutput.x > 0 && lightUv.x > 0 && lightUv.x < 1 && lightUv.y > 0 && lightUv.y < 1)
             {
+                finalUV = lightUv;
+                lowestDist = dist;
                 output = tempOutput;
                 lightPos = lightInformation.lightPos;
-                fallOffRange = -1;
-                finalUV = lightUv.rg;
+                fallOffRange = lightInformation.fallOffRange;
             }
             break;
         case 1: // Spot
@@ -192,12 +185,13 @@ void SampleColoredShadows_float(float3 worldPos, out float4 output, out float2 f
             lightUv += 0.5;
             tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, mask);
             tempOutput.y = dist;
-            if (tempOutput.x > 0 && lightUv.x > 0 && lightUv.x < 1 && lightUv.y > 0 && lightUv.y < 1 && distance(worldPos, lightInformation.lightPos) < lightInformation.fallOffRange)
+            if (tempOutput.x > 0 && lightUv.x > 1 / 1024.0 && lightUv.x < 1023.0 / 1024 && lightUv.y > 1.0 / 1024 && lightUv.y < 1023.0 / 1024 && dist < lowestDist && dist < 1)
             {
+                finalUV = lightUv;
+                lowestDist = dist;
                 output = tempOutput;
                 lightPos = lightInformation.lightPos;
                 fallOffRange = lightInformation.fallOffRange;
-                finalUV = lightUv.rg;
             }
             break;
         case 2: //Point
@@ -206,19 +200,14 @@ void SampleColoredShadows_float(float3 worldPos, out float4 output, out float2 f
             SampleCustomCubeMap(dir, uv, faceIndex);
             float2 cubemapUV = float2((uv.x / 6.0) + ((1.0/6.0) * faceIndex), uv.y);
             tempOutput = SampleColoredShadowMap(cubemapUV, lightInformation.index, mask);
-            finalUV = uv;
-            lowestDist = dist;
-            output = tempOutput;
-            lightPos = lightInformation.lightPos;
-            fallOffRange = lightInformation.fallOffRange;
-            // if (tempOutput.x > 0 && dist < lowestDist && dist < 1)
-            // {
-            //     finalUV = uv;
-            //     lowestDist = dist;
-            //     output = tempOutput;
-            //     lightPos = lightInformation.lightPos;
-            //     fallOffRange = lightInformation.fallOffRange;
-            // }
+            if (tempOutput.x > 0 && dist < lowestDist && dist < 1)
+            {
+                finalUV = uv;
+                lowestDist = dist;
+                output = tempOutput;
+                lightPos = lightInformation.lightPos;
+                fallOffRange = lightInformation.fallOffRange;
+            }
             break;
         }
     }
