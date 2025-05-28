@@ -260,10 +260,13 @@ namespace ColoredShadows.Scripts
             lightInformations[customLight.lightIndex] = new LightInformation(
                 customLight.lightIndex,
                 (int)customLight.lightData.lightMode,
-                GL.GetGPUProjectionMatrix(projectionMatrix, false) * cameraData.GetViewMatrix(),
+                GL.GetGPUProjectionMatrix(projectionMatrix, false) * viewMatrix,
                 customLight.transform.position,
                 customLight.lightData.fallOffRange,
-                customLight.lightData.farPlane
+                customLight.lightData.farPlane,
+                cameraData.camera.transform.position,
+                customLight.shadowTextureSize.x,
+                customLight.shadowTextureSize.y
             );
             if (customLight.lightIndex == 0)
             {
@@ -321,7 +324,10 @@ namespace ColoredShadows.Scripts
             public Vector3 lightPos;
             public float fallOffRange;
             public float farPlane;
-            public LightInformation(int index, int lightMode, Matrix4x4 lightMatrix, Vector3 lightPos, float fallOffRange, float farPlane)
+            public Vector3 cameraPos;
+            public int textureSizeX;
+            public int textureSizeY;
+            public LightInformation(int index, int lightMode, Matrix4x4 lightMatrix, Vector3 lightPos, float fallOffRange, float farPlane, Vector3 cameraPos, int textureSizeX, int textureSizeY)
             {
                 this.index = index;
                 this.lightMode = lightMode;
@@ -329,6 +335,9 @@ namespace ColoredShadows.Scripts
                 this.lightPos = lightPos;
                 this.fallOffRange = fallOffRange;
                 this.farPlane = farPlane;
+                this.cameraPos = cameraPos;
+                this.textureSizeX = textureSizeX;
+                this.textureSizeY = textureSizeY;
             }
         }
 
