@@ -40,7 +40,6 @@ namespace ColoredShadows.Scripts
                 sizeof(float) * 3 +
                 sizeof(int) * 3
             );
-            Debug.Log($"Create");
         
             renderShadowObjectsPassPoint = new RenderColoredShadows("Render Custom Point Shadows depth", injectionPoint, filterSettings.PassNames,
                 filterSettings.RenderQueueType, filterSettings.LayerMask, shadowOverrideMaterial, lightInformations, lightInformationBuffer);
