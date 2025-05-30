@@ -170,8 +170,10 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, int textureSizeX, int tex
         l4 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvYNegative).r);
         l5 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uv).r);
 
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5.r > 0)
         {
+            // l2 = 1 / output.r;
+            // mask = l5 * 5;
             mask = (max(m4.r, m3.r) / output.r) * 5;
             break;
         }
