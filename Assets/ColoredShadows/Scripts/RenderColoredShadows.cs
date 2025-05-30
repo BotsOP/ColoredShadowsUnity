@@ -266,7 +266,8 @@ namespace ColoredShadows.Scripts
                 customLight.lightData.farPlane,
                 cameraData.camera.transform.position,
                 customLight.shadowTextureSize.x,
-                customLight.shadowTextureSize.y
+                customLight.shadowTextureSize.y,
+                customLight.lightData.lightIDMultiplier
             );
             if (customLight.lightIndex == 0)
             {
@@ -327,7 +328,8 @@ namespace ColoredShadows.Scripts
             public Vector3 cameraPos;
             public int textureSizeX;
             public int textureSizeY;
-            public LightInformation(int index, int lightMode, Matrix4x4 lightMatrix, Vector3 lightPos, float fallOffRange, float farPlane, Vector3 cameraPos, int textureSizeX, int textureSizeY)
+            public int lightIDMultiplier;
+            public LightInformation(int index, int lightMode, Matrix4x4 lightMatrix, Vector3 lightPos, float fallOffRange, float farPlane, Vector3 cameraPos, int textureSizeX, int textureSizeY, int lightIDMultiplier)
             {
                 this.index = index;
                 this.lightMode = lightMode;
@@ -338,6 +340,7 @@ namespace ColoredShadows.Scripts
                 this.cameraPos = cameraPos;
                 this.textureSizeX = textureSizeX;
                 this.textureSizeY = textureSizeY;
+                this.lightIDMultiplier = lightIDMultiplier;
             }
         }
 

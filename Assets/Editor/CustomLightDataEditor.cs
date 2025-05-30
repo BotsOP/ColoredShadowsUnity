@@ -19,6 +19,7 @@ public class CustomLightDataPropertyDrawer : PropertyDrawer
         var fovProperty = property.FindPropertyRelative("fov");
         var aspectRatioProperty = property.FindPropertyRelative("aspectRatio");
         var fallOffRangeProperty = property.FindPropertyRelative("fallOffRange");
+        var lightIDMultiplierProperty = property.FindPropertyRelative("lightIDMultiplier");
 
         // Calculate positions
         float lineHeight = EditorGUIUtility.singleLineHeight;
@@ -69,6 +70,8 @@ public class CustomLightDataPropertyDrawer : PropertyDrawer
                     EditorGUI.PropertyField(currentRect, fallOffRangeProperty);
                     break;
             }
+            currentRect.y += lineHeight + spacing;
+            EditorGUI.PropertyField(currentRect, lightIDMultiplierProperty);
 
             EditorGUI.indentLevel--;
         }
@@ -103,6 +106,7 @@ public class CustomLightDataPropertyDrawer : PropertyDrawer
                 height += (lineHeight + spacing) * 2; // radius + fallOffRange
                 break;
         }
+        height += (lineHeight + spacing);
 
         return height - spacing; // Remove last spacing
     }
