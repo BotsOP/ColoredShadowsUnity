@@ -88,6 +88,259 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, int textureSizeX, int tex
     float2 uvYNegative = uv - texelOffsetY;
 
     float4 m1;
+
+    float l1;
+    float l2;
+    float l3;
+    float l4;
+    float l5;
+    
+    switch (mapIndex)
+    {
+    case 0:
+        m1 = (_ColoredShadowMap0.Sample(point_clamp_sampler, uv));
+        output = m1;
+
+        l1 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvXPlus).r);
+        l2 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvXNegative).r);
+        l3 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvYPlus).r);
+        l4 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvYNegative).r);
+        l5 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uv).r);
+
+        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        {
+            mask = (m1.r / output.r) * 5;
+            break;
+        }
+    
+        mask += l1 / output.r;
+        mask += l2 / output.r;
+        mask += l3 / output.r;
+        mask += l4 / output.r;
+        mask += l5 / output.r;
+        break;
+    case 1:
+        m1 = (_ColoredShadowMap1.Sample(point_clamp_sampler, uv));
+        output = m1;
+
+        l1 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvXPlus).r);
+        l2 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvXNegative).r);
+        l3 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvYPlus).r);
+        l4 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvYNegative).r);
+        l5 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uv).r);
+
+        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        {
+            mask = (m1.r / output.r) * 5;
+            break;
+        }
+    
+        mask += l1 / output.r;
+        mask += l2 / output.r;
+        mask += l3 / output.r;
+        mask += l4 / output.r;
+        mask += l5 / output.r;
+        break;
+    case 2:
+        m1 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uv));
+        output = m1;
+
+        l1 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvXPlus).r);
+        l2 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvXNegative).r);
+        l3 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvYPlus).r);
+        l4 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvYNegative).r);
+        l5 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uv).r);
+
+        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        {
+            mask = (m1.r / output.r) * 5;
+            break;
+        }
+    
+        mask += l1 / output.r;
+        mask += l2 / output.r;
+        mask += l3 / output.r;
+        mask += l4 / output.r;
+        mask += l5 / output.r;
+        break;
+    case 3:
+        m1 = (_ColoredShadowMap3.Sample(point_clamp_sampler, uv));
+        output = m1;
+
+        l1 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvXPlus).r);
+        l2 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvXNegative).r);
+        l3 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvYPlus).r);
+        l4 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvYNegative).r);
+        l5 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uv).r);
+
+        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        {
+            mask = (m1.r / output.r) * 5;
+            break;
+        }
+    
+        mask += l1 / output.r;
+        mask += l2 / output.r;
+        mask += l3 / output.r;
+        mask += l4 / output.r;
+        mask += l5 / output.r;
+        break;
+    case 4:
+        m1 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uv));
+        output = m1;
+
+        l1 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvXPlus).r);
+        l2 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvXNegative).r);
+        l3 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvYPlus).r);
+        l4 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvYNegative).r);
+        l5 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uv).r);
+
+        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        {
+            mask = (m1.r / output.r) * 5;
+            break;
+        }
+    
+        mask += l1 / output.r;
+        mask += l2 / output.r;
+        mask += l3 / output.r;
+        mask += l4 / output.r;
+        mask += l5 / output.r;
+        break;
+    case 5:
+        m1 = (_ColoredShadowMap5.Sample(point_clamp_sampler, uv));
+        output = m1;
+
+        l1 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvXPlus).r);
+        l2 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvXNegative).r);
+        l3 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvYPlus).r);
+        l4 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvYNegative).r);
+        l5 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uv).r);
+
+        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        {
+            mask = (m1.r / output.r) * 5;
+            break;
+        }
+    
+        mask += l1 / output.r;
+        mask += l2 / output.r;
+        mask += l3 / output.r;
+        mask += l4 / output.r;
+        mask += l5 / output.r;
+        break;
+    case 6:
+        m1 = (_ColoredShadowMap6.Sample(point_clamp_sampler, uv));
+        output = m1;
+
+        l1 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvXPlus).r);
+        l2 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvXNegative).r);
+        l3 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvYPlus).r);
+        l4 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvYNegative).r);
+        l5 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uv).r);
+
+        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        {
+            mask = (m1.r / output.r) * 5;
+            break;
+        }
+    
+        mask += l1 / output.r;
+        mask += l2 / output.r;
+        mask += l3 / output.r;
+        mask += l4 / output.r;
+        mask += l5 / output.r;
+        break;
+    case 7:
+        m1 = (_ColoredShadowMap7.Sample(point_clamp_sampler, uv));
+        output = m1;
+
+        l1 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvXPlus).r);
+        l2 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvXNegative).r);
+        l3 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvYPlus).r);
+        l4 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvYNegative).r);
+        l5 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uv).r);
+
+        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        {
+            mask = (m1.r / output.r) * 5;
+            break;
+        }
+    
+        mask += l1 / output.r;
+        mask += l2 / output.r;
+        mask += l3 / output.r;
+        mask += l4 / output.r;
+        mask += l5 / output.r;
+        break;
+    case 8:
+        m1 = (_ColoredShadowMap8.Sample(point_clamp_sampler, uv));
+        output = m1;
+
+        l1 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvXPlus).r);
+        l2 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvXNegative).r);
+        l3 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvYPlus).r);
+        l4 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvYNegative).r);
+        l5 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uv).r);
+
+        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        {
+            mask = (m1.r / output.r) * 5;
+            break;
+        }
+    
+        mask += l1 / output.r;
+        mask += l2 / output.r;
+        mask += l3 / output.r;
+        mask += l4 / output.r;
+        mask += l5 / output.r;
+        break;
+    case 9:
+        m1 = (_ColoredShadowMap9.Sample(point_clamp_sampler, uv));
+        output = m1;
+
+        l1 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvXPlus).r);
+        l2 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvXNegative).r);
+        l3 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvYPlus).r);
+        l4 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvYNegative).r);
+        l5 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uv).r);
+
+        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        {
+            mask = (m1.r / output.r) * 5;
+            break;
+        }
+    
+        mask += l1 / output.r;
+        mask += l2 / output.r;
+        mask += l3 / output.r;
+        mask += l4 / output.r;
+        mask += l5 / output.r;
+        break;
+    default:
+        mask = 0;
+        output = float4(0, 0, 0, 0);
+        break;
+    }
+
+    mask /= 5.0;
+    return output;
+}
+
+float4 SampleColoredShadowMap5SampleAA(float2 uv, int mapIndex, int textureSizeX, int textureSizeY, out float mask, int cubemapFaceIndex = -1)
+{
+    float4 output;
+    mask = 0;
+    float2 texelOffsetX = float2(1.0 / textureSizeX, 0);
+    float2 texelOffsetY = float2(0, 1.0 / textureSizeY);
+
+    float2 uvXPlus = uv + texelOffsetX;
+    float2 uvXNegative = uv - texelOffsetX;
+    
+    float2 uvYPlus = uv + texelOffsetY;
+    float2 uvYNegative = uv - texelOffsetY;
+
+    float4 m1;
     float4 m2;
     float4 m3;
     float4 m4;
@@ -127,7 +380,6 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, int textureSizeX, int tex
         mask += l3 / output.r;
         mask += l4 / output.r;
         mask += l5 / output.r;
-        output = m5;
         break;
     case 1:
         m1 = (_ColoredShadowMap1.Sample(point_clamp_sampler, uvXPlus));
@@ -162,23 +414,21 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, int textureSizeX, int tex
         m3 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uvYPlus));
         m4 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uvYNegative));
         m5 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uv));
-    
+        
         output = max(m1, max(m2, max(m3, max(m4, m5))));
-
+        
         l1 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvXPlus).r);
         l2 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvXNegative).r);
         l3 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvYPlus).r);
         l4 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvYNegative).r);
         l5 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uv).r);
-
-        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5.r > 0)
+        
+        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5.r > 0 && cubemapFaceIndex >= 0)
         {
-            // l2 = 1 / output.r;
-            // mask = l5 * 5;
             mask = (max(m4.r, m3.r) / output.r) * 5;
             break;
         }
-    
+        
         mask += l1 / output.r;
         mask += l2 / output.r;
         mask += l3 / output.r;
@@ -384,7 +634,6 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, int textureSizeX, int tex
     return output;
 }
 
-
 struct LightInformation
 {
     int index;
@@ -410,7 +659,7 @@ float remap(float origFrom, float origTo, float targetFrom, float targetTo, floa
 
 int CurrentAmountCustomLights;
 StructuredBuffer<LightInformation> ColoredShadowLightInformation;
-void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 output, out float2 finalUV, out float3 lightPos, out float fallOffRange, out float mask)
+void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, bool SampleAA5, out float4 output, out float2 finalUV, out float3 lightPos, out float fallOffRange, out float mask)
 {
     output = float4(0, 0, 0, 0);
     lightPos = float3(-999999999, -999999999, -999999999);
@@ -438,12 +687,16 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
             lightUv = lightSpace.rgb / lightSpace.a;
             lightUv *= 0.5;
             lightUv += 0.5;
-            finalUV = lightUv;
-            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
+            
+            if (SampleAA5)
+                tempOutput = SampleColoredShadowMap5SampleAA(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
+            else
+                tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
+            
             if (tempOutput.x > 0 && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX && lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY)
             {
                 highestMask = tempMask;
-                mask = saturate(pow(tempMask, 1));
+                mask = saturate(pow(tempMask, 4));
                 finalUV = lightUv + uvOffset;
                 lowestDist = dist;
                 output = tempOutput;
@@ -457,8 +710,12 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
             lightUv = lightSpace.rgb / lightSpace.a;
             lightUv *= 0.5;
             lightUv += 0.5;
-            finalUV = lightUv;
-            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
+            
+            if (SampleAA5)
+                tempOutput = SampleColoredShadowMap5SampleAA(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
+            else
+                tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
+            
             if (tempOutput.x > 0 && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX &&
                 lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY && dist < lowestDist && dist < 1)
             {
@@ -478,9 +735,12 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
             SampleCustomCubeMap(dir, uv, faceIndex);
             float2 cubemapUV = float2((uv.x / 6.0) + ((1.0/6.0) * faceIndex), uv.y);
             cubemapUV += uvOffset * float2(1/6.0, 1);
-            finalUV = cubemapUV;
             textureSizeX *= 6;
-            tempOutput = SampleColoredShadowMap(cubemapUV, lightInformation.index, textureSizeX, textureSizeY, tempMask, faceIndex);
+            
+            if (SampleAA5)
+                tempOutput = SampleColoredShadowMap5SampleAA(cubemapUV, lightInformation.index, textureSizeX, textureSizeY, tempMask, faceIndex);
+            else
+                tempOutput = SampleColoredShadowMap(cubemapUV, lightInformation.index, textureSizeX, textureSizeY, tempMask, faceIndex);
             
             if (tempMask > highestMask && tempMask > 0)
             {
