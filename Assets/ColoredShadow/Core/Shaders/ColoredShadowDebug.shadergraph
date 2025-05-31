@@ -57,7 +57,7 @@
                 "m_Node": {
                     "m_Id": "aaa369499f43437fa2e65dd40521c0e9"
                 },
-                "m_SlotId": 4
+                "m_SlotId": 0
             },
             "m_InputSlot": {
                 "m_Node": {
@@ -281,7 +281,7 @@
     "m_Type": "UnityEditor.ShaderGraph.Texture2DMaterialSlot",
     "m_ObjectId": "3724b6112a6345b5aa80e1aba361d6c7",
     "m_Id": 0,
-    "m_DisplayName": "_ColoredShadowMap0",
+    "m_DisplayName": "_ColoredShadowMap3",
     "m_SlotType": 1,
     "m_Hidden": false,
     "m_ShaderOutputName": "Out",
@@ -588,10 +588,10 @@
     "m_Guid": {
         "m_GuidSerialized": "75ee80cc-685c-40f5-8ba9-e5bce65397eb"
     },
-    "m_Name": "_ColoredShadowMap0",
+    "m_Name": "_ColoredShadowMap3",
     "m_DefaultRefNameVersion": 1,
-    "m_RefNameGeneratedByDisplayName": "_ColoredShadowMap0",
-    "m_DefaultReferenceName": "_ColoredShadowMap0",
+    "m_RefNameGeneratedByDisplayName": "_ColoredShadowMap3",
+    "m_DefaultReferenceName": "_ColoredShadowMap3",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": false,
     "m_UseCustomSlotLabel": false,

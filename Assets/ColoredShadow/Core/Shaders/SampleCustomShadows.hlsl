@@ -127,6 +127,7 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, int textureSizeX, int tex
         mask += l3 / output.r;
         mask += l4 / output.r;
         mask += l5 / output.r;
+        output = m5;
         break;
     case 1:
         m1 = (_ColoredShadowMap1.Sample(point_clamp_sampler, uvXPlus));
@@ -437,6 +438,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
             lightUv = lightSpace.rgb / lightSpace.a;
             lightUv *= 0.5;
             lightUv += 0.5;
+            finalUV = lightUv;
             tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
             if (tempOutput.x > 0 && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX && lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY)
             {
@@ -455,6 +457,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
             lightUv = lightSpace.rgb / lightSpace.a;
             lightUv *= 0.5;
             lightUv += 0.5;
+            finalUV = lightUv;
             tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
             if (tempOutput.x > 0 && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX &&
                 lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY && dist < lowestDist && dist < 1)

@@ -63,7 +63,7 @@ Material:
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ScrollSpeed: 0.2
-    - _TextureSize: 0.1
+    - _TextureSize: 1.15
     - _angle: 0
     m_Colors: []
   m_BuildTextureStacks: []
