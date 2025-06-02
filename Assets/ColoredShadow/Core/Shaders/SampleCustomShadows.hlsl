@@ -1,6 +1,11 @@
 #ifndef SAMPLE_CUSTOM_CUBEMAP_INCLUDED
 #define SAMPLE_CUSTOM_CUBEMAP_INCLUDED
 
+float DepthTextureToWorldDistance(float depthValue, float nearPlane, float farPlane)
+{
+    return nearPlane * farPlane / (farPlane - depthValue * (farPlane - nearPlane));
+}
+
 void SampleCustomCubeMap(float3 direction, out float2 uv, out int faceIndex)
 {
     uv = float2(-1, -1);
@@ -74,7 +79,53 @@ Texture2D _ColoredShadowMap7;
 Texture2D _ColoredShadowMap8;
 Texture2D _ColoredShadowMap9;
 
-float4 SampleColoredShadowMap(float2 uv, int mapIndex, int textureSizeX, int textureSizeY, out float mask, int cubemapFaceIndex = -1)
+float4 SampleColoredShadowMap(float2 uv, int mapIndex, out float mask)
+{
+    float4 output = float4(0, 0, 0, 0);
+    mask = 0;
+    
+    switch (mapIndex)
+    {
+    case 0:
+        output = (_ColoredShadowMap0.Sample(point_clamp_sampler, uv));
+        break;
+    case 1:
+        output = (_ColoredShadowMap1.Sample(point_clamp_sampler, uv));
+        break;
+    case 2:
+        output = (_ColoredShadowMap2.Sample(point_clamp_sampler, uv));
+        break;
+    case 3:
+        output = (_ColoredShadowMap3.Sample(point_clamp_sampler, uv));
+        break;
+    case 4:
+        output = (_ColoredShadowMap4.Sample(point_clamp_sampler, uv));
+        break;
+    case 5:
+        output = (_ColoredShadowMap5.Sample(point_clamp_sampler, uv));
+        break;
+    case 6:
+        output = (_ColoredShadowMap6.Sample(point_clamp_sampler, uv));
+        break;
+    case 7:
+        output = (_ColoredShadowMap7.Sample(point_clamp_sampler, uv));
+        break;
+    case 8:
+        output = (_ColoredShadowMap8.Sample(point_clamp_sampler, uv));
+        break;
+    case 9:
+        output = (_ColoredShadowMap9.Sample(point_clamp_sampler, uv));
+        break;
+    default:
+        output = float4(0, 0, 0, 0);
+        break;
+    }
+    
+    mask = saturate(output.r);
+    return output;
+}
+
+float4 SampleColoredShadowMapAA(float2 uv, int mapIndex, int textureSizeX, int textureSizeY, out float mask, int cubemapFaceIndex = -1)
 {
     float4 output;
     mask = 0;
@@ -167,6 +218,12 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, int textureSizeX, int tex
         m1 = (_ColoredShadowMap3.Sample(point_clamp_sampler, uv));
         output = m1;
 
+        if (output.r == 0)
+        {
+            mask = 0;
+            break;
+        }
+
         l1 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvXPlus).r);
         l2 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvXNegative).r);
         l3 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvYPlus).r);
@@ -189,11 +246,11 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, int textureSizeX, int tex
         m1 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uv));
         output = m1;
 
-        l1 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uv).r);
+        l1 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvXPlus).r);
+        l2 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvXNegative).r);
+        l3 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvYPlus).r);
+        l4 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvYNegative).r);
+        l5 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uv).r);
 
         if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
         {
@@ -323,6 +380,16 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, int textureSizeX, int tex
         break;
     }
 
+    if (mask <= 0)
+    {
+        mask = 0.1;
+        return output;
+    }
+
+    if (mask > 5)
+    {
+        mask = 1;
+    }
     mask /= 5.0;
     return output;
 }
@@ -369,7 +436,7 @@ float4 SampleColoredShadowMap5SampleAA(float2 uv, int mapIndex, int textureSizeX
         l4 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvYNegative).r);
         l5 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uv).r);
 
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
         {
             mask = (max(m4.r, m3.r) / output.r) * 5;
             break;
@@ -396,7 +463,7 @@ float4 SampleColoredShadowMap5SampleAA(float2 uv, int mapIndex, int textureSizeX
         l4 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvYNegative).r);
         l5 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uv).r);
 
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
         {
             mask = (max(m4.r, m3.r) / output.r) * 5;
             break;
@@ -450,7 +517,7 @@ float4 SampleColoredShadowMap5SampleAA(float2 uv, int mapIndex, int textureSizeX
         l4 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvYNegative).r);
         l5 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uv).r);
 
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
         {
             mask = (max(m4.r, m3.r) / output.r) * 5;
             break;
@@ -477,7 +544,7 @@ float4 SampleColoredShadowMap5SampleAA(float2 uv, int mapIndex, int textureSizeX
         l4 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvYNegative).r);
         l5 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uv).r);
 
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
         {
             mask = (max(m4.r, m3.r) / output.r) * 5;
             break;
@@ -504,7 +571,7 @@ float4 SampleColoredShadowMap5SampleAA(float2 uv, int mapIndex, int textureSizeX
         l4 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvYNegative).r);
         l5 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uv).r);
 
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
         {
             mask = (max(m4.r, m3.r) / output.r) * 5;
             break;
@@ -531,7 +598,7 @@ float4 SampleColoredShadowMap5SampleAA(float2 uv, int mapIndex, int textureSizeX
         l4 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvYNegative).r);
         l5 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uv).r);
 
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
         {
             mask = (max(m4.r, m3.r) / output.r) * 5;
             break;
@@ -558,7 +625,7 @@ float4 SampleColoredShadowMap5SampleAA(float2 uv, int mapIndex, int textureSizeX
         l4 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvYNegative).r);
         l5 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uv).r);
 
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
         {
             mask = (max(m4.r, m3.r) / output.r) * 5;
             break;
@@ -585,7 +652,7 @@ float4 SampleColoredShadowMap5SampleAA(float2 uv, int mapIndex, int textureSizeX
         l4 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvYNegative).r);
         l5 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uv).r);
 
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
         {
             mask = (max(m4.r, m3.r) / output.r) * 5;
             break;
@@ -612,7 +679,7 @@ float4 SampleColoredShadowMap5SampleAA(float2 uv, int mapIndex, int textureSizeX
         l4 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvYNegative).r);
         l5 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uv).r);
 
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
         {
             mask = (max(m4.r, m3.r) / output.r) * 5;
             break;
@@ -667,6 +734,12 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, bool SampleAA5
     float lowestDist = 99999999;
     finalUV = float2(0, 0);
     float highestMask = 0;
+    mask = 0;
+
+    // float shadowDist = _ColoredShadowMapDepth2.Sample(point_clamp_sampler, uvOffset);
+    // float shadowDist = DepthTextureToWorldDistance(_ColoredShadowMapDepth2.Sample(point_clamp_sampler, uvOffset).r, 1, 50);
+    // output.r = shadowDist - distanceToCamera;
+    // return;
 
     for (int i = 0; i < CurrentAmountCustomLights; ++i)
     {
@@ -687,22 +760,28 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, bool SampleAA5
             lightUv = lightSpace.rgb / lightSpace.a;
             lightUv *= 0.5;
             lightUv += 0.5;
+        
+            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, tempMask);
             
-            if (SampleAA5)
-                tempOutput = SampleColoredShadowMap5SampleAA(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
-            else
-                tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
+            // if (SampleAA5)
+            //     tempOutput = SampleColoredShadowMap5SampleAA(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
+            // else
+            //     tempOutput = SampleColoredShadowMapAA(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
             
-            if (tempOutput.x > 0 && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX && lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY)
+            if (tempMask > highestMask && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX &&
+                lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY && dist < lowestDist && dist < 1)
             {
-                highestMask = tempMask;
-                mask = saturate(pow(tempMask, 4));
-                finalUV = lightUv + uvOffset;
-                lowestDist = dist;
-                output = tempOutput;
-                output.r *= lightInformation.lightIDMultiplier;
-                lightPos = lightInformation.lightPos;
-                fallOffRange = lightInformation.fallOffRange;
+                if (dist < lowestDist)
+                {
+                    highestMask = tempMask;
+                    mask = tempMask;
+                    finalUV = lightUv + uvOffset;
+                    lowestDist = dist;
+                    output = tempOutput;
+                    output.r *= lightInformation.lightIDMultiplier;
+                    lightPos = lightInformation.lightPos;
+                    fallOffRange = lightInformation.fallOffRange;
+                }
             }
             break;
         case 1: // Spot
@@ -710,23 +789,28 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, bool SampleAA5
             lightUv = lightSpace.rgb / lightSpace.a;
             lightUv *= 0.5;
             lightUv += 0.5;
+
+            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, tempMask);
+
+            // if (SampleAA5)
+            //     tempOutput = SampleColoredShadowMap5SampleAA(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
+            // else
+            //     tempOutput = SampleColoredShadowMapAA(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
             
-            if (SampleAA5)
-                tempOutput = SampleColoredShadowMap5SampleAA(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
-            else
-                tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
-            
-            if (tempOutput.x > 0 && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX &&
-                lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY && dist < lowestDist && dist < 1)
+            if (tempMask > highestMask && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX && lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY)
             {
-                highestMask = tempMask;
-                mask = saturate(pow(tempMask, 1));
-                finalUV = lightUv + uvOffset;
-                lowestDist = dist;
-                output = tempOutput;
-                output.r *= lightInformation.lightIDMultiplier;
-                lightPos = lightInformation.lightPos;
-                fallOffRange = lightInformation.fallOffRange;
+                if (dist < lowestDist && dist < 1)
+                {
+                    highestMask = tempMask;
+                    // tempMask = saturate(pow(tempMask, 4));
+                    mask = tempMask;
+                    finalUV = lightUv + uvOffset;
+                    lowestDist = dist;
+                    output = tempOutput;
+                    output.r *= lightInformation.lightIDMultiplier;
+                    lightPos = lightInformation.lightPos;
+                    fallOffRange = lightInformation.fallOffRange;
+                }
             }
             break;
         case 2: //Point
@@ -736,20 +820,21 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, bool SampleAA5
             float2 cubemapUV = float2((uv.x / 6.0) + ((1.0/6.0) * faceIndex), uv.y);
             cubemapUV += uvOffset * float2(1/6.0, 1);
             textureSizeX *= 6;
-            
-            if (SampleAA5)
-                tempOutput = SampleColoredShadowMap5SampleAA(cubemapUV, lightInformation.index, textureSizeX, textureSizeY, tempMask, faceIndex);
-            else
-                tempOutput = SampleColoredShadowMap(cubemapUV, lightInformation.index, textureSizeX, textureSizeY, tempMask, faceIndex);
-            
-            if (tempMask > highestMask && tempMask > 0)
-            {
-                highestMask = tempMask;
-                tempMask = saturate(pow(tempMask, 4));
-                mask = tempMask;
 
+            tempOutput = SampleColoredShadowMap(cubemapUV, lightInformation.index, tempMask);
+            
+            // if (SampleAA5)
+            //     tempOutput = SampleColoredShadowMap5SampleAA(cubemapUV, lightInformation.index, textureSizeX, textureSizeY, tempMask, faceIndex);
+            // else
+            //     tempOutput = SampleColoredShadowMapAA(cubemapUV, lightInformation.index, textureSizeX, textureSizeY, tempMask, faceIndex);
+            
+            if (tempMask > highestMask)
+            {
                 if (dist < lowestDist && dist < 1)
                 {
+                    highestMask = tempMask;
+                    // tempMask = saturate(pow(tempMask, 4));
+                    mask = tempMask;
                     finalUV = cubemapUV;
                     lowestDist = dist;
                     output = tempOutput;
