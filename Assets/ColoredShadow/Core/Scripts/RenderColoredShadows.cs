@@ -6,6 +6,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.RenderGraphModule.Util;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering.Universal.Internal;
 
 namespace ColoredShadows.Scripts
 {
@@ -27,6 +28,8 @@ namespace ColoredShadows.Scripts
         private RenderStateBlock renderStateBlock;
         private LightInformation[] lightInformations;
         private GraphicsBuffer lightInformationBuffer;
+
+        private CopyDepthPass copyDepthPass;
     
         public RenderColoredShadows(string profilerTag, RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, 
             int layerMask, Material overrideMaterial, LightInformation[] lightInformations, GraphicsBuffer lightInformationBuffer, int overrideMaterialPassIndex = 0)            
@@ -38,6 +41,8 @@ namespace ColoredShadows.Scripts
         
             this.lightInformations = lightInformations;
             this.lightInformationBuffer = lightInformationBuffer;
+
+            copyDepthPass = new CopyDepthPass(renderPassEvent, Shader.Find("Hidden/Universal Render Pipeline/CopyDepth"));
         }
 
         internal void Init(RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, int layerMask)
@@ -147,6 +152,7 @@ namespace ColoredShadows.Scripts
             TextureHandle destinationColor;
             TextureHandle destinationDepth;
             TextureHandle destinationColorRT;
+            TextureHandle destinationDepthRT;
             int textureXMultiplier = 1;
         
             CustomLightData lightData = customLight.lightData;
@@ -186,21 +192,19 @@ namespace ColoredShadows.Scripts
             }
         
             var destinationDescColor = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
-            // destinationDescColor.colorFormat = GraphicsFormat.R32G32B32A32_SInt;
             destinationDescColor.format = GraphicsFormat.R32G32B32A32_SInt;
-            // destinationDescColor.colorFormat = GraphicsFormat.R32G32B32A32_SFloat;
             destinationDescColor.name = "SOURCE_COLOR";
-            // destinationDescColor.filterMode = FilterMode.Point;
             destinationDescColor.width = customLight.shadowTextureSize.x * textureXMultiplier;
             destinationDescColor.height = customLight.shadowTextureSize.y;
             destinationColor = renderGraph.CreateTexture(destinationDescColor);
         
             var destinationDescDepth = renderGraph.GetTextureDesc(resourceData.activeDepthTexture);
+            destinationDescDepth.format = GraphicsFormat.D32_SFloat;
+            destinationDescDepth.colorFormat = GraphicsFormat.D32_SFloat;
+            destinationDescDepth.format = GraphicsFormat.D32_SFloat;
             destinationDescDepth.name = "SOURCE_DEPTH";
-            // destinationDescDepth.filterMode = FilterMode.Point;
             destinationDescDepth.width = customLight.shadowTextureSize.x * textureXMultiplier;
             destinationDescDepth.height = customLight.shadowTextureSize.y;
-            destinationDescDepth.isShadowMap = true;
             destinationDepth = renderGraph.CreateTexture(destinationDescDepth);
         
             RenderTextureDescriptor shadowMapIDDesc = cameraData.cameraTargetDescriptor;
@@ -212,6 +216,16 @@ namespace ColoredShadows.Scripts
             shadowMapIDDesc.msaaSamples = 1;
             RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: shadowMapIDName + customLight.lightIndex );
             destinationColorRT = renderGraph.ImportTexture(shadowMapID);
+            
+            // RenderTextureDescriptor shadowMapDepthDesc = cameraData.cameraTargetDescriptor;
+            // shadowMapDepthDesc.depthStencilFormat = GraphicsFormat.D32_SFloat;
+            // shadowMapDepthDesc.colorFormat = RenderTextureFormat.RFloat;
+            // shadowMapDepthDesc.width = customLight.shadowTextureSize.x * textureXMultiplier;
+            // shadowMapDepthDesc.height = customLight.shadowTextureSize.y;
+            // shadowMapDepthDesc.depthBufferBits = 0;
+            // shadowMapDepthDesc.msaaSamples = 1;
+            // RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapDepth, shadowMapDepthDesc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: shadowMapDepthName + customLight.lightIndex );
+            // destinationDepthRT = renderGraph.ImportTexture(shadowMapDepth);
         
             using (var builder = renderGraph.AddRasterRenderPass<PassData>(passName, out var passData, profilingSampler))
             {
@@ -249,11 +263,14 @@ namespace ColoredShadows.Scripts
                     ExecutePass(data, rgContext.cmd, isYFlipped);
                 });
             }
+            
+            // copyDepthPass.Render(renderGraph, frameData, destinationDepthRT, destinationDepth);
         
             RenderGraphUtils.BlitMaterialParameters para2 = new(destinationColor, destinationColorRT, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
             renderGraph.AddBlitPass(para2, "CaptureShadowsColor");
 
             Shader.SetGlobalTexture("_ColoredShadowMap" + customLight.lightIndex, shadowMapID);
+            Shader.SetGlobalTexture("_ColoredShadowMapDepth" + customLight.lightIndex, shadowMapDepth);
             Shader.SetGlobalVector("_ColoredLightPos", customLight.transform.position);
 
             lightInformations[customLight.lightIndex] = new LightInformation(
@@ -273,7 +290,6 @@ namespace ColoredShadows.Scripts
                 lightInformationBuffer.SetData(lightInformations);
             }
             Shader.SetGlobalBuffer("ColoredShadowLightInformation", lightInformationBuffer);
-            // Debug.Log($"set data");
         }
     
         static ShaderTagId[] s_ShaderTagValues = new ShaderTagId[1];
