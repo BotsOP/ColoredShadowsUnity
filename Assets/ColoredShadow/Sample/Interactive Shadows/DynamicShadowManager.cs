@@ -10,11 +10,11 @@ public class DynamicShadowManager : MonoBehaviour
     [SerializeField] private Material materialFloor;
     [SerializeField] private float speed;
     [SerializeField] private Gradient gradient;
-    [SerializeField] private Color lastColor;
-
-    private MeshRenderer lastMeshRenderer;
     [SerializeField] private MeshRenderer goToMeshRenderer;
 
+    private MeshRenderer lastMeshRenderer;
+
+    private Color lastColor;
     private float t;
     private bool hitObject;
     private Matrix4x4 viewMatrix;
@@ -31,15 +31,17 @@ public class DynamicShadowManager : MonoBehaviour
 
     private void Start()
     {
+        lastColor = gradient.Evaluate(0);
         foreach (MeshRenderer meshRenderer in meshRenderers)
         {
             meshRenderer.material = new Material(meshRenderer.material);
-            meshRenderer.material.SetColor("_Color", lastColor);
             if (meshRenderer == goToMeshRenderer)
             {
+                meshRenderer.material.SetColor("_Color", gradient.Evaluate(1));
                 meshRenderer.material.SetFloat("_ShadowID", 1);
                 continue;
             }
+            meshRenderer.material.SetColor("_Color", lastColor);
             meshRenderer.material.SetFloat("_ShadowID", 1000);
         }
     }
@@ -72,8 +74,9 @@ public class DynamicShadowManager : MonoBehaviour
             if (t > 1)
             {
                 lastMeshRenderer.material.SetFloat("_ShadowID", 1000);
-                hitObject = false;
-                return;
+                // hitObject = false;
+                t = 1;
+                // return;
             }
             
             // Transform world positions to clip space
