@@ -126,8 +126,8 @@ namespace ColoredShadows.Scripts
                 passData.cameraData, lightData, sortingCriteria);
             drawingSettings.enableInstancing = true;
             drawingSettings.enableDynamicBatching = true;
-            drawingSettings.overrideShader = overrideMaterial.shader;
-            drawingSettings.overrideShaderPassIndex = overrideMaterialPassIndex;
+            drawingSettings.overrideShader = customLight.overrideShader;
+            drawingSettings.overrideShaderPassIndex = 0;
 
             CreateRendererListWithRenderStateBlock(renderGraph, ref renderingData.cullResults, drawingSettings, filteringSettings, renderStateBlock, ref passData.rendererListHdl1);
             if (customLight.lightData.lightMode == CustomLightData.LightMode.Point)
@@ -152,7 +152,7 @@ namespace ColoredShadows.Scripts
             TextureHandle destinationColor;
             TextureHandle destinationDepth;
             TextureHandle destinationColorRT;
-            TextureHandle destinationDepthRT;
+            // TextureHandle destinationDepthRT;
             int textureXMultiplier = 1;
         
             CustomLightData lightData = customLight.lightData;
@@ -283,7 +283,7 @@ namespace ColoredShadows.Scripts
                 cameraData.camera.transform.position,
                 customLight.shadowTextureSize.x,
                 customLight.shadowTextureSize.y,
-                customLight.lightData.lightIDMultiplier
+                customLight.lightData.addShadowID
             );
             if (customLight.lightIndex == 0)
             {
