@@ -11,6 +11,49 @@ namespace ColoredShadows.Scripts
         public Vector2Int shadowTextureSize = new Vector2Int(1024, 1024);
         public Shader overrideShader;
 
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.matrix = transform.localToWorldMatrix;
+            Color farPlaneFillColor = new Color(1, 1, 1, 0.1f);
+            Color farPlaneOutlineColor = new Color(1, 1, 1, 0.8f);
+            
+            Color fallOffFillColor = new Color(1, 0, 0, 0.05f);
+            Color fallOffOutlineColor = new Color(1, 0, 0, 0.8f);
+
+            switch (lightData.lightMode)
+            {
+                case CustomLightData.LightMode.Point :
+                    Gizmos.matrix = Matrix4x4.Translate(transform.position); 
+                    Gizmos.color = farPlaneFillColor;
+                    Gizmos.DrawCube(Vector3.zero, Vector3.one * lightData.radius * 2);
+                    Gizmos.color = farPlaneOutlineColor;
+                    Gizmos.DrawWireCube(Vector3.zero, Vector3.one * lightData.radius * 2);
+                    
+                    Gizmos.color = fallOffFillColor;
+                    Gizmos.DrawSphere(Vector3.zero, lightData.fallOffRange);
+                    Gizmos.color = fallOffOutlineColor;
+                    Gizmos.DrawWireSphere(Vector3.zero, lightData.fallOffRange);
+                    break;
+                case CustomLightData.LightMode.Directional :
+                    Gizmos.color = farPlaneFillColor;
+                    Gizmos.DrawCube(Vector3.forward * lightData.farPlane / 2, new Vector3(lightData.horizontalSize, lightData.verticalSize, lightData.farPlane));
+                    Gizmos.color = farPlaneOutlineColor;
+                    Gizmos.DrawWireCube(Vector3.forward * lightData.farPlane / 2, new Vector3(lightData.horizontalSize, lightData.verticalSize, lightData.farPlane));
+                    
+                    Gizmos.color = fallOffFillColor;
+                    Gizmos.DrawCube(Vector3.forward * lightData.fallOffRange / 2, new Vector3(lightData.horizontalSize, lightData.verticalSize, lightData.fallOffRange));
+                    Gizmos.color = fallOffOutlineColor;
+                    Gizmos.DrawWireCube(Vector3.forward * lightData.fallOffRange / 2, new Vector3(lightData.horizontalSize, lightData.verticalSize, lightData.fallOffRange));
+                    break;
+                case CustomLightData.LightMode.Spot :
+                    Gizmos.color = farPlaneFillColor;
+                    Gizmos.DrawFrustum(Vector3.zero, lightData.fov, lightData.farPlane, lightData.nearPlane, lightData.aspectRatio);
+                    Gizmos.color = fallOffOutlineColor;
+                    Gizmos.DrawFrustum(Vector3.zero, lightData.fov, lightData.fallOffRange, lightData.nearPlane, lightData.aspectRatio);
+                    break;
+            }
+        }
+
         private void OnValidate()
         {
             if (overrideShader == null)
@@ -31,11 +74,6 @@ namespace ColoredShadows.Scripts
             {
                 lights[i].lightIndex = i;
             }
-        }
-
-        private void Update()
-        {
-            // Debug.Log($"Test");
         }
     }
 
