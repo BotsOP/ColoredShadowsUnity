@@ -125,581 +125,581 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, out float mask)
     return output;
 }
 
-float4 SampleColoredShadowMapAA(float2 uv, int mapIndex, int textureSizeX, int textureSizeY, out float mask, int cubemapFaceIndex = -1)
-{
-    float4 output;
-    mask = 0;
-    float2 texelOffsetX = float2(1.0 / textureSizeX, 0);
-    float2 texelOffsetY = float2(0, 1.0 / textureSizeY);
-
-    float2 uvXPlus = uv + texelOffsetX;
-    float2 uvXNegative = uv - texelOffsetX;
-    
-    float2 uvYPlus = uv + texelOffsetY;
-    float2 uvYNegative = uv - texelOffsetY;
-
-    float4 m1;
-
-    float l1;
-    float l2;
-    float l3;
-    float l4;
-    float l5;
-    
-    switch (mapIndex)
-    {
-    case 0:
-        m1 = (_ColoredShadowMap0.Sample(point_clamp_sampler, uv));
-        output = m1;
-
-        l1 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uv).r);
-
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
-        {
-            mask = (m1.r / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 1:
-        m1 = (_ColoredShadowMap1.Sample(point_clamp_sampler, uv));
-        output = m1;
-
-        l1 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uv).r);
-
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
-        {
-            mask = (m1.r / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 2:
-        m1 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uv));
-        output = m1;
-
-        l1 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uv).r);
-
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
-        {
-            mask = (m1.r / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 3:
-        m1 = (_ColoredShadowMap3.Sample(point_clamp_sampler, uv));
-        output = m1;
-
-        if (output.r == 0)
-        {
-            mask = 0;
-            break;
-        }
-
-        l1 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uv).r);
-
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
-        {
-            mask = (m1.r / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 4:
-        m1 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uv));
-        output = m1;
-
-        l1 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uv).r);
-
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
-        {
-            mask = (m1.r / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 5:
-        m1 = (_ColoredShadowMap5.Sample(point_clamp_sampler, uv));
-        output = m1;
-
-        l1 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uv).r);
-
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
-        {
-            mask = (m1.r / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 6:
-        m1 = (_ColoredShadowMap6.Sample(point_clamp_sampler, uv));
-        output = m1;
-
-        l1 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uv).r);
-
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
-        {
-            mask = (m1.r / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 7:
-        m1 = (_ColoredShadowMap7.Sample(point_clamp_sampler, uv));
-        output = m1;
-
-        l1 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uv).r);
-
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
-        {
-            mask = (m1.r / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 8:
-        m1 = (_ColoredShadowMap8.Sample(point_clamp_sampler, uv));
-        output = m1;
-
-        l1 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uv).r);
-
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
-        {
-            mask = (m1.r / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 9:
-        m1 = (_ColoredShadowMap9.Sample(point_clamp_sampler, uv));
-        output = m1;
-
-        l1 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uv).r);
-
-        if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
-        {
-            mask = (m1.r / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    default:
-        mask = 0;
-        output = float4(0, 0, 0, 0);
-        break;
-    }
-
-    if (mask <= 0)
-    {
-        mask = 0.1;
-        return output;
-    }
-
-    if (mask > 5)
-    {
-        mask = 1;
-    }
-    mask /= 5.0;
-    return output;
-}
-
-float4 SampleColoredShadowMap5SampleAA(float2 uv, int mapIndex, int textureSizeX, int textureSizeY, out float mask, int cubemapFaceIndex = -1)
-{
-    float4 output;
-    mask = 0;
-    float2 texelOffsetX = float2(1.0 / textureSizeX, 0);
-    float2 texelOffsetY = float2(0, 1.0 / textureSizeY);
-
-    float2 uvXPlus = uv + texelOffsetX;
-    float2 uvXNegative = uv - texelOffsetX;
-    
-    float2 uvYPlus = uv + texelOffsetY;
-    float2 uvYNegative = uv - texelOffsetY;
-
-    float4 m1;
-    float4 m2;
-    float4 m3;
-    float4 m4;
-    float4 m5;
-
-    float l1;
-    float l2;
-    float l3;
-    float l4;
-    float l5;
-    
-    switch (mapIndex)
-    {
-    case 0:
-        m1 = (_ColoredShadowMap0.Sample(point_clamp_sampler, uvXPlus));
-        m2 = (_ColoredShadowMap0.Sample(point_clamp_sampler, uvXNegative));
-        m3 = (_ColoredShadowMap0.Sample(point_clamp_sampler, uvYPlus));
-        m4 = (_ColoredShadowMap0.Sample(point_clamp_sampler, uvYNegative));
-        m5 = (_ColoredShadowMap0.Sample(point_clamp_sampler, uv));
-    
-        output = max(m1, max(m2, max(m3, max(m4, m5))));
-
-        l1 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uv).r);
-
-        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
-        {
-            mask = (max(m4.r, m3.r) / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 1:
-        m1 = (_ColoredShadowMap1.Sample(point_clamp_sampler, uvXPlus));
-        m2 = (_ColoredShadowMap1.Sample(point_clamp_sampler, uvXNegative));
-        m3 = (_ColoredShadowMap1.Sample(point_clamp_sampler, uvYPlus));
-        m4 = (_ColoredShadowMap1.Sample(point_clamp_sampler, uvYNegative));
-        m5 = (_ColoredShadowMap1.Sample(point_clamp_sampler, uv));
-    
-        output = max(m1, max(m2, max(m3, max(m4, m5))));
-
-        l1 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uv).r);
-
-        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
-        {
-            mask = (max(m4.r, m3.r) / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 2:
-        m1 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uvXPlus));
-        m2 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uvXNegative));
-        m3 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uvYPlus));
-        m4 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uvYNegative));
-        m5 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uv));
-        
-        output = max(m1, max(m2, max(m3, max(m4, m5))));
-        
-        l1 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uv).r);
-        
-        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5.r > 0 && cubemapFaceIndex >= 0)
-        {
-            mask = (max(m4.r, m3.r) / output.r) * 5;
-            break;
-        }
-        
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 3:
-        m1 = (_ColoredShadowMap3.Sample(point_clamp_sampler, uvXPlus));
-        m2 = (_ColoredShadowMap3.Sample(point_clamp_sampler, uvXNegative));
-        m3 = (_ColoredShadowMap3.Sample(point_clamp_sampler, uvYPlus));
-        m4 = (_ColoredShadowMap3.Sample(point_clamp_sampler, uvYNegative));
-        m5 = (_ColoredShadowMap3.Sample(point_clamp_sampler, uv));
-    
-        output = max(m1, max(m2, max(m3, max(m4, m5))));
-
-        l1 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uv).r);
-
-        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
-        {
-            mask = (max(m4.r, m3.r) / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 4:
-        m1 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvXPlus));
-        m2 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvXNegative));
-        m3 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvYPlus));
-        m4 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvYNegative));
-        m5 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uv));
-    
-        output = max(m1, max(m2, max(m3, max(m4, m5))));
-
-        l1 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uv).r);
-
-        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
-        {
-            mask = (max(m4.r, m3.r) / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 5:
-        m1 = (_ColoredShadowMap5.Sample(point_clamp_sampler, uvXPlus));
-        m2 = (_ColoredShadowMap5.Sample(point_clamp_sampler, uvXNegative));
-        m3 = (_ColoredShadowMap5.Sample(point_clamp_sampler, uvYPlus));
-        m4 = (_ColoredShadowMap5.Sample(point_clamp_sampler, uvYNegative));
-        m5 = (_ColoredShadowMap5.Sample(point_clamp_sampler, uv));
-    
-        output = max(m1, max(m2, max(m3, max(m4, m5))));
-
-        l1 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uv).r);
-
-        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
-        {
-            mask = (max(m4.r, m3.r) / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 6:
-        m1 = (_ColoredShadowMap6.Sample(point_clamp_sampler, uvXPlus));
-        m2 = (_ColoredShadowMap6.Sample(point_clamp_sampler, uvXNegative));
-        m3 = (_ColoredShadowMap6.Sample(point_clamp_sampler, uvYPlus));
-        m4 = (_ColoredShadowMap6.Sample(point_clamp_sampler, uvYNegative));
-        m5 = (_ColoredShadowMap6.Sample(point_clamp_sampler, uv));
-    
-        output = max(m1, max(m2, max(m3, max(m4, m5))));
-
-        l1 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uv).r);
-
-        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
-        {
-            mask = (max(m4.r, m3.r) / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 7:
-        m1 = (_ColoredShadowMap7.Sample(point_clamp_sampler, uvXPlus));
-        m2 = (_ColoredShadowMap7.Sample(point_clamp_sampler, uvXNegative));
-        m3 = (_ColoredShadowMap7.Sample(point_clamp_sampler, uvYPlus));
-        m4 = (_ColoredShadowMap7.Sample(point_clamp_sampler, uvYNegative));
-        m5 = (_ColoredShadowMap7.Sample(point_clamp_sampler, uv));
-    
-        output = max(m1, max(m2, max(m3, max(m4, m5))));
-
-        l1 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uv).r);
-
-        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
-        {
-            mask = (max(m4.r, m3.r) / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 8:
-        m1 = (_ColoredShadowMap8.Sample(point_clamp_sampler, uvXPlus));
-        m2 = (_ColoredShadowMap8.Sample(point_clamp_sampler, uvXNegative));
-        m3 = (_ColoredShadowMap8.Sample(point_clamp_sampler, uvYPlus));
-        m4 = (_ColoredShadowMap8.Sample(point_clamp_sampler, uvYNegative));
-        m5 = (_ColoredShadowMap8.Sample(point_clamp_sampler, uv));
-    
-        output = max(m1, max(m2, max(m3, max(m4, m5))));
-
-        l1 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uv).r);
-
-        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
-        {
-            mask = (max(m4.r, m3.r) / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    case 9:
-        m1 = (_ColoredShadowMap9.Sample(point_clamp_sampler, uvXPlus));
-        m2 = (_ColoredShadowMap9.Sample(point_clamp_sampler, uvXNegative));
-        m3 = (_ColoredShadowMap9.Sample(point_clamp_sampler, uvYPlus));
-        m4 = (_ColoredShadowMap9.Sample(point_clamp_sampler, uvYNegative));
-        m5 = (_ColoredShadowMap9.Sample(point_clamp_sampler, uv));
-    
-        output = max(m1, max(m2, max(m3, max(m4, m5))));
-
-        l1 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvXPlus).r);
-        l2 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvXNegative).r);
-        l3 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvYPlus).r);
-        l4 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvYNegative).r);
-        l5 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uv).r);
-
-        if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
-        {
-            mask = (max(m4.r, m3.r) / output.r) * 5;
-            break;
-        }
-    
-        mask += l1 / output.r;
-        mask += l2 / output.r;
-        mask += l3 / output.r;
-        mask += l4 / output.r;
-        mask += l5 / output.r;
-        break;
-    default:
-        mask = 0;
-        output = float4(0, 0, 0, 0);
-        break;
-    }
-
-    mask /= 5.0;
-    return output;
-}
+// float4 SampleColoredShadowMapAA(float2 uv, int mapIndex, int textureSizeX, int textureSizeY, out float mask, int cubemapFaceIndex = -1)
+// {
+//     float4 output;
+//     mask = 0;
+//     float2 texelOffsetX = float2(1.0 / textureSizeX, 0);
+//     float2 texelOffsetY = float2(0, 1.0 / textureSizeY);
+//
+//     float2 uvXPlus = uv + texelOffsetX;
+//     float2 uvXNegative = uv - texelOffsetX;
+//     
+//     float2 uvYPlus = uv + texelOffsetY;
+//     float2 uvYNegative = uv - texelOffsetY;
+//
+//     float4 m1;
+//
+//     float l1;
+//     float l2;
+//     float l3;
+//     float l4;
+//     float l5;
+//     
+//     switch (mapIndex)
+//     {
+//     case 0:
+//         m1 = (_ColoredShadowMap0.Sample(point_clamp_sampler, uv));
+//         output = m1;
+//
+//         l1 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+//         {
+//             mask = (m1.r / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 1:
+//         m1 = (_ColoredShadowMap1.Sample(point_clamp_sampler, uv));
+//         output = m1;
+//
+//         l1 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+//         {
+//             mask = (m1.r / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 2:
+//         m1 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uv));
+//         output = m1;
+//
+//         l1 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+//         {
+//             mask = (m1.r / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 3:
+//         m1 = (_ColoredShadowMap3.Sample(point_clamp_sampler, uv));
+//         output = m1;
+//
+//         if (output.r == 0)
+//         {
+//             mask = 0;
+//             break;
+//         }
+//
+//         l1 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+//         {
+//             mask = (m1.r / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 4:
+//         m1 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uv));
+//         output = m1;
+//
+//         l1 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uv).r);
+//
+//         if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+//         {
+//             mask = (m1.r / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 5:
+//         m1 = (_ColoredShadowMap5.Sample(point_clamp_sampler, uv));
+//         output = m1;
+//
+//         l1 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+//         {
+//             mask = (m1.r / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 6:
+//         m1 = (_ColoredShadowMap6.Sample(point_clamp_sampler, uv));
+//         output = m1;
+//
+//         l1 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+//         {
+//             mask = (m1.r / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 7:
+//         m1 = (_ColoredShadowMap7.Sample(point_clamp_sampler, uv));
+//         output = m1;
+//
+//         l1 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+//         {
+//             mask = (m1.r / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 8:
+//         m1 = (_ColoredShadowMap8.Sample(point_clamp_sampler, uv));
+//         output = m1;
+//
+//         l1 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+//         {
+//             mask = (m1.r / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 9:
+//         m1 = (_ColoredShadowMap9.Sample(point_clamp_sampler, uv));
+//         output = m1;
+//
+//         l1 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if (uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) && l5 > 0)
+//         {
+//             mask = (m1.r / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     default:
+//         mask = 0;
+//         output = float4(0, 0, 0, 0);
+//         break;
+//     }
+//
+//     if (mask <= 0)
+//     {
+//         mask = 0.1;
+//         return output;
+//     }
+//
+//     if (mask > 5)
+//     {
+//         mask = 1;
+//     }
+//     mask /= 5.0;
+//     return output;
+// }
+//
+// float4 SampleColoredShadowMap5SampleAA(float2 uv, int mapIndex, int textureSizeX, int textureSizeY, out float mask, int cubemapFaceIndex = -1)
+// {
+//     float4 output;
+//     mask = 0;
+//     float2 texelOffsetX = float2(1.0 / textureSizeX, 0);
+//     float2 texelOffsetY = float2(0, 1.0 / textureSizeY);
+//
+//     float2 uvXPlus = uv + texelOffsetX;
+//     float2 uvXNegative = uv - texelOffsetX;
+//     
+//     float2 uvYPlus = uv + texelOffsetY;
+//     float2 uvYNegative = uv - texelOffsetY;
+//
+//     float4 m1;
+//     float4 m2;
+//     float4 m3;
+//     float4 m4;
+//     float4 m5;
+//
+//     float l1;
+//     float l2;
+//     float l3;
+//     float l4;
+//     float l5;
+//     
+//     switch (mapIndex)
+//     {
+//     case 0:
+//         m1 = (_ColoredShadowMap0.Sample(point_clamp_sampler, uvXPlus));
+//         m2 = (_ColoredShadowMap0.Sample(point_clamp_sampler, uvXNegative));
+//         m3 = (_ColoredShadowMap0.Sample(point_clamp_sampler, uvYPlus));
+//         m4 = (_ColoredShadowMap0.Sample(point_clamp_sampler, uvYNegative));
+//         m5 = (_ColoredShadowMap0.Sample(point_clamp_sampler, uv));
+//     
+//         output = max(m1, max(m2, max(m3, max(m4, m5))));
+//
+//         l1 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap0.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
+//         {
+//             mask = (max(m4.r, m3.r) / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 1:
+//         m1 = (_ColoredShadowMap1.Sample(point_clamp_sampler, uvXPlus));
+//         m2 = (_ColoredShadowMap1.Sample(point_clamp_sampler, uvXNegative));
+//         m3 = (_ColoredShadowMap1.Sample(point_clamp_sampler, uvYPlus));
+//         m4 = (_ColoredShadowMap1.Sample(point_clamp_sampler, uvYNegative));
+//         m5 = (_ColoredShadowMap1.Sample(point_clamp_sampler, uv));
+//     
+//         output = max(m1, max(m2, max(m3, max(m4, m5))));
+//
+//         l1 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap1.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
+//         {
+//             mask = (max(m4.r, m3.r) / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 2:
+//         m1 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uvXPlus));
+//         m2 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uvXNegative));
+//         m3 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uvYPlus));
+//         m4 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uvYNegative));
+//         m5 = (_ColoredShadowMap2.Sample(point_clamp_sampler, uv));
+//         
+//         output = max(m1, max(m2, max(m3, max(m4, m5))));
+//         
+//         l1 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap2.Sample(trilinear_clamp_sampler, uv).r);
+//         
+//         if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5.r > 0 && cubemapFaceIndex >= 0)
+//         {
+//             mask = (max(m4.r, m3.r) / output.r) * 5;
+//             break;
+//         }
+//         
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 3:
+//         m1 = (_ColoredShadowMap3.Sample(point_clamp_sampler, uvXPlus));
+//         m2 = (_ColoredShadowMap3.Sample(point_clamp_sampler, uvXNegative));
+//         m3 = (_ColoredShadowMap3.Sample(point_clamp_sampler, uvYPlus));
+//         m4 = (_ColoredShadowMap3.Sample(point_clamp_sampler, uvYNegative));
+//         m5 = (_ColoredShadowMap3.Sample(point_clamp_sampler, uv));
+//     
+//         output = max(m1, max(m2, max(m3, max(m4, m5))));
+//
+//         l1 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap3.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
+//         {
+//             mask = (max(m4.r, m3.r) / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 4:
+//         m1 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvXPlus));
+//         m2 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvXNegative));
+//         m3 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvYPlus));
+//         m4 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uvYNegative));
+//         m5 = (_ColoredShadowMap4.Sample(point_clamp_sampler, uv));
+//     
+//         output = max(m1, max(m2, max(m3, max(m4, m5))));
+//
+//         l1 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap4.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
+//         {
+//             mask = (max(m4.r, m3.r) / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 5:
+//         m1 = (_ColoredShadowMap5.Sample(point_clamp_sampler, uvXPlus));
+//         m2 = (_ColoredShadowMap5.Sample(point_clamp_sampler, uvXNegative));
+//         m3 = (_ColoredShadowMap5.Sample(point_clamp_sampler, uvYPlus));
+//         m4 = (_ColoredShadowMap5.Sample(point_clamp_sampler, uvYNegative));
+//         m5 = (_ColoredShadowMap5.Sample(point_clamp_sampler, uv));
+//     
+//         output = max(m1, max(m2, max(m3, max(m4, m5))));
+//
+//         l1 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap5.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
+//         {
+//             mask = (max(m4.r, m3.r) / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 6:
+//         m1 = (_ColoredShadowMap6.Sample(point_clamp_sampler, uvXPlus));
+//         m2 = (_ColoredShadowMap6.Sample(point_clamp_sampler, uvXNegative));
+//         m3 = (_ColoredShadowMap6.Sample(point_clamp_sampler, uvYPlus));
+//         m4 = (_ColoredShadowMap6.Sample(point_clamp_sampler, uvYNegative));
+//         m5 = (_ColoredShadowMap6.Sample(point_clamp_sampler, uv));
+//     
+//         output = max(m1, max(m2, max(m3, max(m4, m5))));
+//
+//         l1 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap6.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
+//         {
+//             mask = (max(m4.r, m3.r) / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 7:
+//         m1 = (_ColoredShadowMap7.Sample(point_clamp_sampler, uvXPlus));
+//         m2 = (_ColoredShadowMap7.Sample(point_clamp_sampler, uvXNegative));
+//         m3 = (_ColoredShadowMap7.Sample(point_clamp_sampler, uvYPlus));
+//         m4 = (_ColoredShadowMap7.Sample(point_clamp_sampler, uvYNegative));
+//         m5 = (_ColoredShadowMap7.Sample(point_clamp_sampler, uv));
+//     
+//         output = max(m1, max(m2, max(m3, max(m4, m5))));
+//
+//         l1 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap7.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
+//         {
+//             mask = (max(m4.r, m3.r) / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 8:
+//         m1 = (_ColoredShadowMap8.Sample(point_clamp_sampler, uvXPlus));
+//         m2 = (_ColoredShadowMap8.Sample(point_clamp_sampler, uvXNegative));
+//         m3 = (_ColoredShadowMap8.Sample(point_clamp_sampler, uvYPlus));
+//         m4 = (_ColoredShadowMap8.Sample(point_clamp_sampler, uvYNegative));
+//         m5 = (_ColoredShadowMap8.Sample(point_clamp_sampler, uv));
+//     
+//         output = max(m1, max(m2, max(m3, max(m4, m5))));
+//
+//         l1 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap8.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
+//         {
+//             mask = (max(m4.r, m3.r) / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     case 9:
+//         m1 = (_ColoredShadowMap9.Sample(point_clamp_sampler, uvXPlus));
+//         m2 = (_ColoredShadowMap9.Sample(point_clamp_sampler, uvXNegative));
+//         m3 = (_ColoredShadowMap9.Sample(point_clamp_sampler, uvYPlus));
+//         m4 = (_ColoredShadowMap9.Sample(point_clamp_sampler, uvYNegative));
+//         m5 = (_ColoredShadowMap9.Sample(point_clamp_sampler, uv));
+//     
+//         output = max(m1, max(m2, max(m3, max(m4, m5))));
+//
+//         l1 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvXPlus).r);
+//         l2 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvXNegative).r);
+//         l3 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvYPlus).r);
+//         l4 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uvYNegative).r);
+//         l5 = (_ColoredShadowMap9.Sample(trilinear_clamp_sampler, uv).r);
+//
+//         if ((uv.x < (1/6.0 * (cubemapFaceIndex)) + (1.0 / textureSizeX * 2) || uv.x > (1/6.0 * (cubemapFaceIndex + 1)) - (1.0 / textureSizeX * 2)) && l5 > 0)
+//         {
+//             mask = (max(m4.r, m3.r) / output.r) * 5;
+//             break;
+//         }
+//     
+//         mask += l1 / output.r;
+//         mask += l2 / output.r;
+//         mask += l3 / output.r;
+//         mask += l4 / output.r;
+//         mask += l5 / output.r;
+//         break;
+//     default:
+//         mask = 0;
+//         output = float4(0, 0, 0, 0);
+//         break;
+//     }
+//
+//     mask /= 5.0;
+//     return output;
+// }
 
 struct LightInformation
 {
@@ -735,11 +735,6 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, bool SampleAA5
     finalUV = float2(0, 0);
     float highestMask = 0;
     mask = 0;
-
-    // float shadowDist = _ColoredShadowMapDepth2.Sample(point_clamp_sampler, uvOffset);
-    // float shadowDist = DepthTextureToWorldDistance(_ColoredShadowMapDepth2.Sample(point_clamp_sampler, uvOffset).r, 1, 50);
-    // output.r = shadowDist - distanceToCamera;
-    // return;
 
     for (int i = 0; i < CurrentAmountCustomLights; ++i)
     {
@@ -778,7 +773,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, bool SampleAA5
                     finalUV = lightUv + uvOffset;
                     lowestDist = dist;
                     output = tempOutput;
-                    output.r *= lightInformation.lightIDMultiplier;
+                    output.r += lightInformation.lightIDMultiplier;
                     lightPos = lightInformation.lightPos;
                     fallOffRange = lightInformation.fallOffRange;
                 }
@@ -807,7 +802,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, bool SampleAA5
                     finalUV = lightUv + uvOffset;
                     lowestDist = dist;
                     output = tempOutput;
-                    output.r *= lightInformation.lightIDMultiplier;
+                    output.r += lightInformation.lightIDMultiplier;
                     lightPos = lightInformation.lightPos;
                     fallOffRange = lightInformation.fallOffRange;
                 }
@@ -819,7 +814,6 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, bool SampleAA5
             SampleCustomCubeMap(dir, uv, faceIndex);
             float2 cubemapUV = float2((uv.x / 6.0) + ((1.0/6.0) * faceIndex), uv.y);
             cubemapUV += uvOffset * float2(1/6.0, 1);
-            textureSizeX *= 6;
 
             tempOutput = SampleColoredShadowMap(cubemapUV, lightInformation.index, tempMask);
             
@@ -835,10 +829,10 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, bool SampleAA5
                     highestMask = tempMask;
                     // tempMask = saturate(pow(tempMask, 4));
                     mask = tempMask;
-                    finalUV = cubemapUV;
+                    finalUV = uv;
                     lowestDist = dist;
                     output = tempOutput;
-                    output.r *= lightInformation.lightIDMultiplier;
+                    output.r += lightInformation.lightIDMultiplier;
                     lightPos = lightInformation.lightPos;
                     fallOffRange = lightInformation.fallOffRange;
                 }

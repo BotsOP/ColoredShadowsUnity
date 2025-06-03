@@ -7,11 +7,16 @@ namespace ColoredShadows.Scripts
     public class CustomLight : MonoBehaviour
     {
         public int lightIndex = -1;
-        public CustomLightData lightData = new CustomLightData(CustomLightData.LightMode.Directional, 10, 0.1f, 50, 20, 20, 30, 1, 20, 1);
+        public CustomLightData lightData = new CustomLightData(CustomLightData.LightMode.Directional, 10, 0.1f, 50, 20, 20, 30, 1, 20, 0);
         public Vector2Int shadowTextureSize = new Vector2Int(1024, 1024);
+        public Shader overrideShader;
 
         private void OnValidate()
         {
+            if (overrideShader == null)
+            {
+                overrideShader = Shader.Find("Shader Graphs/OverrideColShadow_UV_UVSize");
+            }
             CustomLight[] lights = FindObjectsByType<CustomLight>(
                 FindObjectsInactive.Include,
                 FindObjectsSortMode.InstanceID
@@ -50,9 +55,9 @@ namespace ColoredShadows.Scripts
         public float horizontalSize, verticalSize;
         public float fov, aspectRatio;
         public float fallOffRange;
-        public int lightIDMultiplier;
+        public int addShadowID;
 
-        public CustomLightData(LightMode lightMode, float radius, float nearPlane, float farPlane, float horizontalSize, float verticalSize, float fov, float aspectRatio, float fallOffRange, int lightIDMultiplier)
+        public CustomLightData(LightMode lightMode, float radius, float nearPlane, float farPlane, float horizontalSize, float verticalSize, float fov, float aspectRatio, float fallOffRange, int addShadowID)
         {
             this.lightMode = lightMode;
             this.radius = radius;
@@ -63,7 +68,7 @@ namespace ColoredShadows.Scripts
             this.fov = fov;
             this.aspectRatio = aspectRatio;
             this.fallOffRange = fallOffRange;
-            this.lightIDMultiplier = lightIDMultiplier;
+            this.addShadowID = addShadowID;
         }
     }
 }
