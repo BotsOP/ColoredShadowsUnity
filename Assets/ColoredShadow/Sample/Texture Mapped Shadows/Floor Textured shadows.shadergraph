@@ -1348,8 +1348,8 @@
     "m_ObjectId": "2fae284a3a18432186a3b2ddd0f15ef1",
     "m_Title": "Handle transparency from textures",
     "m_Position": {
-        "x": 869.0,
-        "y": 52.999942779541019
+        "x": 869.0001220703125,
+        "y": 53.000213623046878
     }
 }
 
@@ -4751,8 +4751,8 @@
     "m_ObjectId": "bb76ffc186174870a56d0c4d75247ff3",
     "m_Title": "Show UV coordinates",
     "m_Position": {
-        "x": -620.0,
-        "y": -1193.0
+        "x": -619.9998779296875,
+        "y": -1192.999755859375
     }
 }
 
@@ -5567,8 +5567,8 @@
     "m_ObjectId": "e43b5c039d534939bdae286eeab3117d",
     "m_Title": "Map Texture",
     "m_Position": {
-        "x": -411.0,
-        "y": -679.9998168945313
+        "x": -410.9998779296875,
+        "y": -680.0
     }
 }
 
@@ -5753,8 +5753,8 @@
     "m_ObjectId": "f1ec558c9dea4c3b97bb13ebfa531a92",
     "m_Title": "Combine inputs",
     "m_Position": {
-        "x": 27.999940872192384,
-        "y": -19.999942779541017
+        "x": 28.0,
+        "y": -19.99978256225586
     }
 }
 
