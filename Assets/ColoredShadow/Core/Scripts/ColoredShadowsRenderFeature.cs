@@ -8,7 +8,7 @@ namespace ColoredShadows.Scripts
 {
     public class ColoredShadowsRenderFeature : ScriptableRendererFeature
     {
-        public const int MAX_AMOUNT_CUSTOM_LIGHTS = 100;
+        public const int MAX_AMOUNT_CUSTOM_LIGHTS = 10;
         public RenderPassEvent injectionPoint = RenderPassEvent.AfterRenderingTransparents;
         public FilterSettings filterSettings;
         public Material shadowOverrideMaterial;

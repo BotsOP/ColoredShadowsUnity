@@ -207,5 +207,6 @@ MonoBehaviour:
     fov: 30
     aspectRatio: 1
     fallOffRange: 20
-    lightIDMultiplier: 1
+    addShadowID: 0
   shadowTextureSize: {x: 1024, y: 1024}
+  overrideShader: {fileID: -6465566751694194690, guid: 6039d6df7c451324fb3106631f7b6454, type: 3}
