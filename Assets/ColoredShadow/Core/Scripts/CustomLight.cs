@@ -17,6 +17,7 @@ namespace ColoredShadows.Scripts
             {
                 overrideShader = Shader.Find("Shader Graphs/OverrideColShadow_UV_UVSize");
             }
+            
             CustomLight[] lights = FindObjectsByType<CustomLight>(
                 FindObjectsInactive.Include,
                 FindObjectsSortMode.InstanceID
