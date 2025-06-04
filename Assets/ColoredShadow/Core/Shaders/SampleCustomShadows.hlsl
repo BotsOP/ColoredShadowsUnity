@@ -726,7 +726,7 @@ float remap(float origFrom, float origTo, float targetFrom, float targetTo, floa
 
 int CurrentAmountCustomLights;
 StructuredBuffer<LightInformation> ColoredShadowLightInformation;
-void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, bool SampleAA5, out float4 output, out float2 finalUV, out float3 lightPos, out float fallOffRange, out float mask)
+void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 output, out float2 finalUV, out float3 lightPos, out float fallOffRange, out float mask)
 {
     output = float4(0, 0, 0, 0);
     lightPos = float3(-999999999, -999999999, -999999999);
@@ -757,17 +757,13 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, bool SampleAA5
             lightUv += 0.5;
         
             tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, tempMask);
-            
-            // if (SampleAA5)
-            //     tempOutput = SampleColoredShadowMap5SampleAA(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
-            // else
-            //     tempOutput = SampleColoredShadowMapAA(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
-            
+
             if (tempMask > highestMask && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX &&
                 lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY && dist < lowestDist && dist < 1)
             {
                 if (dist < lowestDist)
                 {
+                    fallOffRange = 1 - dist;
                     highestMask = tempMask;
                     mask = tempMask;
                     finalUV = lightUv + uvOffset;
@@ -775,7 +771,6 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, bool SampleAA5
                     output = tempOutput;
                     output.r += lightInformation.lightIDMultiplier;
                     lightPos = lightInformation.lightPos;
-                    fallOffRange = lightInformation.fallOffRange;
                 }
             }
             break;
@@ -787,24 +782,18 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, bool SampleAA5
 
             tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, tempMask);
 
-            // if (SampleAA5)
-            //     tempOutput = SampleColoredShadowMap5SampleAA(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
-            // else
-            //     tempOutput = SampleColoredShadowMapAA(lightUv.rg, lightInformation.index, textureSizeX, textureSizeY, tempMask);
-            
             if (tempMask > highestMask && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX && lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY)
             {
                 if (dist < lowestDist && dist < 1)
                 {
+                    fallOffRange = 1 - dist;
                     highestMask = tempMask;
-                    // tempMask = saturate(pow(tempMask, 4));
                     mask = tempMask;
                     finalUV = lightUv + uvOffset;
                     lowestDist = dist;
                     output = tempOutput;
                     output.r += lightInformation.lightIDMultiplier;
                     lightPos = lightInformation.lightPos;
-                    fallOffRange = lightInformation.fallOffRange;
                 }
             }
             break;
@@ -816,25 +805,19 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, bool SampleAA5
             cubemapUV += uvOffset * float2(1/6.0, 1);
 
             tempOutput = SampleColoredShadowMap(cubemapUV, lightInformation.index, tempMask);
-            
-            // if (SampleAA5)
-            //     tempOutput = SampleColoredShadowMap5SampleAA(cubemapUV, lightInformation.index, textureSizeX, textureSizeY, tempMask, faceIndex);
-            // else
-            //     tempOutput = SampleColoredShadowMapAA(cubemapUV, lightInformation.index, textureSizeX, textureSizeY, tempMask, faceIndex);
-            
+
             if (tempMask > highestMask)
             {
                 if (dist < lowestDist && dist < 1)
                 {
-                    highestMask = tempMask;
-                    // tempMask = saturate(pow(tempMask, 4));
+                    fallOffRange = 1 - dist;
+                    highestMask = tempMask * fallOffRange;
                     mask = tempMask;
                     finalUV = uv;
                     lowestDist = dist;
                     output = tempOutput;
                     output.r += lightInformation.lightIDMultiplier;
                     lightPos = lightInformation.lightPos;
-                    fallOffRange = lightInformation.fallOffRange;
                 }
             }
             break;

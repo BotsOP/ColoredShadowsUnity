@@ -40,10 +40,13 @@ Material:
     m_Ints: []
     m_Floats:
     - _CubeMap: 1
+    - _ShowMap2: 1
+    - _ShowMap3: 0
     - _ShowMap4: 0
-    - _ShowMap5: 1
+    - _ShowMap5: 0
     - _ShowMap6: 0
     - _ShowMap7: 0
+    - _ShowMap8: 0
     m_Colors: []
   m_BuildTextureStacks: []
   m_AllowLocking: 1

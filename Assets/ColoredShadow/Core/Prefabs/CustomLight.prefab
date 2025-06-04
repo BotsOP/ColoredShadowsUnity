@@ -9,11 +9,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4835934202178952837}
+  - component: {fileID: 8686053663121692227}
   - component: {fileID: 3656977564949450550}
   - component: {fileID: 6943688068601346298}
   - component: {fileID: 7775270902126507717}
   - component: {fileID: 4506342415661031310}
-  - component: {fileID: 8686053663121692227}
   m_Layer: 0
   m_Name: CustomLight
   m_TagString: Untagged
@@ -36,6 +36,32 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8686053663121692227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1110555675704409640}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: afee8e9cf91d2a04d8f6732c4da11781, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lightIndex: 0
+  lightData:
+    lightMode: 2
+    radius: 10
+    nearPlane: 0.1
+    farPlane: 50
+    horizontalSize: 20
+    verticalSize: 20
+    fov: 30
+    aspectRatio: 1
+    fallOffRange: 20
+    addShadowID: 0
+  shadowTextureSize: {x: 1024, y: 1024}
+  overrideShader: {fileID: -6465566751694194690, guid: 6039d6df7c451324fb3106631f7b6454, type: 3}
 --- !u!33 &3656977564949450550
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -184,29 +210,3 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
---- !u!114 &8686053663121692227
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1110555675704409640}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: afee8e9cf91d2a04d8f6732c4da11781, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  lightIndex: 0
-  lightData:
-    lightMode: 2
-    radius: 10
-    nearPlane: 0.1
-    farPlane: 50
-    horizontalSize: 20
-    verticalSize: 20
-    fov: 30
-    aspectRatio: 1
-    fallOffRange: 20
-    addShadowID: 0
-  shadowTextureSize: {x: 1024, y: 1024}
-  overrideShader: {fileID: -6465566751694194690, guid: 6039d6df7c451324fb3106631f7b6454, type: 3}
