@@ -13,6 +13,7 @@ public class MoveInCircle : MonoBehaviour
     private Vector3 startPos;
     private float offset;
 
+#if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
         customForwardVector = customForwardVector.normalized;
@@ -45,6 +46,8 @@ public class MoveInCircle : MonoBehaviour
         }
         
     }
+#endif
+
 
     private void Start()
     {

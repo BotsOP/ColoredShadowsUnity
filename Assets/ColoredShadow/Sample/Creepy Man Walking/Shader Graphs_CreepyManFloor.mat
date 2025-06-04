@@ -47,7 +47,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _AngleSpeed: 3
-    - _Creepy: 1
+    - _Creepy: 0
     - _FalloffSize: 0.1
     - _NoiseSize: 2.99
     - _QueueControl: 0

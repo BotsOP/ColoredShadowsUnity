@@ -819,9 +819,6 @@
         },
         {
             "m_Id": "f23979e332a24bafb5e1cc05c35ac3b2"
-        },
-        {
-            "m_Id": "a349e11718804dfca8cf98818669db65"
         }
     ],
     "synonyms": [
@@ -878,20 +875,6 @@
         "z": 0.0,
         "w": 0.0
     }
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.BooleanMaterialSlot",
-    "m_ObjectId": "a349e11718804dfca8cf98818669db65",
-    "m_Id": 7,
-    "m_DisplayName": "SampleAA5",
-    "m_SlotType": 0,
-    "m_Hidden": false,
-    "m_ShaderOutputName": "SampleAA5",
-    "m_StageCapability": 3,
-    "m_Value": false,
-    "m_DefaultValue": false
 }
 
 {

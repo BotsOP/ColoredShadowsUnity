@@ -440,6 +440,21 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
+    "m_ObjectId": "3493599b231742d1b4d5ca847501e0f6",
+    "m_Id": 5,
+    "m_DisplayName": "Mask",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "Mask",
+    "m_StageCapability": 3,
+    "m_Value": 0.0,
+    "m_DefaultValue": 0.0,
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector2MaterialSlot",
     "m_ObjectId": "3d1b5d3bd8f54e72829f3dc5108296a2",
     "m_Id": 1,
@@ -658,21 +673,6 @@
 {
     "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
-    "m_ObjectId": "4f06cc8e230543849413994fc4c97031",
-    "m_Id": 5,
-    "m_DisplayName": "Anti_Aliasing",
-    "m_SlotType": 0,
-    "m_Hidden": false,
-    "m_ShaderOutputName": "Anti_Aliasing",
-    "m_StageCapability": 3,
-    "m_Value": 0.0,
-    "m_DefaultValue": 0.0,
-    "m_Labels": []
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "591958f6d1e44454b295d29f87cc391b",
     "m_Id": 1,
     "m_DisplayName": "R",
@@ -884,7 +884,7 @@
             "m_Id": "0e40590437244820aeeac4ef9200ad1a"
         },
         {
-            "m_Id": "4f06cc8e230543849413994fc4c97031"
+            "m_Id": "3493599b231742d1b4d5ca847501e0f6"
         }
     ],
     "synonyms": [],
@@ -918,6 +918,12 @@
     },
     "m_Slots": [
         {
+            "m_Id": "4be69a0d152e4bda878f717f1e781157"
+        },
+        {
+            "m_Id": "f23979e332a24bafb5e1cc05c35ac3b2"
+        },
+        {
             "m_Id": "b9dc85011a3c45ecacdc26db3434a4be"
         },
         {
@@ -931,15 +937,6 @@
         },
         {
             "m_Id": "0100eb2ebcb44c178e52de3b9b9cf04b"
-        },
-        {
-            "m_Id": "4be69a0d152e4bda878f717f1e781157"
-        },
-        {
-            "m_Id": "f23979e332a24bafb5e1cc05c35ac3b2"
-        },
-        {
-            "m_Id": "a349e11718804dfca8cf98818669db65"
         }
     ],
     "synonyms": [
@@ -1035,20 +1032,6 @@
     "m_Value": 0.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.BooleanMaterialSlot",
-    "m_ObjectId": "a349e11718804dfca8cf98818669db65",
-    "m_Id": 7,
-    "m_DisplayName": "SampleAA5",
-    "m_SlotType": 0,
-    "m_Hidden": false,
-    "m_ShaderOutputName": "SampleAA5",
-    "m_StageCapability": 3,
-    "m_Value": false,
-    "m_DefaultValue": false
 }
 
 {
@@ -1206,10 +1189,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -306.6666259765625,
-            "y": -52.0,
-            "width": 125.99993896484375,
-            "height": 36.0
+            "x": -313.0,
+            "y": -75.0,
+            "width": 125.0,
+            "height": 34.0
         }
     },
     "m_Slots": [
