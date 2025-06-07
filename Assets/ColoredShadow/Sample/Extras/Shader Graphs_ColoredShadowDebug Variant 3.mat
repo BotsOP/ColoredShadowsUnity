@@ -40,8 +40,8 @@ Material:
     m_Ints: []
     m_Floats:
     - _CubeMap: 1
-    - _ShowMap2: 1
-    - _ShowMap3: 0
+    - _ShowMap2: 0
+    - _ShowMap3: 1
     - _ShowMap4: 0
     - _ShowMap5: 0
     - _ShowMap6: 0
