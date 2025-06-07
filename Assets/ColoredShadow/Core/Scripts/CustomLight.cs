@@ -40,10 +40,10 @@ namespace ColoredShadows.Scripts
                     Gizmos.color = farPlaneOutlineColor;
                     Gizmos.DrawWireCube(Vector3.forward * lightData.farPlane / 2, new Vector3(lightData.horizontalSize, lightData.verticalSize, lightData.farPlane));
                     
-                    Gizmos.color = fallOffFillColor;
-                    Gizmos.DrawCube(Vector3.forward * lightData.fallOffRange / 2, new Vector3(lightData.horizontalSize, lightData.verticalSize, lightData.fallOffRange));
-                    Gizmos.color = fallOffOutlineColor;
-                    Gizmos.DrawWireCube(Vector3.forward * lightData.fallOffRange / 2, new Vector3(lightData.horizontalSize, lightData.verticalSize, lightData.fallOffRange));
+                    // Gizmos.color = fallOffFillColor;
+                    // Gizmos.DrawCube(Vector3.forward * lightData.fallOffRange / 2, new Vector3(lightData.horizontalSize, lightData.verticalSize, lightData.fallOffRange));
+                    // Gizmos.color = fallOffOutlineColor;
+                    // Gizmos.DrawWireCube(Vector3.forward * lightData.fallOffRange / 2, new Vector3(lightData.horizontalSize, lightData.verticalSize, lightData.fallOffRange));
                     break;
                 case CustomLightData.LightMode.Spot :
                     Gizmos.color = farPlaneFillColor;

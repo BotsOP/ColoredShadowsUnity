@@ -278,7 +278,7 @@ namespace ColoredShadows.Scripts
                 (int)customLight.lightData.lightMode,
                 GL.GetGPUProjectionMatrix(projectionMatrix, false) * viewMatrix,
                 customLight.transform.position,
-                customLight.lightData.fallOffRange,
+                customLight.lightData.lightMode == CustomLightData.LightMode.Directional ? float.MaxValue : customLight.lightData.fallOffRange,
                 customLight.lightData.farPlane,
                 cameraData.camera.transform.position,
                 customLight.shadowTextureSize.x,
