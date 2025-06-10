@@ -1,12 +1,7 @@
 #ifndef SAMPLE_CUSTOM_CUBEMAP_INCLUDED
 #define SAMPLE_CUSTOM_CUBEMAP_INCLUDED
 
-float DepthTextureToWorldDistance(float depthValue, float nearPlane, float farPlane)
-{
-    return nearPlane * farPlane / (farPlane - depthValue * (farPlane - nearPlane));
-}
-
-void SampleCustomCubeMap(float3 direction, out float2 uv, out int faceIndex)
+void GetCubemapUV(float3 direction, out float2 uv, out int faceIndex)
 {
     uv = float2(-1, -1);
     float forward = dot(direction, float3(0.0f, 0.0f, 1.0f));
@@ -63,7 +58,6 @@ void SampleCustomCubeMap(float3 direction, out float2 uv, out int faceIndex)
     }
     uv = uv * 0.5 + 0.5;
     uv = float2(1 - uv.x, uv.y);
-    // uv = float2((uv.x / 6.0) + ((1.0/6.0) * faceIndex), uv.y);
 }
 
 SamplerState trilinear_clamp_sampler;
@@ -86,36 +80,36 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, out float mask)
     
     switch (mapIndex)
     {
-    case 0:
-        output = (_ColoredShadowMap0.Sample(point_clamp_sampler, uv));
-        break;
-    case 1:
-        output = (_ColoredShadowMap1.Sample(point_clamp_sampler, uv));
-        break;
-    case 2:
-        output = (_ColoredShadowMap2.Sample(point_clamp_sampler, uv));
-        break;
-    case 3:
-        output = (_ColoredShadowMap3.Sample(point_clamp_sampler, uv));
-        break;
-    case 4:
-        output = (_ColoredShadowMap4.Sample(point_clamp_sampler, uv));
-        break;
-    case 5:
-        output = (_ColoredShadowMap5.Sample(point_clamp_sampler, uv));
-        break;
-    case 6:
-        output = (_ColoredShadowMap6.Sample(point_clamp_sampler, uv));
-        break;
-    case 7:
-        output = (_ColoredShadowMap7.Sample(point_clamp_sampler, uv));
-        break;
-    case 8:
-        output = (_ColoredShadowMap8.Sample(point_clamp_sampler, uv));
-        break;
-    case 9:
-        output = (_ColoredShadowMap9.Sample(point_clamp_sampler, uv));
-        break;
+    // case 0:
+    //     output = (_ColoredShadowMap0.Sample(point_clamp_sampler, uv));
+    //     break;
+    // case 1:
+    //     output = (_ColoredShadowMap1.Sample(point_clamp_sampler, uv));
+    //     break;
+    // case 2:
+    //     output = (_ColoredShadowMap2.Sample(point_clamp_sampler, uv));
+    //     break;
+    // case 3:
+    //     output = (_ColoredShadowMap3.Sample(point_clamp_sampler, uv));
+    //     break;
+    // case 4:
+    //     output = (_ColoredShadowMap4.Sample(point_clamp_sampler, uv));
+    //     break;
+    // case 5:
+    //     output = (_ColoredShadowMap5.Sample(point_clamp_sampler, uv));
+    //     break;
+    // case 6:
+    //     output = (_ColoredShadowMap6.Sample(point_clamp_sampler, uv));
+    //     break;
+    // case 7:
+    //     output = (_ColoredShadowMap7.Sample(point_clamp_sampler, uv));
+    //     break;
+    // case 8:
+    //     output = (_ColoredShadowMap8.Sample(point_clamp_sampler, uv));
+    //     break;
+    // case 9:
+    //     output = (_ColoredShadowMap9.Sample(point_clamp_sampler, uv));
+    //     break;
     default:
         output = float4(0, 0, 0, 0);
         break;
@@ -727,14 +721,14 @@ struct LightInformation
     float customValue11;
 };
 
-float invLerp(float from, float to, float value){
-    return (value - from) / (to - from);
-}
-
-float remap(float origFrom, float origTo, float targetFrom, float targetTo, float value){
-    float rel = invLerp(origFrom, origTo, value);
-    return lerp(targetFrom, targetTo, rel);
-}
+// float invLerp(float from, float to, float value){
+//     return (value - from) / (to - from);
+// }
+//
+// float remap(float origFrom, float origTo, float targetFrom, float targetTo, float value){
+//     float rel = invLerp(origFrom, origTo, value);
+//     return lerp(targetFrom, targetTo, rel);
+// }
 
 int CurrentAmountCustomLights;
 StructuredBuffer<LightInformation> ColoredShadowLightInformation;
@@ -750,6 +744,13 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
     customValues1 = float4(0, 0, 0, 0);
     customValues2 = float4(0, 0, 0, 0);
     customValues3 = float4(0, 0, 0, 0);
+
+    LightInformation lightInformation1 = ColoredShadowLightInformation[0];
+    float4 lightSpace1 = mul(lightInformation1.lightMatrix, float4(worldPos.x, worldPos.y, worldPos.z, 1));
+    float2 lightUv2 = lightSpace1.rgb / lightSpace1.a;
+    lightUv2 *= 0.5;
+    lightUv2 += 0.5;
+    finalUV = lightUv2;
 
     for (int i = 0; i < CurrentAmountCustomLights; ++i)
     {
@@ -815,9 +816,10 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
         case 2: //Point
             float3 dir = normalize(lightInformation.lightPos - worldPos);
             int faceIndex;
-            SampleCustomCubeMap(dir, uv, faceIndex);
+            GetCubemapUV(dir, uv, faceIndex);
+            uv += uvOffset;
             float2 cubemapUV = float2((uv.x / 6.0) + ((1.0/6.0) * faceIndex), uv.y);
-            cubemapUV += uvOffset * float2(1/6.0, 1);
+            // cubemapUV += uvOffset * float2(1/6.0, 1);
 
             tempOutput = SampleColoredShadowMap(cubemapUV, lightInformation.index, tempMask);
 

@@ -12,8 +12,6 @@ namespace ColoredShadows.Scripts
 {
     public class RenderColoredShadows : ScriptableRenderPass
     {
-        private Material overrideMaterial;
-        private int overrideMaterialPassIndex;
         public CustomLight customLight;
     
         private RTHandle shadowMapID;
@@ -30,10 +28,9 @@ namespace ColoredShadows.Scripts
 
         private CopyDepthPass copyDepthPass;
     
-        public RenderColoredShadows(string profilerTag, string[] shaderTags, LightInformation[] lightInformations, GraphicsBuffer lightInformationBuffer, int overrideMaterialPassIndex = 0)            
+        public RenderColoredShadows(string profilerTag, string[] shaderTags, LightInformation[] lightInformations, GraphicsBuffer lightInformationBuffer)            
         {
             profilingSampler = new ProfilingSampler(profilerTag);
-            this.overrideMaterialPassIndex = overrideMaterialPassIndex;
             Init(renderPassEvent, shaderTags);
         
             this.lightInformations = lightInformations;
@@ -119,6 +116,10 @@ namespace ColoredShadows.Scripts
                 passData.cameraData, lightData, sortingCriteria);
             drawingSettings.enableInstancing = true;
             drawingSettings.enableDynamicBatching = true;
+            if (customLight.overrideShader == null)
+            {
+                customLight.overrideShader = Shader.Find("ColoredShadow/OverrideColShadow_UV_UVSize");
+            }
             drawingSettings.overrideShader = customLight.overrideShader;
             drawingSettings.overrideShaderPassIndex = 0;
 

@@ -79,6 +79,7 @@ namespace ColoredShadows.Scripts
                     EditorGUILayout.PropertyField(farPlaneProp);
                     EditorGUILayout.PropertyField(fovProp);
                     EditorGUILayout.PropertyField(aspectRatioProp);
+                    EditorGUILayout.PropertyField(fallOffRangeProp);
                     break;
                     
                 case LightMode.Directional:
