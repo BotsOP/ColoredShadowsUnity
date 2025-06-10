@@ -5,7 +5,7 @@ using Random = UnityEngine.Random;
 public class DynamicShadowManager : MonoBehaviour
 {
     [SerializeField] private MeshRenderer[] meshRenderers;
-    [SerializeField] private Camera camera;
+    [SerializeField] private Camera renderCamera;
     [SerializeField] private Camera mainCamera;
     [SerializeField] private Material materialFloor;
     [SerializeField] private float speed;
@@ -48,7 +48,7 @@ public class DynamicShadowManager : MonoBehaviour
 
     private void Update()
     {
-        viewMatrix = camera.projectionMatrix * camera.worldToCameraMatrix;
+        viewMatrix = renderCamera.projectionMatrix * renderCamera.worldToCameraMatrix;
         
         RaycastHit hit;
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);

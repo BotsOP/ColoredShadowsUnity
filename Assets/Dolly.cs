@@ -9,6 +9,8 @@ public class Dolly : MonoBehaviour
 
     private void Update()
     {
-        transform.position = Vector3.Lerp(pos1.position, pos2.position, (Time.time - 5) / speed);
+        float t = (Time.time - 5) / speed;
+        transform.position = Vector3.Lerp(pos1.position, pos2.position, t);
+        transform.rotation = Quaternion.Lerp(pos1.rotation, pos2.rotation, t);
     }
 }
