@@ -22,13 +22,12 @@ public class SetQuadDebugMats : MonoBehaviour
             SetQuadShadowMapID(
                 debugQuadMaterials[i],
                 customLights[i].lightIndex,
-                customLights[i].lightData.lightMode == CustomLightData.LightMode.Point
+                customLights[i].lightMode == LightMode.Point
             );
         }
 
         void SetQuadShadowMapID(Material material, int id, bool isCubemap)
         {
-            Debug.Log("_ShowMap" + id);
             for (int i = 0; i < customLights.Count; i++)
             {
                 material.SetInt("_ShowMap" + i, 0);
