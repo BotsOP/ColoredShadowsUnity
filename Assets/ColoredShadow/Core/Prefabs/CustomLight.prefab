@@ -15,7 +15,7 @@ GameObject:
   m_Layer: 0
   m_Name: CustomLight
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 2800000, guid: 7279c02191f8ac74c8bea5d260516825, type: 3}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -47,19 +47,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lightIndex: 0
-  lightData:
-    lightMode: 2
-    radius: 10
-    nearPlane: 0.1
-    farPlane: 50
-    horizontalSize: 20
-    verticalSize: 20
-    fov: 30
-    aspectRatio: 1
-    fallOffRange: 20
-    addShadowID: 0
-  shadowTextureSize: {x: 1024, y: 1024}
+  lightMode: 0
+  radius: 10
+  farPlane: 50
+  size: 10
+  fov: 60
+  aspectRatio: 1
+  fallOffRange: 50
+  addShadowID: 0
+  shadowTextureSize: 1024
   overrideShader: {fileID: -6465566751694194690, guid: 6039d6df7c451324fb3106631f7b6454, type: 3}
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  customValues: []
 --- !u!20 &7775270902126507717
 Camera:
   m_ObjectHideFlags: 0

@@ -713,6 +713,18 @@ struct LightInformation
     int textureSizeX;
     int textureSizeY;
     int lightIDMultiplier;
+    float customValue0;
+    float customValue1;
+    float customValue2;
+    float customValue3;
+    float customValue4;
+    float customValue5;
+    float customValue6;
+    float customValue7;
+    float customValue8;
+    float customValue9;
+    float customValue10;
+    float customValue11;
 };
 
 float invLerp(float from, float to, float value){
@@ -726,7 +738,7 @@ float remap(float origFrom, float origTo, float targetFrom, float targetTo, floa
 
 int CurrentAmountCustomLights;
 StructuredBuffer<LightInformation> ColoredShadowLightInformation;
-void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 output, out float2 finalUV, out float3 lightPos, out float fallOffRange, out float mask)
+void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 output, out float2 finalUV, out float3 lightPos, out float fallOffRange, out float mask, out float4 customValues1, out float4 customValues2, out float4 customValues3)
 {
     output = float4(0, 0, 0, 0);
     lightPos = float3(-999999999, -999999999, -999999999);
@@ -735,6 +747,9 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
     finalUV = float2(0, 0);
     float highestMask = 0;
     mask = 0;
+    customValues1 = float4(0, 0, 0, 0);
+    customValues2 = float4(0, 0, 0, 0);
+    customValues3 = float4(0, 0, 0, 0);
 
     for (int i = 0; i < CurrentAmountCustomLights; ++i)
     {

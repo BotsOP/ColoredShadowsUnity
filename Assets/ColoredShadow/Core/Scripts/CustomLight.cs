@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace ColoredShadows.Scripts
 {
@@ -16,19 +19,19 @@ namespace ColoredShadows.Scripts
     [SelectionBase, ExecuteInEditMode]
     public class CustomLight : MonoBehaviour
     {
-        public int lightIndex = 0;
-        public LightMode lightMode;
-        public float radius = 10;
-        public float farPlane = 50;
-        public float size = 10;
-        public float fov = 60;
-        public float aspectRatio = 1;
-        public float fallOffRange = 50;
-        public int addShadowID;
-        public int shadowTextureSize = 1024;
-        public Shader overrideShader;
-        public LayerMask layerMask;
-        public List<float> customValues;
+        [SerializeField] public int lightIndex = 0;
+        [SerializeField] public LightMode lightMode;
+        [SerializeField] public float radius = 10;
+        [SerializeField] public float farPlane = 50;
+        [SerializeField] public float size = 10;
+        [SerializeField] public float fov = 60;
+        [SerializeField] public float aspectRatio = 1;
+        [SerializeField] public float fallOffRange = 50;
+        [SerializeField] public int addShadowID;
+        [SerializeField] public int shadowTextureSize = 1024;
+        [SerializeField] public Shader overrideShader;
+        [SerializeField] public LayerMask layerMask;
+        [SerializeField] public List<float> customValues;
 
         private void OnDrawGizmosSelected()
         {
@@ -95,14 +98,24 @@ namespace ColoredShadows.Scripts
                 GUI.DrawTextureWithTexCoords(rect2, shadowMap, new Rect(0, 0, 0.5f, 1), false);
                 GUI.DrawTextureWithTexCoords(rect, shadowMap, new Rect(0.5f, 0, 0.5f, 1), false);
             }
-            
-            
 
             Handles.EndGUI();
         }
-        
+
         private void OnEnable()
         {
+            var renderer = (GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset).GetRenderer(0);
+            var property = typeof(ScriptableRenderer).GetProperty("rendererFeatures", BindingFlags.NonPublic | BindingFlags.Instance);
+
+            List<ScriptableRendererFeature> features = property.GetValue(renderer) as List<ScriptableRendererFeature>;
+            foreach (ScriptableRendererFeature rendererFeature in features)
+            {
+                if (rendererFeature is ColoredShadowsRenderFeature)
+                {
+                    Debug.Log($"");
+                }
+            }
+            
             if (overrideShader == null)
             {
                 overrideShader = Shader.Find("Shader Graphs/OverrideColShadow_UV_UVSize");
