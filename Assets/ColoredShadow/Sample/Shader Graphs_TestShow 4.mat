@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-3378202005083557299
+--- !u!114 &-2291887578982716266
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
@@ -20,8 +20,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Shader Graphs_Lit Custom Input 1
-  m_Shader: {fileID: -6465566751694194690, guid: 36ba09bb6417caf4fae981d6d3f34b01, type: 3}
+  m_Name: Shader Graphs_TestShow 4
+  m_Shader: {fileID: -6465566751694194690, guid: ce497353a110611448c6efec50a44479, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -53,9 +53,7 @@ Material:
     m_Floats:
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _ShadowID: 2
     m_Colors:
-    - _Color: {r: 0.12179691, g: 0.10084491, b: 0.849166, a: 1}
-    - _ObjectColor: {r: 0.4716981, g: 0.2737216, b: 0.13127448, a: 0}
+    - _Color: {r: 0.047058836, g: 0.10479528, b: 0.9254902, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

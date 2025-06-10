@@ -1,15 +1,34 @@
 using System;
+using System.Collections.Generic;
+using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 
 namespace ColoredShadows.Scripts
 {
-    [SelectionBase]
+    public enum LightMode
+    {
+        Directional,
+        Spot,
+        Point,
+    }
+    
+    [SelectionBase, ExecuteInEditMode]
     public class CustomLight : MonoBehaviour
     {
-        public int lightIndex = -1;
-        public CustomLightData lightData = new CustomLightData(CustomLightData.LightMode.Directional, 10, 0.1f, 50, 20, 20, 30, 1, 20, 0);
-        public Vector2Int shadowTextureSize = new Vector2Int(1024, 1024);
+        public int lightIndex = 0;
+        public LightMode lightMode;
+        public float radius = 10;
+        public float farPlane = 50;
+        public float size = 10;
+        public float fov = 60;
+        public float aspectRatio = 1;
+        public float fallOffRange = 50;
+        public int addShadowID;
+        public int shadowTextureSize = 1024;
         public Shader overrideShader;
+        public LayerMask layerMask;
+        public List<float> customValues;
 
         private void OnDrawGizmosSelected()
         {
@@ -20,47 +39,87 @@ namespace ColoredShadows.Scripts
             Color fallOffFillColor = new Color(1, 0, 0, 0.05f);
             Color fallOffOutlineColor = new Color(1, 0, 0, 0.8f);
 
-            switch (lightData.lightMode)
+            switch (lightMode)
             {
-                case CustomLightData.LightMode.Point :
+                case LightMode.Point :
                     Gizmos.matrix = Matrix4x4.Translate(transform.position); 
                     Gizmos.color = farPlaneFillColor;
-                    Gizmos.DrawCube(Vector3.zero, Vector3.one * lightData.radius * 2);
+                    Gizmos.DrawCube(Vector3.zero, Vector3.one * radius * 2);
                     Gizmos.color = farPlaneOutlineColor;
-                    Gizmos.DrawWireCube(Vector3.zero, Vector3.one * lightData.radius * 2);
+                    Gizmos.DrawWireCube(Vector3.zero, Vector3.one * radius * 2);
                     
                     Gizmos.color = fallOffFillColor;
-                    Gizmos.DrawSphere(Vector3.zero, lightData.fallOffRange);
+                    Gizmos.DrawSphere(Vector3.zero, fallOffRange);
                     Gizmos.color = fallOffOutlineColor;
-                    Gizmos.DrawWireSphere(Vector3.zero, lightData.fallOffRange);
+                    Gizmos.DrawWireSphere(Vector3.zero, fallOffRange);
                     break;
-                case CustomLightData.LightMode.Directional :
+                case LightMode.Directional :
                     Gizmos.color = farPlaneFillColor;
-                    Gizmos.DrawCube(Vector3.forward * lightData.farPlane / 2, new Vector3(lightData.horizontalSize, lightData.verticalSize, lightData.farPlane));
+                    Gizmos.DrawCube(Vector3.forward * farPlane / 2, new Vector3(size * 2, size * 2, farPlane));
                     Gizmos.color = farPlaneOutlineColor;
-                    Gizmos.DrawWireCube(Vector3.forward * lightData.farPlane / 2, new Vector3(lightData.horizontalSize, lightData.verticalSize, lightData.farPlane));
-                    
-                    // Gizmos.color = fallOffFillColor;
-                    // Gizmos.DrawCube(Vector3.forward * lightData.fallOffRange / 2, new Vector3(lightData.horizontalSize, lightData.verticalSize, lightData.fallOffRange));
-                    // Gizmos.color = fallOffOutlineColor;
-                    // Gizmos.DrawWireCube(Vector3.forward * lightData.fallOffRange / 2, new Vector3(lightData.horizontalSize, lightData.verticalSize, lightData.fallOffRange));
+                    Gizmos.DrawWireCube(Vector3.forward * farPlane / 2, new Vector3(size * 2, size * 2, farPlane));
                     break;
-                case CustomLightData.LightMode.Spot :
+                case LightMode.Spot :
                     Gizmos.color = farPlaneFillColor;
-                    Gizmos.DrawFrustum(Vector3.zero, lightData.fov, lightData.farPlane, lightData.nearPlane, lightData.aspectRatio);
+                    Gizmos.DrawFrustum(Vector3.zero, fov, farPlane, 0.1f, aspectRatio);
                     Gizmos.color = fallOffOutlineColor;
-                    Gizmos.DrawFrustum(Vector3.zero, lightData.fov, lightData.fallOffRange, lightData.nearPlane, lightData.aspectRatio);
+                    Gizmos.DrawFrustum(Vector3.zero, fov, fallOffRange, 0.1f, aspectRatio);
                     break;
             }
         }
 
-        private void OnValidate()
+        private void SceneViewGUI(SceneView sceneView)
+        {
+            if(!Selection.Contains(gameObject))
+                return;
+            
+            Handles.BeginGUI();
+
+            // Define position for the RenderTexture (bottom-left corner)
+            float crossSection = Vector2.Distance(Vector2.zero, new Vector2(sceneView.cameraViewport.width, sceneView.cameraViewport.height));
+            int textureSize = (int)(crossSection / 5.0f);
+            Texture shadowMap = Shader.GetGlobalTexture("_ColoredShadowMap" + lightIndex);
+            if(shadowMap == null)
+                return;
+            
+            if (lightMode != LightMode.Point)
+            {
+                Rect rect = new Rect(sceneView.cameraViewport.width - textureSize, sceneView.cameraViewport.height - textureSize, textureSize, textureSize);
+                EditorGUI.DrawRect(rect, Color.black);
+                GUI.DrawTexture(rect, shadowMap);
+            }
+            else
+            {
+                Rect rect = new Rect(sceneView.cameraViewport.width - textureSize * 1.5f, sceneView.cameraViewport.height - textureSize, Mathf.Ceil(textureSize * 1.5f), Mathf.Ceil(textureSize / 2.0f));
+                Rect rect2 = new Rect(sceneView.cameraViewport.width - textureSize * 1.5f, sceneView.cameraViewport.height - textureSize / 2, Mathf.Ceil(textureSize * 1.5f), Mathf.Ceil(textureSize / 2.0f));
+                GUI.DrawTextureWithTexCoords(rect2, shadowMap, new Rect(0, 0, 0.5f, 1), false);
+                GUI.DrawTextureWithTexCoords(rect, shadowMap, new Rect(0.5f, 0, 0.5f, 1), false);
+            }
+            
+            
+
+            Handles.EndGUI();
+        }
+        
+        private void OnEnable()
         {
             if (overrideShader == null)
             {
                 overrideShader = Shader.Find("Shader Graphs/OverrideColShadow_UV_UVSize");
             }
+
+            SceneView.duringSceneGui += SceneViewGUI;
             
+            UpdateLightIndices();
+        }
+        private void OnDisable()
+        {
+            SceneView.duringSceneGui -= SceneViewGUI;
+            UpdateLightIndices();
+        }
+        
+        private static void UpdateLightIndices()
+        {
             CustomLight[] lights = FindObjectsByType<CustomLight>(
                 FindObjectsInactive.Include,
                 FindObjectsSortMode.InstanceID

@@ -9,9 +9,7 @@ namespace ColoredShadows.Scripts
     public class ColoredShadowsRenderFeature : ScriptableRendererFeature
     {
         public const int MAX_AMOUNT_CUSTOM_LIGHTS = 10;
-        public RenderPassEvent injectionPoint = RenderPassEvent.AfterRenderingTransparents;
         public FilterSettings filterSettings;
-        public Material shadowOverrideMaterial;
     
         private RenderColoredShadows renderShadowObjectsPassPoint;
         private Dictionary<Camera, CustomLight> cameraLightPair;
@@ -41,8 +39,7 @@ namespace ColoredShadows.Scripts
                 sizeof(int) * 3
             );
         
-            renderShadowObjectsPassPoint = new RenderColoredShadows("Render Custom Point Shadows depth", injectionPoint, filterSettings.PassNames,
-                filterSettings.RenderQueueType, filterSettings.LayerMask, shadowOverrideMaterial, lightInformations, lightInformationBuffer);
+            renderShadowObjectsPassPoint = new RenderColoredShadows("Render Custom Point Shadows depth", filterSettings.PassNames, lightInformations, lightInformationBuffer);
         }
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -60,8 +57,11 @@ namespace ColoredShadows.Scripts
                 cameraLightPair.Add(camera, camera.transform.GetComponent<CustomLight>());
             }
             Shader.SetGlobalInt("CurrentAmountCustomLights", cameraLightPair.Count);
+            if (cameraLightPair[camera] == null)
+            {
+                cameraLightPair[camera] = camera.transform.GetComponent<CustomLight>();
+            }
             renderShadowObjectsPassPoint.customLight = cameraLightPair[camera];
-            // Debug.Log($"Add render pass");
         
             renderer.EnqueuePass(renderShadowObjectsPassPoint);
         }
