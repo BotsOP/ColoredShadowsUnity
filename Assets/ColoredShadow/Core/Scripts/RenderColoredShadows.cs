@@ -148,8 +148,7 @@ namespace ColoredShadows.Scripts
             // TextureHandle destinationDepthRT;
             int textureXMultiplier = 1;
 
-            filteringSettings.layerMask = ~customLight.layerMask;
-            // filteringSettingsID.layerMask = customLight.layerMask;
+            filteringSettings.layerMask = customLight.layerMask;
         
             switch (customLight.lightMode)
             {
@@ -268,6 +267,18 @@ namespace ColoredShadows.Scripts
             // Shader.SetGlobalTexture("_ColoredShadowMapDepth" + customLight.lightIndex, shadowMapDepth);
             Shader.SetGlobalVector("_ColoredLightPos", customLight.transform.position);
 
+            List<float> customValuesCopy = new List<float>(customLight.customValues);
+
+            for (int i = 0; customValuesCopy.Count < 12; i++)
+            {
+                customValuesCopy.Add(0);
+                if (i > 12)
+                {
+                    Debug.LogError($"Cannot fill Custom Values list up to 12 entries");
+                    break;
+                }
+            }
+
             lightInformations[customLight.lightIndex] = new LightInformation(
                 customLight.lightIndex,
                 (int)customLight.lightMode,
@@ -278,7 +289,8 @@ namespace ColoredShadows.Scripts
                 cameraData.camera.transform.position,
                 customLight.shadowTextureSize,
                 customLight.shadowTextureSize,
-                customLight.addShadowID
+                customLight.addShadowID,
+                customValuesCopy
             );
             if (customLight.lightIndex == 0)
             {
@@ -340,7 +352,19 @@ namespace ColoredShadows.Scripts
             public int textureSizeX;
             public int textureSizeY;
             public int lightIDMultiplier;
-            public LightInformation(int index, int lightMode, Matrix4x4 lightMatrix, Vector3 lightPos, float fallOffRange, float farPlane, Vector3 cameraPos, int textureSizeX, int textureSizeY, int lightIDMultiplier)
+            public float customValue0;
+            public float customValue1;
+            public float customValue2;
+            public float customValue3;
+            public float customValue4;
+            public float customValue5;
+            public float customValue6;
+            public float customValue7;
+            public float customValue8;
+            public float customValue9;
+            public float customValue10;
+            public float customValue11;
+            public LightInformation(int index, int lightMode, Matrix4x4 lightMatrix, Vector3 lightPos, float fallOffRange, float farPlane, Vector3 cameraPos, int textureSizeX, int textureSizeY, int lightIDMultiplier, List<float> customValues) : this()
             {
                 this.index = index;
                 this.lightMode = lightMode;
@@ -352,6 +376,18 @@ namespace ColoredShadows.Scripts
                 this.textureSizeX = textureSizeX;
                 this.textureSizeY = textureSizeY;
                 this.lightIDMultiplier = lightIDMultiplier;
+                customValue0 = customValues[0];
+                customValue1 = customValues[1];
+                customValue2 = customValues[2];
+                customValue3 = customValues[3];
+                customValue4 = customValues[4];
+                customValue5 = customValues[5];
+                customValue6 = customValues[6];
+                customValue7 = customValues[7];
+                customValue8 = customValues[8];
+                customValue9 = customValues[9];
+                customValue10 = customValues[10];
+                customValue11 = customValues[11];
             }
         }
 

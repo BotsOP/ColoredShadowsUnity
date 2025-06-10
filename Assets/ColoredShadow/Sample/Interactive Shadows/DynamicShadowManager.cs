@@ -4,6 +4,7 @@ using Random = UnityEngine.Random;
 
 public class DynamicShadowManager : MonoBehaviour
 {
+    public LayerMask layerMask;
     [SerializeField] private MeshRenderer[] meshRenderers;
     [SerializeField] private Camera renderCamera;
     [SerializeField] private Camera mainCamera;

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
@@ -8,47 +9,82 @@ namespace ColoredShadows.Scripts
     {
         private bool showAdvancedSettings = false;
         
+        // Serialized Properties
+        private SerializedProperty lightIndexProp;
+        private SerializedProperty lightModeProp;
+        private SerializedProperty radiusProp;
+        private SerializedProperty farPlaneProp;
+        private SerializedProperty sizeProp;
+        private SerializedProperty fovProp;
+        private SerializedProperty aspectRatioProp;
+        private SerializedProperty fallOffRangeProp;
+        private SerializedProperty addShadowIDProp;
+        private SerializedProperty shadowTextureSizeProp;
+        private SerializedProperty overrideShaderProp;
+        private SerializedProperty layerMaskProp;
+        private SerializedProperty customValuesProp;
+        
+        void OnEnable()
+        {
+            // Find all serialized properties
+            lightIndexProp = serializedObject.FindProperty("lightIndex");
+            lightModeProp = serializedObject.FindProperty("lightMode");
+            radiusProp = serializedObject.FindProperty("radius");
+            farPlaneProp = serializedObject.FindProperty("farPlane");
+            sizeProp = serializedObject.FindProperty("size");
+            fovProp = serializedObject.FindProperty("fov");
+            aspectRatioProp = serializedObject.FindProperty("aspectRatio");
+            fallOffRangeProp = serializedObject.FindProperty("fallOffRange");
+            addShadowIDProp = serializedObject.FindProperty("addShadowID");
+            shadowTextureSizeProp = serializedObject.FindProperty("shadowTextureSize");
+            overrideShaderProp = serializedObject.FindProperty("overrideShader");
+            layerMaskProp = serializedObject.FindProperty("layerMask");
+            customValuesProp = serializedObject.FindProperty("customValues");
+        }
+        
         public override void OnInspectorGUI()
         {
-            CustomLight customLight = (CustomLight)target;
+            serializedObject.Update();
             
             // Light Index (read-only)
             GUI.enabled = false;
-            EditorGUILayout.IntField("Light Index", customLight.lightIndex);
+            EditorGUILayout.PropertyField(lightIndexProp);
             GUI.enabled = true;
             
             // Light Mode
-            customLight.lightMode = (LightMode)EditorGUILayout.EnumPopup("Light Mode", customLight.lightMode);
+            EditorGUILayout.PropertyField(lightModeProp);
             
             // Light Mode dependent properties in grey rect
             EditorGUILayout.Space(5);
             
             // Create grey background
             Color originalColor = GUI.backgroundColor;
-            GUI.backgroundColor = new Color(0.6f, 0.6f, 0.6f, 0.3f);
+            GUI.backgroundColor = new Color(0.8f, 0.8f, 0.8f, 0.3f);
             
             EditorGUILayout.BeginVertical("box");
             GUI.backgroundColor = originalColor;
             
-            switch (customLight.lightMode)
+            LightMode currentMode = (LightMode)lightModeProp.enumValueIndex;
+            
+            switch (currentMode)
             {
                 case LightMode.Point:
                     EditorGUILayout.LabelField("Point Light Settings", EditorStyles.boldLabel);
-                    customLight.radius = EditorGUILayout.FloatField("Radius", customLight.radius);
-                    customLight.fallOffRange = EditorGUILayout.FloatField("Fall Off Range", customLight.fallOffRange);
+                    EditorGUILayout.PropertyField(radiusProp);
+                    EditorGUILayout.PropertyField(fallOffRangeProp);
                     break;
                     
                 case LightMode.Spot:
                     EditorGUILayout.LabelField("Spot Light Settings", EditorStyles.boldLabel);
-                    customLight.farPlane = EditorGUILayout.FloatField("Far Plane", customLight.farPlane);
-                    customLight.fov = EditorGUILayout.FloatField("FOV", customLight.fov);
-                    customLight.aspectRatio = EditorGUILayout.FloatField("Aspect Ratio", customLight.aspectRatio);
+                    EditorGUILayout.PropertyField(farPlaneProp);
+                    EditorGUILayout.PropertyField(fovProp);
+                    EditorGUILayout.PropertyField(aspectRatioProp);
                     break;
                     
                 case LightMode.Directional:
                     EditorGUILayout.LabelField("Directional Light Settings", EditorStyles.boldLabel);
-                    customLight.farPlane = EditorGUILayout.FloatField("Far Plane", customLight.farPlane);
-                    customLight.size = EditorGUILayout.FloatField("Size", customLight.size);
+                    EditorGUILayout.PropertyField(farPlaneProp);
+                    EditorGUILayout.PropertyField(sizeProp);
                     break;
             }
             
@@ -63,16 +99,27 @@ namespace ColoredShadows.Scripts
             {
                 EditorGUI.indentLevel++;
                 
-                customLight.addShadowID = EditorGUILayout.IntField("Add Shadow ID", customLight.addShadowID);
-                customLight.shadowTextureSize = EditorGUILayout.IntField("Shadow Texture Size", customLight.shadowTextureSize);
-                customLight.layerMask = EditorGUILayout.LayerField("Layer Mask", customLight.layerMask);
-                customLight.overrideShader = (Shader)EditorGUILayout.ObjectField("Override Shader", customLight.overrideShader, typeof(Shader), false);
+                EditorGUILayout.PropertyField(addShadowIDProp);
+                EditorGUILayout.PropertyField(shadowTextureSizeProp);
+                EditorGUILayout.PropertyField(overrideShaderProp);
+                EditorGUILayout.PropertyField(layerMaskProp);
                 
-                // Custom Values List
+                // Custom Values List - Standard Unity List View
                 EditorGUILayout.Space(5);
-                SerializedProperty customValuesProperty = serializedObject.FindProperty("customValues");
-                EditorGUILayout.PropertyField(customValuesProperty, true);
-
+                if (customValuesProp.arraySize > 12)
+                {
+                    customValuesProp.arraySize = 12;
+                }
+            
+                // Draw the property field
+                EditorGUILayout.PropertyField(customValuesProp, true);
+            
+                // Check again after drawing in case user tried to add more
+                if (customValuesProp.arraySize > 12)
+                {
+                    customValuesProp.arraySize = 12;
+                    Debug.LogError($"Can't have more than 12 entries of custom values");
+                }
                 
                 EditorGUI.indentLevel--;
             }
