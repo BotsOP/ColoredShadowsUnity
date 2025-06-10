@@ -30,7 +30,7 @@ namespace ColoredShadows.Scripts
         [SerializeField] public int addShadowID;
         [SerializeField] public int shadowTextureSize = 1024;
         [SerializeField] public Shader overrideShader;
-        [SerializeField] public LayerMask layerMask;
+        [SerializeField] public LayerMask layerMask = int.MaxValue;
         [SerializeField] public List<float> customValues;
 
         private void OnDrawGizmosSelected()
@@ -63,7 +63,7 @@ namespace ColoredShadows.Scripts
                     Gizmos.DrawWireCube(Vector3.forward * farPlane / 2, new Vector3(size * 2, size * 2, farPlane));
                     break;
                 case LightMode.Spot :
-                    Gizmos.color = farPlaneFillColor;
+                    Gizmos.color = farPlaneOutlineColor;
                     Gizmos.DrawFrustum(Vector3.zero, fov, farPlane, 0.1f, aspectRatio);
                     Gizmos.color = fallOffOutlineColor;
                     Gizmos.DrawFrustum(Vector3.zero, fov, fallOffRange, 0.1f, aspectRatio);
@@ -80,7 +80,7 @@ namespace ColoredShadows.Scripts
 
             // Define position for the RenderTexture (bottom-left corner)
             float crossSection = Vector2.Distance(Vector2.zero, new Vector2(sceneView.cameraViewport.width, sceneView.cameraViewport.height));
-            int textureSize = (int)(crossSection / 5.0f);
+            int textureSize = (int)(crossSection / 10.0f);
             Texture shadowMap = Shader.GetGlobalTexture("_ColoredShadowMap" + lightIndex);
             if(shadowMap == null)
                 return;
@@ -102,23 +102,16 @@ namespace ColoredShadows.Scripts
             Handles.EndGUI();
         }
 
+        private void Reset()
+        {
+            overrideShader = Shader.Find("ColoredShadow/OverrideColShadow_UV_UVSize");
+        }
+
         private void OnEnable()
         {
-            var renderer = (GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset).GetRenderer(0);
-            var property = typeof(ScriptableRenderer).GetProperty("rendererFeatures", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            List<ScriptableRendererFeature> features = property.GetValue(renderer) as List<ScriptableRendererFeature>;
-            foreach (ScriptableRendererFeature rendererFeature in features)
-            {
-                if (rendererFeature is ColoredShadowsRenderFeature)
-                {
-                    Debug.Log($"");
-                }
-            }
-            
             if (overrideShader == null)
             {
-                overrideShader = Shader.Find("Shader Graphs/OverrideColShadow_UV_UVSize");
+                overrideShader = Shader.Find("ColoredShadow/OverrideColShadow_UV_UVSize");
             }
 
             SceneView.duringSceneGui += SceneViewGUI;
