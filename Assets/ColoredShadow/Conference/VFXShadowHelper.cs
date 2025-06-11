@@ -1,3 +1,4 @@
+using ColoredShadows.Scripts;
 using EasyButtons;
 using UnityEngine;
 using UnityEngine.VFX;
@@ -5,11 +6,12 @@ using UnityEngine.VFX;
 public class VFXShadowHelper : MonoBehaviour
 {
     [SerializeField] private VisualEffect vfx;
+    [SerializeField] private CustomLight customLight;
 
     [Button]
     private void SetValues()
     {
-        Texture shadowMap = Shader.GetGlobalTexture("_ColoredShadowMap0");
-        vfx.SetTexture("_ColoredShadowMap0", shadowMap);
+        vfx.SetGraphicsBuffer("_ShadowPositions", customLight.vfxAppendBuffer);
+        vfx.SetInt("_ShadowPositionsCount", customLight.vfxAppendCount);
     }
 }

@@ -9,11 +9,11 @@ namespace ColoredShadows.Scripts
     public class ColoredShadowsRenderFeature : ScriptableRendererFeature
     {
         public const int MAX_AMOUNT_CUSTOM_LIGHTS = 10;
-        public FilterSettings filterSettings;
+        public ComputeShader cs;
     
-        private RenderColoredShadows renderShadowObjectsPassPoint;
+        private RenderColoredShadowsVFX renderShadowObjectsPassPoint;
         private Dictionary<Camera, CustomLight> cameraLightPair;
-        private RenderColoredShadows.LightInformation[] lightInformations;
+        private RenderColoredShadowsVFX.LightInformation[] lightInformations;
         private GraphicsBuffer lightInformationBuffer;
         public override void Create()
         {
@@ -27,7 +27,7 @@ namespace ColoredShadows.Scripts
             {
                 cameraLightPair.Add(light.transform.GetComponent<Camera>(), light);
             }
-            lightInformations = new RenderColoredShadows.LightInformation[MAX_AMOUNT_CUSTOM_LIGHTS];
+            lightInformations = new RenderColoredShadowsVFX.LightInformation[MAX_AMOUNT_CUSTOM_LIGHTS];
             lightInformationBuffer = new GraphicsBuffer(
                 GraphicsBuffer.Target.Structured,
                 MAX_AMOUNT_CUSTOM_LIGHTS,
@@ -40,7 +40,7 @@ namespace ColoredShadows.Scripts
                 sizeof(float) * 12
             );
         
-            renderShadowObjectsPassPoint = new RenderColoredShadows("Render Custom Point Shadows depth", filterSettings.PassNames, lightInformations, lightInformationBuffer);
+            renderShadowObjectsPassPoint = new RenderColoredShadowsVFX("Render Custom Point Shadows depth", cs, lightInformations, lightInformationBuffer);
         }
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -77,20 +77,6 @@ namespace ColoredShadows.Scripts
                 shadowMapDepthFormatted = TextureHandle.nullHandle;
                 shadowMapColorFormatted = TextureHandle.nullHandle;
                 shadowMapID = TextureHandle.nullHandle;
-            }
-        }
-    
-        [System.Serializable]
-        public class FilterSettings
-        {
-            public RenderQueueType RenderQueueType;
-            public LayerMask LayerMask;
-            public string[] PassNames;
-
-            public FilterSettings()
-            {
-                RenderQueueType = RenderQueueType.Opaque;
-                LayerMask = 0;
             }
         }
 

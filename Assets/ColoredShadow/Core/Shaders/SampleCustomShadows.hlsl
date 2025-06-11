@@ -80,36 +80,36 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, out float mask)
     
     switch (mapIndex)
     {
-    // case 0:
-    //     output = (_ColoredShadowMap0.Sample(point_clamp_sampler, uv));
-    //     break;
-    // case 1:
-    //     output = (_ColoredShadowMap1.Sample(point_clamp_sampler, uv));
-    //     break;
-    // case 2:
-    //     output = (_ColoredShadowMap2.Sample(point_clamp_sampler, uv));
-    //     break;
-    // case 3:
-    //     output = (_ColoredShadowMap3.Sample(point_clamp_sampler, uv));
-    //     break;
-    // case 4:
-    //     output = (_ColoredShadowMap4.Sample(point_clamp_sampler, uv));
-    //     break;
-    // case 5:
-    //     output = (_ColoredShadowMap5.Sample(point_clamp_sampler, uv));
-    //     break;
-    // case 6:
-    //     output = (_ColoredShadowMap6.Sample(point_clamp_sampler, uv));
-    //     break;
-    // case 7:
-    //     output = (_ColoredShadowMap7.Sample(point_clamp_sampler, uv));
-    //     break;
-    // case 8:
-    //     output = (_ColoredShadowMap8.Sample(point_clamp_sampler, uv));
-    //     break;
-    // case 9:
-    //     output = (_ColoredShadowMap9.Sample(point_clamp_sampler, uv));
-    //     break;
+    case 0:
+        output = (_ColoredShadowMap0.Sample(point_clamp_sampler, uv));
+        break;
+    case 1:
+        output = (_ColoredShadowMap1.Sample(point_clamp_sampler, uv));
+        break;
+    case 2:
+        output = (_ColoredShadowMap2.Sample(point_clamp_sampler, uv));
+        break;
+    case 3:
+        output = (_ColoredShadowMap3.Sample(point_clamp_sampler, uv));
+        break;
+    case 4:
+        output = (_ColoredShadowMap4.Sample(point_clamp_sampler, uv));
+        break;
+    case 5:
+        output = (_ColoredShadowMap5.Sample(point_clamp_sampler, uv));
+        break;
+    case 6:
+        output = (_ColoredShadowMap6.Sample(point_clamp_sampler, uv));
+        break;
+    case 7:
+        output = (_ColoredShadowMap7.Sample(point_clamp_sampler, uv));
+        break;
+    case 8:
+        output = (_ColoredShadowMap8.Sample(point_clamp_sampler, uv));
+        break;
+    case 9:
+        output = (_ColoredShadowMap9.Sample(point_clamp_sampler, uv));
+        break;
     default:
         output = float4(0, 0, 0, 0);
         break;
@@ -744,13 +744,6 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
     customValues1 = float4(0, 0, 0, 0);
     customValues2 = float4(0, 0, 0, 0);
     customValues3 = float4(0, 0, 0, 0);
-
-    LightInformation lightInformation1 = ColoredShadowLightInformation[0];
-    float4 lightSpace1 = mul(lightInformation1.lightMatrix, float4(worldPos.x, worldPos.y, worldPos.z, 1));
-    float2 lightUv2 = lightSpace1.rgb / lightSpace1.a;
-    lightUv2 *= 0.5;
-    lightUv2 += 0.5;
-    finalUV = lightUv2;
 
     for (int i = 0; i < CurrentAmountCustomLights; ++i)
     {
