@@ -33,6 +33,9 @@ namespace ColoredShadows.Scripts
         [SerializeField] public LayerMask layerMask = int.MaxValue;
         [SerializeField] public List<float> customValues;
 
+        public GraphicsBuffer vfxAppendBuffer;
+        public int vfxAppendCount;
+
         private void OnDrawGizmosSelected()
         {
             Gizmos.matrix = transform.localToWorldMatrix;

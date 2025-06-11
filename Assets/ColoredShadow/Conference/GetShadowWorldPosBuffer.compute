@@ -1,0 +1,40 @@
+#pragma kernel CSMain
+
+Texture2D<float4> _ShadowMap;
+Texture2D<float> _DepthMap;
+float4x4 _InvProjViewMatrix;
+AppendStructuredBuffer<float3> _OutputBuffer;
+RWStructuredBuffer<int> _DebugBuffer;
+
+float3 DepthToWorldPositionViewProj(float2 screenUV, float depth)
+{
+    // Convert screen UV to NDC
+    float2 ndcXY = screenUV * 2.0 - 1;
+    
+    // Create NDC position
+    float worldZDistance = 1 + (depth * (30 - 1));
+    float ndcZ = ((worldZDistance - 1) * 2.0f / (30 - 1)) - 1.0f;
+    ndcZ *= -1;
+    float4 ndcPos = float4(ndcXY.x, ndcXY.y, ndcZ, 1.0);
+    
+    // Transform directly from NDC to world space
+    float4 worldPos = mul(_InvProjViewMatrix, ndcPos);
+    
+    // Perspective divide
+    worldPos.xyz /= worldPos.w;
+    
+    return worldPos.xyz;
+}
+
+[numthreads(8,8,1)]
+void CSMain (uint2 id : SV_DispatchThreadID)
+{
+    id *= 8;
+    float4 shadow = _ShadowMap[id];
+    float depth = _DepthMap[id];
+    if (depth > 0 && shadow.r > 0)
+    {
+        InterlockedAdd(_DebugBuffer[0], 1);
+        _OutputBuffer.Append(DepthToWorldPositionViewProj(float2(id.x / 2048.0, id.y / 2048.0), depth));
+    }
+}

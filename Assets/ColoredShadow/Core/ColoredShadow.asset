@@ -65,14 +65,7 @@ MonoBehaviour:
   m_Name: ColoredShadowsRenderFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  injectionPoint: 500
-  filterSettings:
-    RenderQueueType: 1
-    LayerMask:
-      serializedVersion: 2
-      m_Bits: 95
-    PassNames: []
-  shadowOverrideMaterial: {fileID: -876546973899608171, guid: 6039d6df7c451324fb3106631f7b6454, type: 3}
+  cs: {fileID: 7200000, guid: 720a21ab9b7375742a9722e5ad10a303, type: 3}
 --- !u!114 &7227916146802232454
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -86,11 +79,4 @@ MonoBehaviour:
   m_Name: ColoredPointShadowsRenderFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  injectionPoint: 500
-  filterSettings:
-    RenderQueueType: 1
-    LayerMask:
-      serializedVersion: 2
-      m_Bits: 4294967295
-    PassNames: []
-  shadowOverrideMaterial: {fileID: 0}
+  cs: {fileID: 0}
