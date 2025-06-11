@@ -33,6 +33,7 @@ namespace ColoredShadows.Scripts
         [SerializeField] public LayerMask shadowCastingMask = int.MaxValue;
         [SerializeField] public LayerMask shadowReceivingMask = int.MaxValue;
         [SerializeField] public List<float> customValues;
+        
 
         public float nearPlane = 1;
         public int amountPixelsToSkipPerSample = 8;
