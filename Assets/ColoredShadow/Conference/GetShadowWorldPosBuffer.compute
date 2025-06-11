@@ -1,10 +1,25 @@
-#pragma kernel CSMain
+#pragma kernel SampleShadowMap
+#pragma kernel SampleShadowCubeMap
 
 Texture2D<float4> _ShadowMap;
 Texture2D<float> _DepthMap;
-float4x4 _InvProjViewMatrix;
 AppendStructuredBuffer<float3> _OutputBuffer;
 RWStructuredBuffer<int> _DebugBuffer;
+float4x4 _InvProjViewMatrix1;
+float4x4 _InvProjViewMatrix2;
+float4x4 _InvProjViewMatrix3;
+float4x4 _InvProjViewMatrix4;
+float4x4 _InvProjViewMatrix5;
+float4x4 _InvProjViewMatrix6;
+
+int _SkipAmountPixelsPerSample;
+int _ShadowTextureSizeX;
+int _ShadowTextureSizeY;
+
+float remap(float value, float inputMin, float inputMax, float outputMin, float outputMax)
+{
+    return outputMin + (value - inputMin) * (outputMax - outputMin) / (inputMax - inputMin);
+}
 
 float3 DepthToWorldPositionViewProj(float2 screenUV, float depth)
 {
@@ -18,7 +33,7 @@ float3 DepthToWorldPositionViewProj(float2 screenUV, float depth)
     float4 ndcPos = float4(ndcXY.x, ndcXY.y, ndcZ, 1.0);
     
     // Transform directly from NDC to world space
-    float4 worldPos = mul(_InvProjViewMatrix, ndcPos);
+    float4 worldPos = mul(_InvProjViewMatrix1, ndcPos);
     
     // Perspective divide
     worldPos.xyz /= worldPos.w;
@@ -26,15 +41,32 @@ float3 DepthToWorldPositionViewProj(float2 screenUV, float depth)
     return worldPos.xyz;
 }
 
-[numthreads(8,8,1)]
-void CSMain (uint2 id : SV_DispatchThreadID)
+[numthreads(32,32,1)]
+void SampleShadowMap (uint2 id : SV_DispatchThreadID)
 {
-    id *= 8;
+    id *= _SkipAmountPixelsPerSample;
     float4 shadow = _ShadowMap[id];
     float depth = _DepthMap[id];
     if (depth > 0 && shadow.r > 0)
     {
         InterlockedAdd(_DebugBuffer[0], 1);
-        _OutputBuffer.Append(DepthToWorldPositionViewProj(float2(id.x / 2048.0, id.y / 2048.0), depth));
+        _OutputBuffer.Append(DepthToWorldPositionViewProj(float2((float)id.x / _ShadowTextureSizeX, (float)id.y / _ShadowTextureSizeY), depth));
+    }
+}
+
+[numthreads(32,32,1)]
+void SampleShadowCubeMap (uint2 id : SV_DispatchThreadID)
+{
+    id *= _SkipAmountPixelsPerSample;
+    float4 shadow = _ShadowMap[id];
+    float depth = _DepthMap[id];
+        
+    if (depth > 0 && shadow.r > 0)
+    {
+        InterlockedAdd(_DebugBuffer[0], 1);
+        int faceIndex = floor(id.x / (_ShadowTextureSizeX / 6));
+        float2 uv = float2(remap((float)id.x / _ShadowTextureSizeX, 1/6 * faceIndex, 1/6 * (faceIndex + 1), 0, 1), (float)id.y / _ShadowTextureSizeY);
+        float3 worldPos = DepthToWorldPositionViewProj(uv, depth);
+        _OutputBuffer.Append(worldPos);
     }
 }
