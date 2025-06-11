@@ -149,7 +149,7 @@ namespace ColoredShadows.Scripts
             // TextureHandle destinationDepthRT;
             int textureXMultiplier = 1;
 
-            filteringSettings.layerMask = customLight.layerMask;
+            filteringSettings.layerMask = customLight.shadowCastingMask;
         
             switch (customLight.lightMode)
             {

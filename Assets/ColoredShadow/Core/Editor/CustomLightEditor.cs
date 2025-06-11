@@ -21,7 +21,8 @@ namespace ColoredShadows.Scripts
         private SerializedProperty addShadowIDProp;
         private SerializedProperty shadowTextureSizeProp;
         private SerializedProperty overrideShaderProp;
-        private SerializedProperty layerMaskProp;
+        private SerializedProperty shadowCastingMaskProp;
+        private SerializedProperty shadowReceivingMaskProp;
         private SerializedProperty customValuesProp;
         
         void OnEnable()
@@ -38,7 +39,8 @@ namespace ColoredShadows.Scripts
             addShadowIDProp = serializedObject.FindProperty("addShadowID");
             shadowTextureSizeProp = serializedObject.FindProperty("shadowTextureSize");
             overrideShaderProp = serializedObject.FindProperty("overrideShader");
-            layerMaskProp = serializedObject.FindProperty("layerMask");
+            shadowCastingMaskProp = serializedObject.FindProperty("shadowCastingMask");
+            shadowReceivingMaskProp = serializedObject.FindProperty("shadowReceivingMask");
             customValuesProp = serializedObject.FindProperty("customValues");
         }
         
@@ -103,7 +105,8 @@ namespace ColoredShadows.Scripts
                 EditorGUILayout.PropertyField(addShadowIDProp);
                 EditorGUILayout.PropertyField(shadowTextureSizeProp);
                 EditorGUILayout.PropertyField(overrideShaderProp);
-                EditorGUILayout.PropertyField(layerMaskProp);
+                EditorGUILayout.PropertyField(shadowCastingMaskProp);
+                EditorGUILayout.PropertyField(shadowReceivingMaskProp);
                 
                 // Custom Values List - Standard Unity List View
                 EditorGUILayout.Space(5);
