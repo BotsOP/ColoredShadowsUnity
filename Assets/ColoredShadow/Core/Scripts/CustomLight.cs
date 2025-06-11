@@ -32,6 +32,7 @@ namespace ColoredShadows.Scripts
         [SerializeField] public Shader overrideShader;
         [SerializeField] public LayerMask layerMask = int.MaxValue;
         [SerializeField] public List<float> customValues;
+        
 
         public GraphicsBuffer vfxAppendBuffer;
         public int vfxAppendCount;
