@@ -76,9 +76,6 @@ namespace ColoredShadows.Scripts
             
             if (passData.lightMode == LightMode.Point)
             {
-                cmd.SetGlobalVector("_ColoredLightPos", passData.lightPos);
-                cmd.SetGlobalFloat("_ColoredLightFarPlane", passData.farPlane);
-                
                 cmd.SetViewport(new Rect(resolutionSizeX * 1, 0, resolutionSizeX, resolutionSizeY));
                 cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * passData.viewMatrix, projectionMatrix);
                 cmd.DrawRendererList(passData.rendererListHdl2);
@@ -105,7 +102,7 @@ namespace ColoredShadows.Scripts
         {
             Matrix4x4 projectionMatrix = passData.projectionMatrix;
             // cmd.SetViewProjectionMatrices(passData.viewMatrix, projectionMatrix);
-            projectionMatrix = GL.GetGPUProjectionMatrix(projectionMatrix, !isYFlipped);
+            // projectionMatrix = GL.GetGPUProjectionMatrix(projectionMatrix, !isYFlipped);
             cmd.DisableScissorRect();
             float resolutionSizeX = passData.textureSize.x;
             float resolutionSizeY = passData.textureSize.y;
@@ -117,34 +114,32 @@ namespace ColoredShadows.Scripts
             
             if (passData.lightMode == LightMode.Point)
             {
-                cmd.SetGlobalVector("_ColoredLightPos", passData.lightPos);
-                cmd.SetGlobalFloat("_ColoredLightFarPlane", passData.farPlane);
-                
                 cmd.SetViewport(new Rect(resolutionSizeX * 1, 0, resolutionSizeX, resolutionSizeY));
                 cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * passData.viewMatrix, projectionMatrix);
-                cmd.DrawRendererList(passData.rendererListHdl2);
+                cmd.DrawRendererList(passData.rendererListHdlVFX2);
 
                 cmd.SetViewport(new Rect(resolutionSizeX * 2, 0, resolutionSizeX, resolutionSizeY));
                 cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0)) * passData.viewMatrix, projectionMatrix);
-                cmd.DrawRendererList(passData.rendererListHdl3);
+                cmd.DrawRendererList(passData.rendererListHdlVFX3);
 
                 cmd.SetViewport(new Rect(resolutionSizeX * 3, 0, resolutionSizeX, resolutionSizeY));
                 cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 270, 0)) * passData.viewMatrix, projectionMatrix);
-                cmd.DrawRendererList(passData.rendererListHdl4);
+                cmd.DrawRendererList(passData.rendererListHdlVFX4);
 
                 cmd.SetViewport(new Rect(resolutionSizeX * 4, 0, resolutionSizeX, resolutionSizeY));
                 cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(90, 0, 0)) * passData.viewMatrix, projectionMatrix);
-                cmd.DrawRendererList(passData.rendererListHdl5);
+                cmd.DrawRendererList(passData.rendererListHdlVFX5);
 
                 cmd.SetViewport(new Rect(resolutionSizeX * 5, 0, resolutionSizeX, resolutionSizeY));
                 cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(270, 0, 0)) * passData.viewMatrix, projectionMatrix);
-                cmd.DrawRendererList(passData.rendererListHdl6);
+                cmd.DrawRendererList(passData.rendererListHdlVFX6);
             }
         }
         
         static void ExecutePassCompute(PassDataCompute data, ComputeGraphContext cgContext)
         {
-            cgContext.cmd.SetComputeMatrixParam(data.cs, "_InvProjViewMatrix", data.invProjViewMatrix);
+            // cgContext.cmd.SetComputeMatrixParam(data.cs, "_InvProjViewMatrix1", Matrix4x4.Inverse(data.projMatrix));
+            cgContext.cmd.SetComputeMatrixParam(data.cs, "_InvProjViewMatrix1", Matrix4x4.Inverse(data.projMatrix * data.viewMatrix));
             cgContext.cmd.SetComputeFloatParam(data.cs, "_NearPlane", data.nearPlane);
             cgContext.cmd.SetComputeFloatParam(data.cs, "_FarPlane", data.farPlane);
             cgContext.cmd.SetComputeIntParam(data.cs, "_AmountPixelsToSkipPerSample", data.amountPixelsToSkipPerSample);
@@ -158,6 +153,13 @@ namespace ColoredShadows.Scripts
                 cgContext.cmd.SetComputeBufferParam(data.cs, data.cs.FindKernel("SampleShadowCubeMap"), "_DebugBuffer", data.debufBuffer);
                 cgContext.cmd.SetComputeTextureParam(data.cs, data.cs.FindKernel("SampleShadowCubeMap"), "_ShadowMap", data.shadowMap);
                 cgContext.cmd.SetComputeTextureParam(data.cs, data.cs.FindKernel("SampleShadowCubeMap"), "_DepthMap", data.depthMap);
+                
+                // cgContext.cmd.SetComputeMatrixParam(data.cs, "_InvProjViewMatrix2", Matrix4x4.Inverse(data.viewMatrix));
+                cgContext.cmd.SetComputeMatrixParam(data.cs, "_InvProjViewMatrix2", Matrix4x4.Inverse(data.projMatrix * (Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * data.viewMatrix)));
+                cgContext.cmd.SetComputeMatrixParam(data.cs, "_InvProjViewMatrix3", Matrix4x4.Inverse(data.projMatrix * (Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0)) * data.viewMatrix)));
+                cgContext.cmd.SetComputeMatrixParam(data.cs, "_InvProjViewMatrix4", Matrix4x4.Inverse(data.projMatrix * (Matrix4x4.Rotate(Quaternion.Euler(0, 270, 0)) * data.viewMatrix)));
+                cgContext.cmd.SetComputeMatrixParam(data.cs, "_InvProjViewMatrix5", Matrix4x4.Inverse(data.projMatrix * (Matrix4x4.Rotate(Quaternion.Euler(90, 0, 0)) * data.viewMatrix)));
+                cgContext.cmd.SetComputeMatrixParam(data.cs, "_InvProjViewMatrix6", Matrix4x4.Inverse(data.projMatrix * (Matrix4x4.Rotate(Quaternion.Euler(270, 0, 0)) * data.viewMatrix)));
                 cgContext.cmd.SetComputeIntParam(data.cs, "_TextureSizeX", data.textureSize * 6);
                 cgContext.cmd.SetComputeIntParam(data.cs, "_TextureSizeY", data.textureSize);
                 
@@ -244,7 +246,8 @@ namespace ColoredShadows.Scripts
                     Matrix4x4 projectionCullingMatrix = Matrix4x4.Ortho(-lightRadius, lightRadius, -lightRadius, lightRadius, customLight.nearPlane, lightRadius * 2);
                     cameraData.camera.cullingMatrix = projectionCullingMatrix * viewCullingMatrix;
                     viewMatrix = GetViewMatrix(customLight.transform.position, Quaternion.identity);
-                    projectionMatrix = Matrix4x4.Perspective(90, 1, customLight.nearPlane, lightRadius);
+                    // projectionMatrix = Matrix4x4.Perspective(90, 1, customLight.nearPlane, lightRadius);
+                    projectionMatrix = CreatePerspectiveMatrix(90, 1, customLight.nearPlane, 99, false);
                     textureXMultiplier = 6;
                     break;
                 case LightMode.Directional:
@@ -391,6 +394,8 @@ namespace ColoredShadows.Scripts
             debugBuffer.SetData(new int[1]);
             outputBuffer.GetData(output);
             outputBuffer.SetCounterValue(0);
+            Debug.Log($"{outputDebug[0]}");
+            Debug.Log($"{output[0]}");
             
             BufferHandle outputHandle = renderGraph.ImportBuffer(outputBuffer);
             BufferHandle debugHandle = renderGraph.ImportBuffer(debugBuffer);
@@ -401,7 +406,10 @@ namespace ColoredShadows.Scripts
                 passData.shadowMap = destinationColor;
                 passData.depthMap = destinationDepth;
                 passData.debufBuffer = debugHandle;
-                passData.invProjViewMatrix = Matrix4x4.Inverse(GL.GetGPUProjectionMatrix(projectionMatrix, false)  * viewMatrix);
+                // passData.projMatrix = Matrix4x4.Inverse(GL.GetGPUProjectionMatrix(projectionMatrix, false)  * viewMatrix);
+                passData.projMatrix = projectionMatrix;
+                // passData.projMatrix = GL.GetGPUProjectionMatrix(projectionMatrix, true);
+                passData.viewMatrix = viewMatrix;
                 passData.textureSize = customLight.shadowTextureSize;
                 passData.lightMode = customLight.lightMode;
                 passData.farPlane = customLight.farPlane;
@@ -449,6 +457,24 @@ namespace ColoredShadows.Scripts
                 lightInformationBuffer.SetData(lightInformations);
             }
             Shader.SetGlobalBuffer("ColoredShadowLightInformation", lightInformationBuffer);
+        }
+        
+        public static Matrix4x4 CreatePerspectiveMatrix(float fovY, float aspect, float nearPlane, float farPlane, bool reverseZ = false)
+        {
+            // Convert FOV from degrees to radians
+            float fovRadians = fovY * Mathf.Deg2Rad;
+            float tanHalfFov = Mathf.Tan(fovRadians * 0.5f);
+        
+            Matrix4x4 matrix = Matrix4x4.zero;
+        
+            // Standard perspective matrix elements
+            matrix.m00 = 1.0f / (aspect * tanHalfFov);  // X scale
+            matrix.m11 = 1.0f / tanHalfFov;             // Y scale
+            matrix.m22 = reverseZ ? nearPlane / (nearPlane - farPlane) : -(farPlane + nearPlane) / (farPlane - nearPlane);
+            matrix.m23 = reverseZ ? (nearPlane * farPlane) / (nearPlane - farPlane) : -(2.0f * farPlane * nearPlane) / (farPlane - nearPlane);
+            matrix.m32 = reverseZ ? 1.0f : -1.0f;      // W component manipulation
+        
+            return matrix;
         }
         
         public static Matrix4x4 OrthoMatrix(float left, float right, float bottom, float top, float near, float far)
@@ -532,7 +558,8 @@ namespace ColoredShadows.Scripts
             internal ComputeShader cs;
             internal BufferHandle outputBuffer;
             internal BufferHandle debufBuffer;
-            internal Matrix4x4 invProjViewMatrix;
+            internal Matrix4x4 projMatrix;
+            internal Matrix4x4 viewMatrix;
             internal float nearPlane;
             internal float farPlane;
             internal int amountPixelsToSkipPerSample;
