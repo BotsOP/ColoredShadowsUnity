@@ -30,8 +30,12 @@ namespace ColoredShadows.Scripts
         [SerializeField] public int addShadowID;
         [SerializeField] public int shadowTextureSize = 1024;
         [SerializeField] public Shader overrideShader;
-        [SerializeField] public LayerMask layerMask = int.MaxValue;
+        [SerializeField] public LayerMask shadowCastingMask = int.MaxValue;
+        [SerializeField] public LayerMask shadowReceivingMask = int.MaxValue;
         [SerializeField] public List<float> customValues;
+
+        public float nearPlane = 1;
+        public int amountPixelsToSkipPerSample = 8;
 
         public GraphicsBuffer vfxAppendBuffer;
         public int vfxAppendCount;
