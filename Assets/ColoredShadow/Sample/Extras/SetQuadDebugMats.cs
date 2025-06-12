@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ColoredShadows.Scripts;
-using EasyButtons;
+// using EasyButtons;
 using UnityEngine;
 
 public class SetQuadDebugMats : MonoBehaviour
@@ -14,7 +14,7 @@ public class SetQuadDebugMats : MonoBehaviour
         SyncQuads();
     }
 
-    [Button]
+    // [Button]
     private void SyncQuads()
     {
         for (int i = 0; i < debugQuadMaterials.Count; i++)

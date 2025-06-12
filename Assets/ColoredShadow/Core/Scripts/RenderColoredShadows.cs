@@ -290,7 +290,7 @@ namespace ColoredShadows.Scripts
                 cameraData.camera.transform.position,
                 customLight.shadowTextureSize,
                 customLight.shadowTextureSize,
-                customLight.addShadowID,
+                customLight.addToShadowID,
                 customValuesCopy
             );
             if (customLight.lightIndex == 0)

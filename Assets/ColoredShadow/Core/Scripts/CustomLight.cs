@@ -6,6 +6,8 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Serialization;
+using UnityEngine.VFX;
 
 namespace ColoredShadows.Scripts
 {
@@ -27,16 +29,17 @@ namespace ColoredShadows.Scripts
         [SerializeField] public float fov = 60;
         [SerializeField] public float aspectRatio = 1;
         [SerializeField] public float fallOffRange = 50;
-        [SerializeField] public int addShadowID;
+        [SerializeField] public int addToShadowID;
         [SerializeField] public int shadowTextureSize = 1024;
         [SerializeField] public Shader overrideShader;
         [SerializeField] public LayerMask shadowCastingMask = int.MaxValue;
         [SerializeField] public LayerMask shadowReceivingMask = int.MaxValue;
         [SerializeField] public List<float> customValues;
-        
+        [SerializeField] public bool enableVFXSupport;
+        [SerializeField] public List<VisualEffect> visualEffects;
+        [SerializeField] public int amountPixelsToSkipPerSample = 8;
 
         public float nearPlane = 1;
-        public int amountPixelsToSkipPerSample = 8;
 
         public GraphicsBuffer vfxAppendBuffer;
         public int vfxAppendCount;
@@ -108,6 +111,18 @@ namespace ColoredShadows.Scripts
             }
 
             Handles.EndGUI();
+        }
+
+        private void Update()
+        {
+            if (enableVFXSupport)
+            {
+                foreach (VisualEffect visualEffect in visualEffects)
+                {
+                    visualEffect.SetGraphicsBuffer("_ShadowPositions", vfxAppendBuffer);
+                    visualEffect.SetInt("_ShadowPositionsCount", vfxAppendCount);
+                }
+            }
         }
 
         private void Reset()

@@ -2184,8 +2184,8 @@
     "m_ObjectId": "1cd1f7da39074e27a21dcab4b88b9456",
     "m_Title": "Lerp Spiral",
     "m_Position": {
-        "x": -371.33331298828127,
-        "y": 1232.6663818359375
+        "x": -371.0,
+        "y": 1232.0
     }
 }
 
@@ -3146,6 +3146,15 @@
         },
         {
             "m_Id": "d15fbf2b79cf405db13c760987d98e05"
+        },
+        {
+            "m_Id": "778d0177c9294c81881cad8337ee952b"
+        },
+        {
+            "m_Id": "e172e85e51e94aad9732219794df13ed"
+        },
+        {
+            "m_Id": "f20bc723568c40a7ab16897c86ae6a34"
         }
     ],
     "synonyms": [],
@@ -5634,6 +5643,31 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector4MaterialSlot",
+    "m_ObjectId": "778d0177c9294c81881cad8337ee952b",
+    "m_Id": 8,
+    "m_DisplayName": "CustomOutput1",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "CustomOutput1",
+    "m_StageCapability": 3,
+    "m_Value": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.StepNode",
     "m_ObjectId": "78621a527afd4b55b23b34e85929cac1",
     "m_Group": {
@@ -5719,8 +5753,8 @@
     "m_ObjectId": "78f04fffddd84adb8f8f21f477a58776",
     "m_Title": "Body Shadow",
     "m_Position": {
-        "x": -121.3333740234375,
-        "y": -148.00001525878907
+        "x": -121.0,
+        "y": -148.0
     }
 }
 
@@ -6067,8 +6101,8 @@
     "m_ObjectId": "85fa389e665b497ba3da1e7585ae77bc",
     "m_Title": "Spiral",
     "m_Position": {
-        "x": -715.9999389648438,
-        "y": 557.3333129882813
+        "x": -716.0,
+        "y": 557.0
     }
 }
 
@@ -7060,8 +7094,8 @@
     "m_ObjectId": "a1f95fbedd0e493ba17f2e89a6368fd3",
     "m_Title": "Eyes and mouth shadow",
     "m_Position": {
-        "x": 256.66668701171877,
-        "y": -607.3333740234375
+        "x": 257.0,
+        "y": -608.0
     }
 }
 
@@ -8727,8 +8761,8 @@
     "m_ObjectId": "ca42e65c3f1c4bfc8f0255471b8ae443",
     "m_Title": "Lerp Offset",
     "m_Position": {
-        "x": -1554.66650390625,
-        "y": 208.6666259765625
+        "x": -1554.0,
+        "y": 208.0
     }
 }
 
@@ -8968,10 +9002,10 @@
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "d15fbf2b79cf405db13c760987d98e05",
     "m_Id": 5,
-    "m_DisplayName": "Anti_Aliasing",
+    "m_DisplayName": "Mask",
     "m_SlotType": 1,
     "m_Hidden": false,
-    "m_ShaderOutputName": "Anti_Aliasing",
+    "m_ShaderOutputName": "Mask",
     "m_StageCapability": 3,
     "m_Value": 0.0,
     "m_DefaultValue": 0.0,
@@ -9461,6 +9495,31 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector4MaterialSlot",
+    "m_ObjectId": "e172e85e51e94aad9732219794df13ed",
+    "m_Id": 9,
+    "m_DisplayName": "CustomOutput2",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "CustomOutput2",
+    "m_StageCapability": 3,
+    "m_Value": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.DynamicVectorMaterialSlot",
     "m_ObjectId": "e17898ac02ce4205ad54d93725d397f5",
     "m_Id": 0,
@@ -9714,8 +9773,8 @@
     "m_ObjectId": "e75dd31dc0154c0b9ca120bcbde0a6e0",
     "m_Title": "Position Offset",
     "m_Position": {
-        "x": -3705.333251953125,
-        "y": -149.99993896484376
+        "x": -3705.0,
+        "y": -150.0
     }
 }
 
@@ -9979,6 +10038,31 @@
     },
     "isMainColor": false,
     "m_ColorMode": 0
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector4MaterialSlot",
+    "m_ObjectId": "f20bc723568c40a7ab16897c86ae6a34",
+    "m_Id": 10,
+    "m_DisplayName": "CustomOutput3",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "CustomOutput3",
+    "m_StageCapability": 3,
+    "m_Value": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_Labels": []
 }
 
 {
