@@ -1577,13 +1577,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 948216549}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.22491151, z: -0, w: 0.97437924}
-  m_LocalPosition: {x: 7.272, y: 2.908, z: 3.516}
-  m_LocalScale: {x: 1.0585699, y: 1.0585699, z: 1.0585699}
+  m_LocalRotation: {x: -0.41047254, y: 0.5098962, z: 0.16777587, w: 0.7371359}
+  m_LocalPosition: {x: 7.68, y: 2.908, z: 3.21}
+  m_LocalScale: {x: 1.2830926, y: 1.2830926, z: 1.2830926}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 25.995, z: 0}
+  m_LocalEulerAnglesHint: {x: -50.918, y: 76.886, z: -15.762}
 --- !u!1 &1003626692
 GameObject:
   m_ObjectHideFlags: 0
@@ -2783,15 +2783,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4835934202178952837, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.04
+      value: 7.52
       objectReference: {fileID: 0}
     - target: {fileID: 4835934202178952837, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.67
+      value: 7.3
       objectReference: {fileID: 0}
     - target: {fileID: 4835934202178952837, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 6.21
+      value: 7.28
       objectReference: {fileID: 0}
     - target: {fileID: 4835934202178952837, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2839,7 +2839,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8686053663121692227, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: lightMode
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8686053663121692227, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: aspectRatio
@@ -2863,7 +2863,7 @@ PrefabInstance:
       objectReference: {fileID: -6465566751694194690, guid: 6039d6df7c451324fb3106631f7b6454, type: 3}
     - target: {fileID: 8686053663121692227, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: vfxAppendCount
-      value: 726
+      value: 55738
       objectReference: {fileID: 0}
     - target: {fileID: 8686053663121692227, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: enableVFXSupport
@@ -2922,6 +2922,10 @@ PrefabInstance:
       value: 127
       objectReference: {fileID: 0}
     - target: {fileID: 8686053663121692227, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
+      propertyPath: amountPixelsToSkipPerSample
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8686053663121692227, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: 'visualEffects.Array.data[0]'
       value: 
       objectReference: {fileID: 1802318182}
@@ -2933,17 +2937,6 @@ PrefabInstance:
       addedObject: {fileID: 410087041}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
---- !u!114 &1718884603 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8686053663121692227, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
-  m_PrefabInstance: {fileID: 1718884602}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: afee8e9cf91d2a04d8f6732c4da11781, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &1718884604 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4835934202178952837, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
@@ -3121,7 +3114,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 79e30a97a8c7bb64fb02f0bb196e1e01, type: 2}
+  - {fileID: 2100000, guid: f8251e327aa564c4e83660fdbbef9365, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3177,7 +3170,6 @@ GameObject:
   - component: {fileID: 1802318183}
   - component: {fileID: 1802318182}
   - component: {fileID: 1802318181}
-  - component: {fileID: 1802318184}
   m_Layer: 0
   m_Name: ShadowVFXTest
   m_TagString: Untagged
@@ -3256,7 +3248,7 @@ VisualEffect:
       m_Array: []
     m_Int:
       m_Array:
-      - m_Value: 728
+      - m_Value: 653761
         m_Name: _ShadowPositionsCount
         m_Overridden: 1
     m_Matrix4x4f:
@@ -3284,20 +3276,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1802318184
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1802318180}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 74dd67ebe933c824eb4acb55ce5cae85, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  vfx: {fileID: 1802318182}
-  customLight: {fileID: 1718884603}
 --- !u!1 &1894988043
 GameObject:
   m_ObjectHideFlags: 0
