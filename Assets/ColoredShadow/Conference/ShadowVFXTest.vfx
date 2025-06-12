@@ -210,10 +210,10 @@ MonoBehaviour:
   - title: Get Shadow Position
     position:
       serializedVersion: 2
-      x: -494
-      y: -56
-      width: 707
-      height: 325
+      x: -303
+      y: -72
+      width: 705
+      height: 318
     contents:
     - model: {fileID: 8926484042661614665}
       id: 0
@@ -231,10 +231,10 @@ MonoBehaviour:
   categories: []
   uiBounds:
     serializedVersion: 2
-    x: -494
+    x: -303
     y: -492
-    width: 1650
-    height: 1613
+    width: 1457
+    height: 1596
 --- !u!114 &114350483966674976
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1555,7 +1555,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEngine.Vector3, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"x":1.0,"y":1.0,"z":1.0}'
+      m_SerializableObject: '{"x":1.0,"y":0.0,"z":0.0}'
     m_Space: -1
   m_Property:
     name: _Color
@@ -1894,7 +1894,7 @@ MonoBehaviour:
     linkedSlots:
     - outputSlot: {fileID: 8926484042661614666}
       inputSlot: {fileID: 8926484042661614670}
-    position: {x: -234, y: 2.666668}
+    position: {x: -43, y: -13}
     expandedSlots: []
     expanded: 1
     supecollapsed: 0
@@ -1975,7 +1975,7 @@ MonoBehaviour:
     linkedSlots:
     - outputSlot: {fileID: 8926484042661614668}
       inputSlot: {fileID: 8926484042661614692}
-    position: {x: -468.66666, y: 140}
+    position: {x: -278, y: 124}
     expandedSlots: []
     expanded: 1
     supecollapsed: 0
@@ -2029,7 +2029,7 @@ MonoBehaviour:
   m_UIIgnoredErrors: []
   m_Parent: {fileID: 114350483966674976}
   m_Children: []
-  m_UIPosition: {x: -24, y: 25}
+  m_UIPosition: {x: 167, y: 9}
   m_UICollapsed: 0
   m_UISuperCollapsed: 0
   m_InputSlots:
@@ -2263,7 +2263,7 @@ MonoBehaviour:
   m_UIIgnoredErrors: []
   m_Parent: {fileID: 114350483966674976}
   m_Children: []
-  m_UIPosition: {x: -237, y: 71}
+  m_UIPosition: {x: -46, y: 55}
   m_UICollapsed: 0
   m_UISuperCollapsed: 0
   m_InputSlots:
@@ -2503,7 +2503,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: True
+      m_SerializableObject: False
     m_Space: -1
   m_Property:
     name: _vfx_enabled

@@ -764,6 +764,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
             lightUv = lightSpace.rgb / lightSpace.a;
             lightUv *= 0.5;
             lightUv += 0.5;
+            lightUv.xy += uvOffset;
         
             tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, tempMask);
 
@@ -775,7 +776,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
                     fallOffRange = 1 - dist;
                     highestMask = tempMask;
                     mask = tempMask;
-                    finalUV = lightUv + uvOffset;
+                    finalUV = lightUv;
                     lowestDist = dist;
                     output = tempOutput;
                     output.r += lightInformation.lightIDMultiplier;
@@ -788,6 +789,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
             lightUv = lightSpace.rgb / lightSpace.a;
             lightUv *= 0.5;
             lightUv += 0.5;
+            lightUv.xy += uvOffset;
 
             tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, tempMask);
 
@@ -798,7 +800,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
                     fallOffRange = 1 - dist;
                     highestMask = tempMask;
                     mask = tempMask;
-                    finalUV = lightUv + uvOffset;
+                    finalUV = lightUv;
                     lowestDist = dist;
                     output = tempOutput;
                     output.r += lightInformation.lightIDMultiplier;

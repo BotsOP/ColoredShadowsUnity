@@ -55,8 +55,9 @@ Material:
     - _ShadowID: 1
     m_Colors:
     - _Color: {r: 1, g: 0, b: 0, a: 0}
-    - _Tiling: {r: 10, g: 10, b: 0, a: 0}
-    - _Vector2: {r: 0, g: 0, b: 0, a: 0}
+    - _Tiling: {r: 50, g: 50, b: 0, a: 0}
+    - _Vector2: {r: -0.04, g: -0.06, b: 0, a: 0}
+    - _Vector3: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &7136247168215522961

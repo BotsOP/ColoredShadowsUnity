@@ -8,6 +8,7 @@ namespace ColoredShadows.Scripts
     public class CustomLightEditor : Editor
     {
         private bool showAdvancedSettings = false;
+        private bool showVFXSettings = false;
         
         // Serialized Properties
         private SerializedProperty lightIndexProp;
@@ -24,6 +25,9 @@ namespace ColoredShadows.Scripts
         private SerializedProperty shadowCastingMaskProp;
         private SerializedProperty shadowReceivingMaskProp;
         private SerializedProperty customValuesProp;
+        private SerializedProperty enableVFXSupportProp;
+        private SerializedProperty visualEffectsProp;
+        private SerializedProperty amountPixelsToSkipPerSampleProp;
         
         void OnEnable()
         {
@@ -36,30 +40,29 @@ namespace ColoredShadows.Scripts
             fovProp = serializedObject.FindProperty("fov");
             aspectRatioProp = serializedObject.FindProperty("aspectRatio");
             fallOffRangeProp = serializedObject.FindProperty("fallOffRange");
-            addShadowIDProp = serializedObject.FindProperty("addShadowID");
+            addShadowIDProp = serializedObject.FindProperty("addToShadowID");
             shadowTextureSizeProp = serializedObject.FindProperty("shadowTextureSize");
             overrideShaderProp = serializedObject.FindProperty("overrideShader");
             shadowCastingMaskProp = serializedObject.FindProperty("shadowCastingMask");
             shadowReceivingMaskProp = serializedObject.FindProperty("shadowReceivingMask");
             customValuesProp = serializedObject.FindProperty("customValues");
+            enableVFXSupportProp = serializedObject.FindProperty("enableVFXSupport");
+            visualEffectsProp = serializedObject.FindProperty("visualEffects");
+            amountPixelsToSkipPerSampleProp = serializedObject.FindProperty("amountPixelsToSkipPerSample");
         }
         
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
             
-            // Light Index (read-only)
             GUI.enabled = false;
             EditorGUILayout.PropertyField(lightIndexProp);
             GUI.enabled = true;
             
-            // Light Mode
             EditorGUILayout.PropertyField(lightModeProp);
             
-            // Light Mode dependent properties in grey rect
             EditorGUILayout.Space(5);
             
-            // Create grey background
             Color originalColor = GUI.backgroundColor;
             GUI.backgroundColor = new Color(0.8f, 0.8f, 0.8f, 0.3f);
             
@@ -126,6 +129,18 @@ namespace ColoredShadows.Scripts
                 }
                 
                 EditorGUI.indentLevel--;
+            }
+            
+            showVFXSettings = EditorGUILayout.Foldout(showVFXSettings, "VFX Settings", true, EditorStyles.foldoutHeader);
+
+            if (showVFXSettings)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(enableVFXSupportProp);
+                GUI.enabled = enableVFXSupportProp.boolValue;
+                EditorGUILayout.PropertyField(amountPixelsToSkipPerSampleProp);
+                EditorGUILayout.PropertyField(visualEffectsProp);
+                GUI.enabled = true;
             }
             
             // Apply changes
