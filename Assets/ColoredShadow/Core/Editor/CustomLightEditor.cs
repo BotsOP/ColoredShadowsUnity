@@ -27,7 +27,7 @@ namespace ColoredShadows.Scripts
         private SerializedProperty customValuesProp;
         private SerializedProperty enableVFXSupportProp;
         private SerializedProperty visualEffectsProp;
-        private SerializedProperty amountPixelsToSkipPerSampleProp;
+        private SerializedProperty vfxSamplingSizeProp;
         
         void OnEnable()
         {
@@ -48,7 +48,7 @@ namespace ColoredShadows.Scripts
             customValuesProp = serializedObject.FindProperty("customValues");
             enableVFXSupportProp = serializedObject.FindProperty("enableVFXSupport");
             visualEffectsProp = serializedObject.FindProperty("visualEffects");
-            amountPixelsToSkipPerSampleProp = serializedObject.FindProperty("amountPixelsToSkipPerSample");
+            vfxSamplingSizeProp = serializedObject.FindProperty("vfxSamplingSize");
         }
         
         public override void OnInspectorGUI()
@@ -138,7 +138,15 @@ namespace ColoredShadows.Scripts
                 EditorGUI.indentLevel++;
                 EditorGUILayout.PropertyField(enableVFXSupportProp);
                 GUI.enabled = enableVFXSupportProp.boolValue;
-                EditorGUILayout.PropertyField(amountPixelsToSkipPerSampleProp);
+                int maxValue = shadowTextureSizeProp.intValue;
+                int sliderValue = EditorGUILayout.IntSlider(
+                    vfxSamplingSizeProp.displayName,
+                    vfxSamplingSizeProp.intValue,
+                    1,
+                    maxValue
+                );
+                vfxSamplingSizeProp.intValue = Mathf.ClosestPowerOfTwo(sliderValue);
+                
                 EditorGUILayout.PropertyField(visualEffectsProp);
                 GUI.enabled = true;
             }

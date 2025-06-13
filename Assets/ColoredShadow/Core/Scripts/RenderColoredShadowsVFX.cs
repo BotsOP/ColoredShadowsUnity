@@ -41,8 +41,7 @@ namespace ColoredShadows.Scripts
             this.cs = cs;
 
             copyDepthPass = new CopyDepthPass(renderPassEvent, Shader.Find("Hidden/Universal Render Pipeline/CopyDepth"));
-
-            outputBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Append, 1024 * 1024, sizeof(float) * 3);
+            
             debugBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, sizeof(float));
             Debug.Log($"Create");
         }
@@ -137,9 +136,11 @@ namespace ColoredShadows.Scripts
             cgContext.cmd.SetComputeMatrixParam(data.cs, "_InvProjViewMatrix1", Matrix4x4.Inverse(data.projMatrix * data.viewMatrix));
             cgContext.cmd.SetComputeFloatParam(data.cs, "_NearPlane", data.nearPlane);
             cgContext.cmd.SetComputeFloatParam(data.cs, "_FarPlane", data.farPlane);
-            cgContext.cmd.SetComputeIntParam(data.cs, "_AmountPixelsToSkipPerSample", data.amountPixelsToSkipPerSample);
+            int amountPixelsToSkipPerSample = Mathf.Clamp(data.vfxSamplingSize, 1, data.textureSize);
+            amountPixelsToSkipPerSample = data.textureSize / amountPixelsToSkipPerSample;
+            cgContext.cmd.SetComputeIntParam(data.cs, "_AmountPixelsToSkipPerSample", amountPixelsToSkipPerSample);
             
-            int threadGroupSize = Mathf.CeilToInt(data.textureSize / 32f / data.amountPixelsToSkipPerSample);
+            int threadGroupSize = Mathf.CeilToInt(data.textureSize / 32f / amountPixelsToSkipPerSample);
 
             if (data.lightMode == LightMode.Point)
             {
@@ -225,6 +226,17 @@ namespace ColoredShadows.Scripts
             TextureHandle destinationColorRT;
             TextureHandle destinationDepthRT;
             int textureXMultiplier = 1;
+
+            int vfxSamplingSize = Mathf.Max(customLight.vfxSamplingSize, 1);
+            if (outputBuffer == null || outputBuffer.count != customLight.vfxSamplingSize * customLight.vfxSamplingSize)
+            {
+                outputBuffer?.Release();
+                outputBuffer = new GraphicsBuffer(
+                    GraphicsBuffer.Target.Append,
+                    vfxSamplingSize * vfxSamplingSize,
+                    sizeof(float) * 3
+                );
+            }
 
             filteringSettings.layerMask = customLight.shadowCastingMask;
         
@@ -322,7 +334,7 @@ namespace ColoredShadows.Scripts
                 });
             }
 
-            if (customLight.enableVFXSupport)
+            if (customLight.enableVFXSupport && outputBuffer.IsValid())
             {
                 DoVFXPrepPass();
             }
@@ -410,7 +422,7 @@ namespace ColoredShadows.Scripts
         
             
 
-                Vector3[] output = new Vector3[1024];
+                Vector3[] output = new Vector3[1];
                 int[] outputDebug = new int[1];
                 debugBuffer.GetData(outputDebug);
                 debugBuffer.SetData(new int[1]);
@@ -434,7 +446,7 @@ namespace ColoredShadows.Scripts
                     passData.lightMode = customLight.lightMode;
                     passData.farPlane = customLight.farPlane;
                     passData.nearPlane = customLight.nearPlane;
-                    passData.amountPixelsToSkipPerSample = customLight.amountPixelsToSkipPerSample;
+                    passData.vfxSamplingSize = vfxSamplingSize;
                     builder.AllowPassCulling(false);
                     builder.UseTexture(destinationColor);
                     builder.UseTexture(destinationDepth);
@@ -497,7 +509,7 @@ namespace ColoredShadows.Scripts
             internal Matrix4x4 viewMatrix;
             internal float nearPlane;
             internal float farPlane;
-            internal int amountPixelsToSkipPerSample;
+            internal int vfxSamplingSize;
             internal int textureSize;
             internal LightMode lightMode;
         }

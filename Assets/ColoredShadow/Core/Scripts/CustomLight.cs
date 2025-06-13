@@ -37,7 +37,8 @@ namespace ColoredShadows.Scripts
         [SerializeField] public List<float> customValues;
         [SerializeField] public bool enableVFXSupport;
         [SerializeField] public List<VisualEffect> visualEffects;
-        [SerializeField] public int amountPixelsToSkipPerSample = 8;
+        [SerializeField] public int vfxSamplingSize = 256;
+        [SerializeField] public int sliderVFXSamplingSize = 1;
 
         public float nearPlane = 1;
 
@@ -88,8 +89,7 @@ namespace ColoredShadows.Scripts
                 return;
             
             Handles.BeginGUI();
-
-            // Define position for the RenderTexture (bottom-left corner)
+            
             float crossSection = Vector2.Distance(Vector2.zero, new Vector2(sceneView.cameraViewport.width, sceneView.cameraViewport.height));
             int textureSize = (int)(crossSection / 10.0f);
             Texture shadowMap = Shader.GetGlobalTexture("_ColoredShadowMap" + lightIndex);

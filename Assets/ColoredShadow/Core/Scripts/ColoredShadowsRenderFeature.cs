@@ -66,19 +66,6 @@ namespace ColoredShadows.Scripts
         
             renderer.EnqueuePass(renderShadowObjectsPassPoint);
         }
-    
-        public class CustomShadowData : ContextItem 
-        {
-            public TextureHandle shadowMapDepthFormatted;
-            public TextureHandle shadowMapColorFormatted;
-            public TextureHandle shadowMapID;
-            public override void Reset()
-            {
-                shadowMapDepthFormatted = TextureHandle.nullHandle;
-                shadowMapColorFormatted = TextureHandle.nullHandle;
-                shadowMapID = TextureHandle.nullHandle;
-            }
-        }
 
         protected override void Dispose(bool disposing)
         {
