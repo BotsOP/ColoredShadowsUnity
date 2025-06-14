@@ -1487,7 +1487,6 @@ GameObject:
   - component: {fileID: 948216553}
   - component: {fileID: 948216552}
   - component: {fileID: 948216551}
-  - component: {fileID: 948216550}
   m_Layer: 7
   m_Name: Cube (8)
   m_TagString: Untagged
@@ -1495,27 +1494,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!65 &948216550
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 948216549}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &948216551
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1577,13 +1555,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 948216549}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.5647471, y: 0.40399963, z: 0.39346594, w: 0.6025194}
-  m_LocalPosition: {x: 8.18, y: 3.33, z: 4.07}
-  m_LocalScale: {x: 1.2830926, y: 1.2830926, z: 1.2830926}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 14.81, y: 2.75, z: 2.97}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: -86.822, y: 49.923, z: 18.758}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1003626692
 GameObject:
   m_ObjectHideFlags: 0
@@ -2955,7 +2933,7 @@ VisualEffect:
       m_Array: []
     m_Int:
       m_Array:
-      - m_Value: 4830
+      - m_Value: 3564
         m_Name: _ShadowPositionsCount
         m_Overridden: 1
     m_Matrix4x4f:
@@ -3200,6 +3178,114 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1066076852}
   m_LocalEulerAnglesHint: {x: -13.444, y: 242.071, z: -28.112}
+--- !u!1 &1991287130
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1991287134}
+  - component: {fileID: 1991287133}
+  - component: {fileID: 1991287132}
+  - component: {fileID: 1991287131}
+  m_Layer: 0
+  m_Name: Sphere
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!135 &1991287131
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1991287130}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &1991287132
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1991287130}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: f8251e327aa564c4e83660fdbbef9365, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1991287133
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1991287130}
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &1991287134
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1991287130}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.04597195, y: -0.69302154, z: 0.5607972, w: -0.45068207}
+  m_LocalPosition: {x: 17.054, y: 0.457, z: 6.287}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 54.958, y: 86.484, z: 309.702}
 --- !u!1 &2023742564
 GameObject:
   m_ObjectHideFlags: 0
@@ -3379,14 +3465,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1110555675271079634}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.1605349, y: 0.8071873, z: -0.25525945, w: 0.5074642}
-  m_LocalPosition: {x: 6.98, y: 6.76, z: 6.38}
+  m_LocalRotation: {x: -0.3088687, y: -0.24855776, z: 0.083964035, w: -0.9142042}
+  m_LocalPosition: {x: 12.67, y: 5.49, z: -0.44}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 410087041}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 35.101, y: -244.312, z: 0.007}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &7775270902766923327
 Camera:
   m_ObjectHideFlags: 0
@@ -3451,10 +3537,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lightIndex: 0
-  lightMode: 2
+  lightMode: 1
   radius: 10
   farPlane: 31.03
-  size: 10
+  size: 5
   fov: 60
   aspectRatio: 1
   fallOffRange: 50
@@ -3474,7 +3560,7 @@ MonoBehaviour:
   vfxSamplingSize: 256
   sliderVFXSamplingSize: 6
   nearPlane: 1
-  vfxAppendCount: 4830
+  vfxAppendCount: 3564
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -3499,3 +3585,4 @@ SceneRoots:
   - {fileID: 1106841096}
   - {fileID: 948216553}
   - {fileID: 446019881}
+  - {fileID: 1991287134}
