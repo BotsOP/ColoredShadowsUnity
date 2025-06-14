@@ -30,6 +30,8 @@ namespace ColoredShadows.Scripts
         private GraphicsBuffer outputBuffer;
         private GraphicsBuffer debugBuffer;
         private ComputeShader cs;
+
+        private Shader overrideVFXShader;
     
         public RenderColoredShadowsVFX(string profilerTag, ComputeShader cs, LightInformation[] lightInformations, GraphicsBuffer lightInformationBuffer)            
         {
@@ -41,6 +43,7 @@ namespace ColoredShadows.Scripts
             this.cs = cs;
 
             copyDepthPass = new CopyDepthPass(renderPassEvent, Shader.Find("Hidden/Universal Render Pipeline/CopyDepth"));
+            overrideVFXShader = Shader.Find("Shader Graphs/UnlitColShadow");
             
             debugBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, sizeof(float));
         }
@@ -200,6 +203,7 @@ namespace ColoredShadows.Scripts
             }
 
             filteringSettings.layerMask = customLight.shadowReceivingMask;
+            drawingSettings.overrideShader = overrideVFXShader;
             CreateRendererListWithRenderStateBlock(renderGraph, ref renderingData.cullResults, drawingSettings, filteringSettings, renderStateBlock, ref passData.rendererListHdlVFX1);
             if (customLight.lightMode == LightMode.Point)
             {
@@ -233,7 +237,7 @@ namespace ColoredShadows.Scripts
                 outputBuffer = new GraphicsBuffer(
                     GraphicsBuffer.Target.Append,
                     vfxSamplingSize * vfxSamplingSize,
-                    sizeof(float) * 3
+                    sizeof(float) * 8
                 );
             }
 
@@ -419,13 +423,13 @@ namespace ColoredShadows.Scripts
             
                 // copyDepthPass.Render(renderGraph, frameData, destinationDepthRT, destinationDepth);
 
-                Vector3[] output = new Vector3[1];
                 int[] outputDebug = new int[1];
                 debugBuffer.GetData(outputDebug);
                 debugBuffer.SetData(new int[1]);
-                outputBuffer.GetData(output);
                 outputBuffer.SetCounterValue(0);
-                // Debug.Log($"{outputDebug[0]}");
+                ShadowData[] output = new ShadowData[outputDebug[0]];
+                outputBuffer.GetData(output);
+                Debug.Log($"{outputDebug[0]}");
                 // Debug.Log($"{output[0]}");
             
                 BufferHandle outputHandle = renderGraph.ImportBuffer(outputBuffer);
@@ -453,6 +457,13 @@ namespace ColoredShadows.Scripts
                 customLight.vfxAppendCount = outputDebug[0];
             }
         }
+        
+        struct ShadowData
+        {
+            public Vector3 pos;
+            public Vector3 normal;
+            public Vector2 uv;
+        };
         
         static ShaderTagId[] s_ShaderTagValues = new ShaderTagId[1];
         static RenderStateBlock[] s_RenderStateBlocks = new RenderStateBlock[1];

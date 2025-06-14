@@ -1,9 +1,16 @@
 #pragma kernel SampleShadowMap
 #pragma kernel SampleShadowCubeMap
 
+struct ShadowData
+{
+    float3 pos;
+    float3 normal;
+    float2 uv;
+};
+
 Texture2D<float4> _ShadowMap;
 Texture2D<float> _DepthMap;
-AppendStructuredBuffer<float3> _OutputBuffer;
+AppendStructuredBuffer<ShadowData> _OutputBuffer;
 RWStructuredBuffer<int> _DebugBuffer;
 
 float4x4 _InvProjViewMatrix1;
@@ -23,23 +30,22 @@ float remap(float value, float oldMin, float oldMax, float newMin, float newMax)
     return newMin + (value - oldMin) * (newMax - newMin) / (oldMax - oldMin);
 }
 
+float3 CalculateWorldNormal(float3 pos1, float3 pos2, float3 pos3)
+{
+    float3 edge1 = pos2 - pos1;
+    float3 edge2 = pos3 - pos1;
+    float3 normal = cross(edge1, edge2);
+    return normalize(normal);
+}
+
 float3 DepthToWorldPositionViewProj(float4x4 invProjViewMatrix, float2 screenUV, float depth)
 {
-    // Convert screen UV to NDC
     float2 ndcXY = screenUV * 2.0 - 1;
-
-    // ndcXY.y = 1 - ndcXY.y;
-    
-    // Create NDC position
     float worldZDistance = _NearPlane + (depth * (_FarPlane - _NearPlane));
-    float ndcZ = ((worldZDistance - _NearPlane) * 2.0f / (_FarPlane - _NearPlane)) - 1.0f;
+    float ndcZ = (worldZDistance - _NearPlane) * 2.0f / (_FarPlane - _NearPlane) - 1.0f;
     ndcZ *= -1;
     float4 ndcPos = float4(ndcXY.x, ndcXY.y, ndcZ, 1.0);
-    
-    // Transform directly from NDC to world space
     float4 worldPos = mul(invProjViewMatrix, ndcPos);
-    
-    // Perspective divide
     worldPos.xyz /= worldPos.w;
     
     return worldPos.xyz;
@@ -51,48 +57,58 @@ void SampleShadowMap (uint2 id : SV_DispatchThreadID)
     id *= _AmountPixelsToSkipPerSample;
     float4 shadow = _ShadowMap[id];
     float depth = _DepthMap[id];
+    float depthX = _DepthMap[id + uint2(1, 0)];
+    float depthY = _DepthMap[id + uint2(0, 1)];
     if (depth > 0 && shadow.r > 0)
     {
         InterlockedAdd(_DebugBuffer[0], 1);
         float2 uv = float2((float)id.x / _TextureSizeX, (float)id.y / _TextureSizeY);
-        _OutputBuffer.Append(DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv, depth));
+        float3 worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv, depth);
+        float3 worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv + float2(1.0 / _TextureSizeX, 0), depthX);
+        float3 worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv + float2(0, 1.0 / _TextureSizeY), depthY);
+
+        ShadowData shadowData;
+        shadowData.pos = worldPos;
+        shadowData.normal = CalculateWorldNormal(worldPos, worldPosY, worldPosX);
+        shadowData.uv = float2(0, 0);
+        _OutputBuffer.Append(shadowData);
     }
 }
 
 [numthreads(32,32,1)]
 void SampleShadowCubeMap (uint2 id : SV_DispatchThreadID)
 {
-    id *= _AmountPixelsToSkipPerSample;
-    float4 shadow = _ShadowMap[id];
-    float depth = _DepthMap[id];
-    if (depth > 0 && shadow.r > 0)
-    {
-        InterlockedAdd(_DebugBuffer[0], 1);
-        int faceIndex = floor(id.x / (_TextureSizeX / 6));
-        float2 uv = float2((float)id.x / _TextureSizeX, (float)id.y / _TextureSizeY);
-        uv.x = remap(uv.x, 1/6.0 * faceIndex, 1/6.0 * (faceIndex + 1), 0, 1);
-        switch (faceIndex)
-        {
-        case 0 :
-            _OutputBuffer.Append(DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv, depth));
-            break;
-        case 1 :
-            _OutputBuffer.Append(DepthToWorldPositionViewProj(_InvProjViewMatrix2, uv, depth));
-            break;
-        case 2 :
-            _OutputBuffer.Append(DepthToWorldPositionViewProj(_InvProjViewMatrix3, uv, depth));
-            break;
-        case 3 :
-            _OutputBuffer.Append(DepthToWorldPositionViewProj(_InvProjViewMatrix4, uv, depth));
-            break;
-        case 4 :
-            _OutputBuffer.Append(DepthToWorldPositionViewProj(_InvProjViewMatrix5, uv, depth));
-            break;
-        case 5 :
-            _OutputBuffer.Append(DepthToWorldPositionViewProj(_InvProjViewMatrix6, uv, depth));
-            break;
-        default:
-            break;
-        }
-    }
+    // id *= _AmountPixelsToSkipPerSample;
+    // float4 shadow = _ShadowMap[id];
+    // float depth = _DepthMap[id];
+    // if (depth > 0 && shadow.r > 0)
+    // {
+    //     InterlockedAdd(_DebugBuffer[0], 1);
+    //     int faceIndex = floor(id.x / (_TextureSizeX / 6));
+    //     float2 uv = float2((float)id.x / _TextureSizeX, (float)id.y / _TextureSizeY);
+    //     uv.x = remap(uv.x, 1/6.0 * faceIndex, 1/6.0 * (faceIndex + 1), 0, 1);
+    //     switch (faceIndex)
+    //     {
+    //     case 0 :
+    //         _OutputBuffer.Append(DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv, depth));
+    //         break;
+    //     case 1 :
+    //         _OutputBuffer.Append(DepthToWorldPositionViewProj(_InvProjViewMatrix2, uv, depth));
+    //         break;
+    //     case 2 :
+    //         _OutputBuffer.Append(DepthToWorldPositionViewProj(_InvProjViewMatrix3, uv, depth));
+    //         break;
+    //     case 3 :
+    //         _OutputBuffer.Append(DepthToWorldPositionViewProj(_InvProjViewMatrix4, uv, depth));
+    //         break;
+    //     case 4 :
+    //         _OutputBuffer.Append(DepthToWorldPositionViewProj(_InvProjViewMatrix5, uv, depth));
+    //         break;
+    //     case 5 :
+    //         _OutputBuffer.Append(DepthToWorldPositionViewProj(_InvProjViewMatrix6, uv, depth));
+    //         break;
+    //     default:
+    //         break;
+    //     }
+    // }
 }

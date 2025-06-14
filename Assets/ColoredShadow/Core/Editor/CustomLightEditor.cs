@@ -109,7 +109,6 @@ namespace ColoredShadows.Scripts
                 EditorGUILayout.PropertyField(shadowTextureSizeProp);
                 EditorGUILayout.PropertyField(overrideShaderProp);
                 EditorGUILayout.PropertyField(shadowCastingMaskProp);
-                EditorGUILayout.PropertyField(shadowReceivingMaskProp);
                 
                 // Custom Values List - Standard Unity List View
                 EditorGUILayout.Space(5);
@@ -138,6 +137,7 @@ namespace ColoredShadows.Scripts
                 EditorGUI.indentLevel++;
                 EditorGUILayout.PropertyField(enableVFXSupportProp);
                 GUI.enabled = enableVFXSupportProp.boolValue;
+                
                 int maxValue = shadowTextureSizeProp.intValue;
                 int sliderValue = EditorGUILayout.IntSlider(
                     vfxSamplingSizeProp.displayName,
@@ -147,6 +147,7 @@ namespace ColoredShadows.Scripts
                 );
                 vfxSamplingSizeProp.intValue = Mathf.ClosestPowerOfTwo(sliderValue);
                 
+                EditorGUILayout.PropertyField(shadowReceivingMaskProp);
                 EditorGUILayout.PropertyField(visualEffectsProp);
                 GUI.enabled = true;
             }
