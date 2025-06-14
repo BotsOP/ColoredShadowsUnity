@@ -38,7 +38,8 @@ namespace ColoredShadows.Scripts
         [SerializeField] public bool enableVFXSupport;
         [SerializeField] public List<VisualEffect> visualEffects;
         [SerializeField] public int vfxSamplingSize = 256;
-        [SerializeField] public int sliderVFXSamplingSize = 1;
+        [SerializeField] public float uvMultipler = 1;
+        [SerializeField] public bool relativeUVSize = true;
 
         public float nearPlane = 1;
 

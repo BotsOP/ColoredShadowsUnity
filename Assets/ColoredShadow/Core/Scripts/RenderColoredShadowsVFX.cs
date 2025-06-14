@@ -138,6 +138,8 @@ namespace ColoredShadows.Scripts
             cgContext.cmd.SetComputeMatrixParam(data.cs, "_InvProjViewMatrix1", Matrix4x4.Inverse(data.projMatrix * data.viewMatrix));
             cgContext.cmd.SetComputeFloatParam(data.cs, "_NearPlane", data.nearPlane);
             cgContext.cmd.SetComputeFloatParam(data.cs, "_FarPlane", data.farPlane);
+            cgContext.cmd.SetComputeFloatParam(data.cs, "_ShadowUVMultiplier", data.uvMultipler / 100);
+            cgContext.cmd.SetComputeIntParam(data.cs, "_RelativeUVSize", data.relativeUVSize ? 1 : 0);
             int amountPixelsToSkipPerSample = Mathf.Clamp(data.vfxSamplingSize, 1, data.textureSize);
             amountPixelsToSkipPerSample = data.textureSize / amountPixelsToSkipPerSample;
             cgContext.cmd.SetComputeIntParam(data.cs, "_AmountPixelsToSkipPerSample", amountPixelsToSkipPerSample);
@@ -237,7 +239,7 @@ namespace ColoredShadows.Scripts
                 outputBuffer = new GraphicsBuffer(
                     GraphicsBuffer.Target.Append,
                     vfxSamplingSize * vfxSamplingSize,
-                    sizeof(float) * 8
+                    sizeof(float) * 9
                 );
             }
 
@@ -427,6 +429,7 @@ namespace ColoredShadows.Scripts
                 debugBuffer.GetData(outputDebug);
                 debugBuffer.SetData(new int[1]);
                 outputBuffer.SetCounterValue(0);
+                
                 ShadowData[] output = new ShadowData[outputDebug[0]];
                 outputBuffer.GetData(output);
                 Debug.Log($"{outputDebug[0]}");
@@ -447,6 +450,8 @@ namespace ColoredShadows.Scripts
                     passData.lightMode = customLight.lightMode;
                     passData.farPlane = customLight.farPlane;
                     passData.nearPlane = customLight.nearPlane;
+                    passData.uvMultipler = customLight.uvMultipler;
+                    passData.relativeUVSize = customLight.relativeUVSize;
                     passData.vfxSamplingSize = vfxSamplingSize;
                     builder.AllowPassCulling(false);
                     builder.UseTexture(destinationColor);
@@ -463,6 +468,7 @@ namespace ColoredShadows.Scripts
             public Vector3 pos;
             public Vector3 normal;
             public Vector2 uv;
+            public float shadowID;
         };
         
         static ShaderTagId[] s_ShaderTagValues = new ShaderTagId[1];
@@ -517,6 +523,8 @@ namespace ColoredShadows.Scripts
             internal Matrix4x4 viewMatrix;
             internal float nearPlane;
             internal float farPlane;
+            internal float uvMultipler;
+            internal bool relativeUVSize;
             internal int vfxSamplingSize;
             internal int textureSize;
             internal LightMode lightMode;
