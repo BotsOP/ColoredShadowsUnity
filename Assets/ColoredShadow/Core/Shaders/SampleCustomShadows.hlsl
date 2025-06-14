@@ -1,6 +1,13 @@
 #ifndef SAMPLE_CUSTOM_CUBEMAP_INCLUDED
 #define SAMPLE_CUSTOM_CUBEMAP_INCLUDED
 
+float remap(float value, float oldMin, float oldMax, float newMin, float newMax)
+{
+    float a = newMin + (value - oldMin) * (newMax - newMin);
+    float b = (oldMax - oldMin);
+    return a / b;
+}
+
 void GetCubemapUV(float3 direction, out float2 uv, out int faceIndex)
 {
     uv = float2(-1, -1);
@@ -75,7 +82,7 @@ Texture2D _ColoredShadowMap9;
 
 float4 SampleColoredShadowMap(float2 uv, int mapIndex, out float mask)
 {
-    float4 output = float4(0, 0, 0, 0);
+    float4 output;
     mask = 0;
     
     switch (mapIndex)
@@ -115,7 +122,7 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, out float mask)
         break;
     }
     
-    mask = saturate(output.r);
+    mask = ceil(saturate(output.r));
     return output;
 }
 
@@ -732,12 +739,13 @@ struct LightInformation
 
 int CurrentAmountCustomLights;
 StructuredBuffer<LightInformation> ColoredShadowLightInformation;
-void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 output, out float2 finalUV, out float3 lightPos, out float fallOffRange, out float mask, out float4 customValues1, out float4 customValues2, out float4 customValues3)
+void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUVMultiplier, bool relativeUVSize, out float4 output, out float2 shadowUV, out float2 finalUV, out float3 lightPos, out float fallOffRange, out float mask, out float4 customValues1, out float4 customValues2, out float4 customValues3)
 {
     output = float4(0, 0, 0, 0);
     lightPos = float3(-999999999, -999999999, -999999999);
     fallOffRange = 0;
     float lowestDist = 99999999;
+    shadowUV = float2(0, 0);
     finalUV = float2(0, 0);
     float highestMask = 0;
     mask = 0;
@@ -773,6 +781,12 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
             {
                 if (dist < lowestDist)
                 {
+                    float shadowSize = relativeUVSize ? tempOutput.a : 1;
+                    shadowSize *= shadowUVMultiplier;
+                    float2 shadowUVX = float2(tempOutput.g - shadowSize, tempOutput.g + shadowSize);
+                    float2 shadowUVY = float2(tempOutput.b - shadowSize, tempOutput.b + shadowSize);
+                    shadowUV = float2(remap(lightUv.x, shadowUVX.x, shadowUVX.y, 0, 1), remap(lightUv.y, shadowUVY.x, shadowUVY.y, 0, 1));
+                    
                     fallOffRange = 1 - dist;
                     highestMask = tempMask;
                     mask = tempMask;
@@ -797,6 +811,12 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
             {
                 if (dist < lowestDist && dist < 1)
                 {
+                    float shadowSize = relativeUVSize ? tempOutput.a : 1;
+                    shadowSize *= shadowUVMultiplier;
+                    float2 shadowUVX = float2(tempOutput.g - shadowSize, tempOutput.g + shadowSize);
+                    float2 shadowUVY = float2(tempOutput.b - shadowSize, tempOutput.b + shadowSize);
+                    shadowUV = float2(remap(lightUv.x, shadowUVX.x, shadowUVX.y, 0, 1), remap(lightUv.y, shadowUVY.x, shadowUVY.y, 0, 1));
+
                     fallOffRange = 1 - dist;
                     highestMask = tempMask;
                     mask = tempMask;
@@ -813,8 +833,8 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
             int faceIndex;
             GetCubemapUV(dir, uv, faceIndex);
             uv += uvOffset;
+            
             float2 cubemapUV = float2((uv.x / 6.0) + ((1.0/6.0) * faceIndex), uv.y);
-            // cubemapUV += uvOffset * float2(1/6.0, 1);
 
             tempOutput = SampleColoredShadowMap(cubemapUV, lightInformation.index, tempMask);
 
@@ -822,6 +842,12 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, out float4 out
             {
                 if (dist < lowestDist && dist < 1)
                 {
+                    float shadowSize = relativeUVSize ? tempOutput.a : 1;
+                    shadowSize *= shadowUVMultiplier;
+                    float2 shadowUVX = float2(tempOutput.g - shadowSize, tempOutput.g + shadowSize);
+                    float2 shadowUVY = float2(tempOutput.b - shadowSize, tempOutput.b + shadowSize);
+                    shadowUV = float2(remap(uv.x, shadowUVX.x, shadowUVX.y, 0, 1), remap(uv.y, shadowUVY.x, shadowUVY.y, 0, 1));
+                    
                     fallOffRange = 1 - dist;
                     highestMask = tempMask * fallOffRange;
                     mask = tempMask;
