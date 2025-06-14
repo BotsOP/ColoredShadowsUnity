@@ -43,7 +43,6 @@ namespace ColoredShadows.Scripts
             copyDepthPass = new CopyDepthPass(renderPassEvent, Shader.Find("Hidden/Universal Render Pipeline/CopyDepth"));
             
             debugBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, sizeof(float));
-            Debug.Log($"Create");
         }
 
         internal void Init(RenderPassEvent renderPassEvent)
@@ -419,8 +418,6 @@ namespace ColoredShadows.Scripts
                 }
             
                 // copyDepthPass.Render(renderGraph, frameData, destinationDepthRT, destinationDepth);
-        
-            
 
                 Vector3[] output = new Vector3[1];
                 int[] outputDebug = new int[1];
