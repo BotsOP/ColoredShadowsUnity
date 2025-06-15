@@ -430,9 +430,9 @@ namespace ColoredShadows.Scripts
                 debugBuffer.SetData(new int[1]);
                 outputBuffer.SetCounterValue(0);
                 
-                ShadowData[] output = new ShadowData[outputDebug[0]];
-                outputBuffer.GetData(output);
-                Debug.Log($"{outputDebug[0]}");
+                // ShadowData[] output = new ShadowData[outputDebug[0]];
+                // outputBuffer.GetData(output);
+                // Debug.Log($"{outputDebug[0]}");
                 // Debug.Log($"{output[0]}");
             
                 BufferHandle outputHandle = renderGraph.ImportBuffer(outputBuffer);
@@ -450,7 +450,7 @@ namespace ColoredShadows.Scripts
                     passData.lightMode = customLight.lightMode;
                     passData.farPlane = customLight.farPlane;
                     passData.nearPlane = customLight.nearPlane;
-                    passData.uvMultipler = customLight.uvMultipler;
+                    passData.uvMultipler = customLight.vfxUVSize;
                     passData.relativeUVSize = customLight.relativeUVSize;
                     passData.vfxSamplingSize = vfxSamplingSize;
                     builder.AllowPassCulling(false);
