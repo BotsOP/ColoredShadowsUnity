@@ -28,7 +28,7 @@ namespace ColoredShadows.Scripts
         private SerializedProperty enableVFXSupportProp;
         private SerializedProperty visualEffectsProp;
         private SerializedProperty vfxSamplingSizeProp;
-        private SerializedProperty uvMultiplerProp;
+        private SerializedProperty vfxUVSizeProp;
         private SerializedProperty relativeUVSizeProp;
         
         void OnEnable()
@@ -51,7 +51,7 @@ namespace ColoredShadows.Scripts
             enableVFXSupportProp = serializedObject.FindProperty("enableVFXSupport");
             visualEffectsProp = serializedObject.FindProperty("visualEffects");
             vfxSamplingSizeProp = serializedObject.FindProperty("vfxSamplingSize");
-            uvMultiplerProp = serializedObject.FindProperty("uvMultipler");
+            vfxUVSizeProp = serializedObject.FindProperty("vfxUVSize");
             relativeUVSizeProp = serializedObject.FindProperty("relativeUVSize");
         }
         
@@ -150,7 +150,7 @@ namespace ColoredShadows.Scripts
                     maxValue
                 );
                 vfxSamplingSizeProp.intValue = Mathf.ClosestPowerOfTwo(sliderValue);
-                EditorGUILayout.PropertyField(uvMultiplerProp);
+                EditorGUILayout.PropertyField(vfxUVSizeProp);
                 EditorGUILayout.PropertyField(relativeUVSizeProp);
                 
                 EditorGUILayout.PropertyField(shadowReceivingMaskProp);
