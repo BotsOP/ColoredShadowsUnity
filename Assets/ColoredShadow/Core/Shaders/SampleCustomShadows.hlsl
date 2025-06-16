@@ -67,6 +67,15 @@ void GetCubemapUV(float3 direction, out float2 uv, out int faceIndex)
     uv = float2(1 - uv.x, uv.y);
 }
 
+float BilinearSampleCompact(float bottomLeft, float bottomRight, float topLeft, float topRight, float2 uv)
+{
+    return lerp(
+        lerp(bottomLeft, bottomRight, uv.x),  // Bottom edge interpolation
+        lerp(topLeft, topRight, uv.x),       // Top edge interpolation
+        uv.y                                 // Vertical interpolation
+    );
+}
+
 SamplerState trilinear_clamp_sampler;
 SamplerState point_clamp_sampler;
 Texture2D _ColoredShadowMap0;
@@ -80,10 +89,10 @@ Texture2D _ColoredShadowMap7;
 Texture2D _ColoredShadowMap8;
 Texture2D _ColoredShadowMap9;
 
-float4 SampleColoredShadowMap(float2 uv, int mapIndex, out float mask)
+float4 SampleColoredShadowMap(float2 uv, int mapIndex)
 {
     float4 output;
-    mask = 0;
+    // mask = 0;
     
     switch (mapIndex)
     {
@@ -122,8 +131,117 @@ float4 SampleColoredShadowMap(float2 uv, int mapIndex, out float mask)
         break;
     }
     
-    mask = ceil(saturate(output.r));
+    // mask = ceil(saturate(output.r));
     return output;
+}
+
+float NinePointBlend(
+    float topLeft,    float topCenter,    float topRight,
+    float midLeft,    float center,       float midRight,
+    float bottomLeft, float bottomCenter, float bottomRight,
+    float2 localUV)
+{
+    // localUV should be from 0-1 within the 3x3 grid cell
+    // where (0,0) is bottom-left and (1,1) is top-right
+    
+    // Determine which quadrant we're in and get interpolation factors
+    float2 gridPos = localUV * 2.0; // Scale to 0-2 range
+    
+    if (gridPos.x <= 1.0 && gridPos.y <= 1.0)
+    {
+        // Bottom-left quadrant
+        float2 t = gridPos; // 0-1 within this quadrant
+        return BilinearSampleCompact(bottomLeft, bottomCenter, midLeft, center, t);
+    }
+    else if (gridPos.x > 1.0 && gridPos.y <= 1.0)
+    {
+        // Bottom-right quadrant
+        float2 t = float2(gridPos.x - 1.0, gridPos.y); // 0-1 within this quadrant
+        return BilinearSampleCompact(bottomCenter, bottomRight, center, midRight, t);
+    }
+    else if (gridPos.x <= 1.0 && gridPos.y > 1.0)
+    {
+        // Top-left quadrant
+        float2 t = float2(gridPos.x, gridPos.y - 1.0); // 0-1 within this quadrant
+        return BilinearSampleCompact(midLeft, center, topLeft, topCenter, t);
+    }
+    else
+    {
+        // Top-right quadrant
+        float2 t = float2(gridPos.x - 1.0, gridPos.y - 1.0); // 0-1 within this quadrant
+        return BilinearSampleCompact(center, midRight, topCenter, topRight, t);
+    }
+}
+
+float2 ConstrainToCardinalDirectionsFast(float2 direction)
+{
+    // Normalize the input direction
+    direction = normalize(direction);
+    
+    // Get absolute values for octant determination
+    float2 abs_dir = abs(direction);
+    
+    // Determine which octant we're in based on which component is larger
+    // and the signs of the components
+    
+    if (abs_dir.x > abs_dir.y)
+    {
+        // Horizontal dominant
+        if (abs_dir.x > abs_dir.y * 2.414) // tan(67.5°) ≈ 2.414
+        {
+            // Pure horizontal: East or West
+            return float2(sign(direction.x), 0.0);
+        }
+        else
+        {
+            // Diagonal: Northeast, Southeast, Northwest, Southwest
+            return normalize(float2(sign(direction.x), sign(direction.y)));
+        }
+    }
+    else
+    {
+        // Vertical dominant
+        if (abs_dir.y > abs_dir.x * 2.414) // tan(67.5°) ≈ 2.414
+        {
+            // Pure vertical: North or South
+            return float2(0.0, sign(direction.y));
+        }
+        else
+        {
+            // Diagonal: Northeast, Southeast, Northwest, Southwest
+            return normalize(float2(sign(direction.x), sign(direction.y)));
+        }
+    }
+}
+
+float GetMask(float2 uv, int mapIndex, int textureSizeX, int textureSizeY, float2 offset = float2(0, 0))
+{
+    float2 texelSize = float2(1, 1) / int2(textureSizeX, textureSizeY);
+    // float2 dir = float2(-1, 0) * length(texelSize);
+    // float2 dir = normalize(float2(uv - offset)) * length(texelSize);
+    // float2 dir = ConstrainToCardinalDirectionsFast(uv - offset) * length(texelSize);
+    // uv += dir;
+    float2 subPixelOffset = ((frac(uv * int2(textureSizeX, textureSizeY)) - 0.5) * -1) / int2(textureSizeX, textureSizeY);
+    float2 centerUV = uv;
+    float2 bottomLeft = uv + subPixelOffset - texelSize;
+    float2 topRight = uv + subPixelOffset + texelSize;
+    float2 localUV = float2(remap(uv.x, bottomLeft.x, topRight.x, 0, 1), remap(uv.y, bottomLeft.y, topRight.y, 0, 1));
+
+    float topLeftSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(-texelSize.x, texelSize.y), mapIndex).r));
+    float topCenterSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(0, texelSize.y), mapIndex).r));
+    float topRightSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(texelSize.x, texelSize.y), mapIndex).r));
+    float midLeftSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(-texelSize.x, 0), mapIndex).r));
+    float midCenterSample = ceil(saturate(SampleColoredShadowMap(centerUV, mapIndex).r));
+    float midRightSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(texelSize.x, 0), mapIndex).r));
+    float bottomLeftSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(-texelSize.x, -texelSize.y), mapIndex).r));
+    float bottomCenterSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(0, -texelSize.y), mapIndex).r));
+    float bottomRightSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(texelSize.x, -texelSize.y), mapIndex).r));
+
+    // float mask2 = (topLeftSample + topCenterSample + topRightSample + topRightSample + midLeftSample + midCenterSample + midRightSample + bottomLeftSample + bottomCenterSample + bottomRightSample) / 9.0;
+
+    float mask = NinePointBlend(topLeftSample, topCenterSample, topRightSample, midLeftSample, midCenterSample, midRightSample, bottomLeftSample, bottomCenterSample, bottomRightSample, localUV);
+
+    return mask;
 }
 
 // float4 SampleColoredShadowMapAA(float2 uv, int mapIndex, int textureSizeX, int textureSizeY, out float mask, int cubemapFaceIndex = -1)
@@ -760,7 +878,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
         float4 tempOutput;
         float4 lightSpace;
         float3 lightUv;
-        float tempMask;
+        float tempMask = 0;
         float textureSizeX = lightInformation.textureSizeX;
         float textureSizeY = lightInformation.textureSizeY;
         float dist = distance(worldPos, lightInformation.lightPos) / lightInformation.fallOffRange;
@@ -774,7 +892,8 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             lightUv += 0.5;
             lightUv.xy += uvOffset;
         
-            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, tempMask);
+            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index);
+            tempMask = GetMask(lightUv.rg, lightInformation.index, lightInformation.textureSizeX, lightInformation.textureSizeX, tempOutput.gb);
 
             if (tempMask > highestMask && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX &&
                 lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY && dist < lowestDist && dist < 1)
@@ -789,7 +908,8 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
                     
                     fallOffRange = 1 - dist;
                     highestMask = tempMask;
-                    mask = tempMask;
+                    // mask = tempMask;
+                    mask = pow(tempMask * ceil(saturate(tempOutput.r)), 4);
                     finalUV = lightUv;
                     lowestDist = dist;
                     output = tempOutput;
@@ -805,7 +925,8 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             lightUv += 0.5;
             lightUv.xy += uvOffset;
 
-            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index, tempMask);
+            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index);
+            tempMask = GetMask(lightUv.rg, lightInformation.index, lightInformation.textureSizeX, lightInformation.textureSizeX);
 
             if (tempMask > highestMask && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX && lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY)
             {
@@ -836,7 +957,8 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             
             float2 cubemapUV = float2((uv.x / 6.0) + ((1.0/6.0) * faceIndex), uv.y);
 
-            tempOutput = SampleColoredShadowMap(cubemapUV, lightInformation.index, tempMask);
+            tempOutput = SampleColoredShadowMap(cubemapUV, lightInformation.index);
+            tempMask = GetMask(cubemapUV, lightInformation.index, lightInformation.textureSizeX * 6, lightInformation.textureSizeX);
 
             if (tempMask > highestMask)
             {

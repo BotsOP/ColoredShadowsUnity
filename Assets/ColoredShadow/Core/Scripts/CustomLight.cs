@@ -48,6 +48,7 @@ namespace ColoredShadows.Scripts
 
         private void OnDrawGizmosSelected()
         {
+            
             Gizmos.matrix = transform.localToWorldMatrix;
             Color farPlaneFillColor = new Color(1, 1, 1, 0.1f);
             Color farPlaneOutlineColor = new Color(1, 1, 1, 0.8f);
