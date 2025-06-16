@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Shader Graphs_ColoredShadowDebug Variant 4
+  m_Name: Shader Graphs_ColoredShadowDebug Variant 6
   m_Shader: {fileID: -6465566751694194690, guid: ae9274ed92eacb041a2f47cd5c89a4c5, type: 3}
   m_Parent: {fileID: 2100000, guid: 59ca09a0c3dd648488125e73103d1a76, type: 2}
   m_ModifiedSerializedProperties: 0
@@ -40,12 +40,14 @@ Material:
     m_Ints: []
     m_Floats:
     - _CubeMap: 0
+    - _ShowMap1: 0
+    - _ShowMap2: 1
     - _ShowMap3: 0
     - _ShowMap4: 0
     - _ShowMap5: 0
     - _ShowMap6: 0
-    - _ShowMap7: 1
-    - _ShowMap8: 1
+    - _ShowMap7: 0
+    - _ShowMap8: 0
     m_Colors: []
   m_BuildTextureStacks: []
   m_AllowLocking: 1

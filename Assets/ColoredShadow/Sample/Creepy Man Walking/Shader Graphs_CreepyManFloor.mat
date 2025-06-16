@@ -53,14 +53,14 @@ Material:
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ScrollSpeed: 0.5
-    - _TextureSize: 4.86
+    - _TextureSize: 2.21
     - _amplitude: 0.07
     - _angle: 48.53
     - _number: 5
     - _wavelength: 4.52
     m_Colors:
     - _Color: {r: 0.8078432, g: 0, b: 0, a: 0}
-    - _position: {r: 1.58, g: 2.3, b: 0, a: 0}
+    - _position: {r: 1.58, g: 2.38, b: 0, a: 0}
     - _tiling: {r: 2.85, g: 2.66, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
