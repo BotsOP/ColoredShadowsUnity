@@ -297,7 +297,14 @@
             "m_Id": "78f04fffddd84adb8f8f21f477a58776"
         }
     ],
-    "m_StickyNoteDatas": [],
+    "m_StickyNoteDatas": [
+        {
+            "m_Id": "b5582e91fbe04d998c4d0b3fd43c1369"
+        },
+        {
+            "m_Id": "e565de6c7f074748afa768428db822dc"
+        }
+    ],
     "m_Edges": [
         {
             "m_OutputSlot": {
@@ -2118,8 +2125,8 @@
     "m_ObjectId": "1cd1f7da39074e27a21dcab4b88b9456",
     "m_Title": "Lerp Spiral",
     "m_Position": {
-        "x": -371.33331298828127,
-        "y": 1232.66650390625
+        "x": -371.33319091796877,
+        "y": 1232.6663818359375
     }
 }
 
@@ -5694,8 +5701,8 @@
     "m_ObjectId": "78f04fffddd84adb8f8f21f477a58776",
     "m_Title": "Body Shadow",
     "m_Position": {
-        "x": -121.33333587646485,
-        "y": -148.0
+        "x": -121.33373260498047,
+        "y": -147.99998474121095
     }
 }
 
@@ -6042,8 +6049,8 @@
     "m_ObjectId": "85fa389e665b497ba3da1e7585ae77bc",
     "m_Title": "Spiral",
     "m_Position": {
-        "x": -618.6666870117188,
-        "y": 691.3333129882813
+        "x": -618.6663818359375,
+        "y": 691.333251953125
     }
 }
 
@@ -6984,7 +6991,7 @@
     "m_ObjectId": "a1f95fbedd0e493ba17f2e89a6368fd3",
     "m_Title": "Eyes and mouth shadow",
     "m_Position": {
-        "x": 256.666748046875,
+        "x": 256.6665344238281,
         "y": -607.3333740234375
     }
 }
@@ -7777,6 +7784,26 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
+    }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.StickyNoteData",
+    "m_ObjectId": "b5582e91fbe04d998c4d0b3fd43c1369",
+    "m_Title": "Sample Shadow+UV+UVsize",
+    "m_Content": "- ShadowID: The ID used to differentiate the shadows. Is Determined by the _ShadowID on the shadow casting object.\n- ShadowUV: UV coordinates mapped to the center of the shadow\n- LlightUV Screen UV relative to the lights camera\n- LightPos: The position of the light that is casting the shadow.\n- FalloffRange: The fall off range set by the user on the light.\n- Mask: Used to blend the shadow with background to prevent jagged edges.\n- CustomOutput1/2/3: The custom values set on the custom light in the advanced settings.\n\n",
+    "m_TextSize": 0,
+    "m_Theme": 0,
+    "m_Position": {
+        "serializedVersion": "2",
+        "x": -728.0,
+        "y": -294.6666564941406,
+        "width": 321.3333435058594,
+        "height": 252.66665649414063
+    },
+    "m_Group": {
+        "m_Id": ""
     }
 }
 
@@ -8652,7 +8679,7 @@
     "m_Title": "Lerp Offset",
     "m_Position": {
         "x": -1554.6666259765625,
-        "y": 208.6665802001953
+        "y": 208.6667022705078
     }
 }
 
@@ -9550,6 +9577,26 @@
     "m_PreviewMode": 0,
     "m_CustomColors": {
         "m_SerializableColors": []
+    }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.StickyNoteData",
+    "m_ObjectId": "e565de6c7f074748afa768428db822dc",
+    "m_Title": "Sample Shadow Input",
+    "m_Content": "- UVOffset: The offset added to the uvs when sampling the shadow map.\n- PosOffset: The offset added to the position before calculating the uvs to sample the shadow map.\n-ShadowUVSize: how zoomed in or zoomed out the ShadowUV should be for texture sampling\n-RelativeUVSize: whether the ShadowUV should scale together with the object size",
+    "m_TextSize": 0,
+    "m_Theme": 0,
+    "m_Position": {
+        "serializedVersion": "2",
+        "x": -1058.6666259765625,
+        "y": -272.0,
+        "width": 230.6666259765625,
+        "height": 205.33334350585938
+    },
+    "m_Group": {
+        "m_Id": ""
     }
 }
 

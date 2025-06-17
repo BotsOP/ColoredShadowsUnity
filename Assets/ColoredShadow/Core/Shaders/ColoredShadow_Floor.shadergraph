@@ -104,10 +104,10 @@
     ],
     "m_StickyNoteDatas": [
         {
-            "m_Id": "c8bdd35bfc85432d8a2cb1a003ec9a60"
+            "m_Id": "9b5cc987a3704354add40950b54c94b6"
         },
         {
-            "m_Id": "65cc8f9b2973476c9e9c2d2f3c5143ad"
+            "m_Id": "17b37be6140040f299be4fd059c76475"
         }
     ],
     "m_Edges": [
@@ -693,6 +693,26 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.StickyNoteData",
+    "m_ObjectId": "17b37be6140040f299be4fd059c76475",
+    "m_Title": "Sample Shadow Input",
+    "m_Content": "- UVOffset: The offset added to the uvs when sampling the shadow map.\n- PosOffset: The offset added to the position before calculating the uvs to sample the shadow map.\n-ShadowUVSize: how zoomed in or zoomed out the ShadowUV should be for texture sampling\n-RelativeUVSize: whether the ShadowUV should scale together with the object size",
+    "m_TextSize": 0,
+    "m_Theme": 0,
+    "m_Position": {
+        "serializedVersion": "2",
+        "x": -368.6666564941406,
+        "y": -408.66668701171877,
+        "width": 230.66665649414063,
+        "height": 205.33334350585938
+    },
+    "m_Group": {
+        "m_Id": ""
+    }
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.DynamicVectorMaterialSlot",
     "m_ObjectId": "1c405718981944cdac1ee6a4d6adbc4a",
     "m_Id": 2,
@@ -948,13 +968,16 @@
             "m_Id": "ab2f107639854982b92e3928b7e09e38"
         },
         {
+            "m_Id": "c78a5330e353401ebac8746d4023bbeb"
+        },
+        {
+            "m_Id": "b22b5ab4e99c4259bb7085759535a1ea"
+        },
+        {
             "m_Id": "72507b6b619a46c69a8c2cc82cf38f50"
         },
         {
             "m_Id": "6b0a661c54534d52984bd5ab233eb816"
-        },
-        {
-            "m_Id": "627736ef8f3e4f388ee7a5ea79800184"
         },
         {
             "m_Id": "83d56e157b4846e58060e2c7a728b1d7"
@@ -991,13 +1014,17 @@
         "84f5be6c-57a2-4589-bc44-dd35ad6599cd",
         "3f7e59f3-c297-4717-8c64-e8ff5553c199",
         "b8f2c004-15da-4257-bba3-c869d0072edf",
-        "bc4257ea-9322-48fc-8bac-41421a8b560b"
+        "bc4257ea-9322-48fc-8bac-41421a8b560b",
+        "574b87b6-05ea-4378-8cbd-125906f9df0e",
+        "36aa711f-fee5-4561-96d7-ecf46a04928f"
     ],
     "m_PropertyIds": [
         960022751,
         507555005,
         1279488437,
-        -1112939687
+        -1112939687,
+        1140770518,
+        146103302
     ],
     "m_Dropdowns": [],
     "m_DropdownSelectedEntries": []
@@ -1491,41 +1518,6 @@
         "w": 0.0
     },
     "m_Labels": []
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
-    "m_ObjectId": "627736ef8f3e4f388ee7a5ea79800184",
-    "m_Id": 7,
-    "m_DisplayName": "ShadowSize",
-    "m_SlotType": 1,
-    "m_Hidden": false,
-    "m_ShaderOutputName": "ShadowSize",
-    "m_StageCapability": 3,
-    "m_Value": 0.0,
-    "m_DefaultValue": 0.0,
-    "m_Labels": []
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.StickyNoteData",
-    "m_ObjectId": "65cc8f9b2973476c9e9c2d2f3c5143ad",
-    "m_Title": "Sample Shadow Input",
-    "m_Content": "- UVOffset: The offset added to the uvs when sampling the shadow map.\n- PosOffset: The offset added to the position before calculating the uvs to sample the shadow map.",
-    "m_TextSize": 0,
-    "m_Theme": 0,
-    "m_Position": {
-        "serializedVersion": "2",
-        "x": -337.3333435058594,
-        "y": -398.0,
-        "width": 200.00001525878907,
-        "height": 159.99998474121095
-    },
-    "m_Group": {
-        "m_Id": ""
-    }
 }
 
 {
@@ -2388,6 +2380,26 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.StickyNoteData",
+    "m_ObjectId": "9b5cc987a3704354add40950b54c94b6",
+    "m_Title": "Sample Shadow+UV+UVsize",
+    "m_Content": "- ShadowID: The ID used to differentiate the shadows. Is Determined by the _ShadowID on the shadow casting object.\n- ShadowUV: UV coordinates mapped to the center of the shadow\n- LlightUV Screen UV relative to the lights camera\n- LightPos: The position of the light that is casting the shadow.\n- FalloffRange: The fall off range set by the user on the light.\n- Mask: Used to blend the shadow with background to prevent jagged edges.\n- CustomOutput1/2/3: The custom values set on the custom light in the advanced settings.\n\n",
+    "m_TextSize": 0,
+    "m_Theme": 0,
+    "m_Position": {
+        "serializedVersion": "2",
+        "x": -38.0,
+        "y": -431.3333435058594,
+        "width": 321.3333435058594,
+        "height": 252.6666717529297
+    },
+    "m_Group": {
+        "m_Id": ""
+    }
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "9df07d24f2ef4ed9bca8c2d6130409ea",
     "m_Id": 4,
@@ -2672,6 +2684,20 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.BooleanMaterialSlot",
+    "m_ObjectId": "b22b5ab4e99c4259bb7085759535a1ea",
+    "m_Id": 146103302,
+    "m_DisplayName": "RelativeUVSize",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "_RelativeUVSize",
+    "m_StageCapability": 3,
+    "m_Value": true,
+    "m_DefaultValue": false
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.NormalMaterialSlot",
     "m_ObjectId": "bace0d43f0bd4f85b64fd890a3c66d9b",
     "m_Id": 0,
@@ -2817,6 +2843,21 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
+    "m_ObjectId": "c78a5330e353401ebac8746d4023bbeb",
+    "m_Id": 1140770518,
+    "m_DisplayName": "ShadowUVSize",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "_ShadowUVSize",
+    "m_StageCapability": 3,
+    "m_Value": 1.0,
+    "m_DefaultValue": 0.0,
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector4MaterialSlot",
     "m_ObjectId": "c79837b2256a40e69416077ba4cef7df",
     "m_Id": 0,
@@ -2897,26 +2938,6 @@
     "m_Value": 0.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.StickyNoteData",
-    "m_ObjectId": "c8bdd35bfc85432d8a2cb1a003ec9a60",
-    "m_Title": "Sample Shadow+UV+UVsize",
-    "m_Content": "- ShadowID: The ID used to differentiate the shadows. Is Determined by the _ShadowID on the shadow casting object.\n- ShadowUV: The middle UV coordinate relative to the lightUV (used for shadow texture mapping).\n- ShadowSize: The world distance between world min bounds and world max bounds of the object (used for shadow texture mapping).\n- LightUV: The UV coordinate that was used to sample the shadow map (used for shadow texture mapping).\n- LightPos: The position of the light that is casting the shadow.\n- FalloffRange: The fall off range set by the user on the light.\n- Anti Aliasing: Used to blend the shadow with background to prevent jagged edges.\n\n",
-    "m_TextSize": 0,
-    "m_Theme": 0,
-    "m_Position": {
-        "serializedVersion": "2",
-        "x": -58.66666793823242,
-        "y": -437.3333435058594,
-        "width": 321.33331298828127,
-        "height": 252.6666717529297
-    },
-    "m_Group": {
-        "m_Id": ""
-    }
 }
 
 {

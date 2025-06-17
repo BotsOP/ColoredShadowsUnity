@@ -44,7 +44,7 @@ Material:
     - _ShowMap4: 0
     - _ShowMap5: 0
     - _ShowMap6: 0
-    - _ShowMap7: 1
+    - _ShowMap7: 0
     - _ShowMap8: 1
     m_Colors: []
   m_BuildTextureStacks: []
