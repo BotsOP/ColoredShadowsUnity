@@ -948,13 +948,16 @@
             "m_Id": "ab2f107639854982b92e3928b7e09e38"
         },
         {
+            "m_Id": "aa50d86824b34a55967b44a0ac424dc4"
+        },
+        {
+            "m_Id": "728cf357f2fd45529c8f820828eec149"
+        },
+        {
             "m_Id": "72507b6b619a46c69a8c2cc82cf38f50"
         },
         {
             "m_Id": "6b0a661c54534d52984bd5ab233eb816"
-        },
-        {
-            "m_Id": "627736ef8f3e4f388ee7a5ea79800184"
         },
         {
             "m_Id": "83d56e157b4846e58060e2c7a728b1d7"
@@ -967,6 +970,15 @@
         },
         {
             "m_Id": "d15fbf2b79cf405db13c760987d98e05"
+        },
+        {
+            "m_Id": "eb5825728b87469abadef744acc9276d"
+        },
+        {
+            "m_Id": "cefbb9acca4e47e0aea5b3d008147dd5"
+        },
+        {
+            "m_Id": "cf45b4fc95434914a8da709e0af0a28b"
         }
     ],
     "synonyms": [],
@@ -982,13 +994,17 @@
         "84f5be6c-57a2-4589-bc44-dd35ad6599cd",
         "3f7e59f3-c297-4717-8c64-e8ff5553c199",
         "b8f2c004-15da-4257-bba3-c869d0072edf",
-        "bc4257ea-9322-48fc-8bac-41421a8b560b"
+        "bc4257ea-9322-48fc-8bac-41421a8b560b",
+        "574b87b6-05ea-4378-8cbd-125906f9df0e",
+        "36aa711f-fee5-4561-96d7-ecf46a04928f"
     ],
     "m_PropertyIds": [
         960022751,
         507555005,
         1279488437,
-        -1112939687
+        -1112939687,
+        1140770518,
+        146103302
     ],
     "m_Dropdowns": [],
     "m_DropdownSelectedEntries": []
@@ -1486,33 +1502,18 @@
 
 {
     "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
-    "m_ObjectId": "627736ef8f3e4f388ee7a5ea79800184",
-    "m_Id": 7,
-    "m_DisplayName": "ShadowSize",
-    "m_SlotType": 1,
-    "m_Hidden": false,
-    "m_ShaderOutputName": "ShadowSize",
-    "m_StageCapability": 3,
-    "m_Value": 0.0,
-    "m_DefaultValue": 0.0,
-    "m_Labels": []
-}
-
-{
-    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.StickyNoteData",
     "m_ObjectId": "65cc8f9b2973476c9e9c2d2f3c5143ad",
     "m_Title": "Sample Shadow Input",
-    "m_Content": "- UVOffset: The offset added to the uvs when sampling the shadow map.\n- PosOffset: The offset added to the position before calculating the uvs to sample the shadow map.",
+    "m_Content": "- UVOffset: The offset added to the uvs when sampling the shadow map.\n- PosOffset: The offset added to the position before calculating the uvs to sample the shadow map.\n-ShadowUVSize: how zoomed in or zoomed out the ShadowUV should be for texture sampling\n-RelativeUVSize: whether the ShadowUV should scale together with the object size",
     "m_TextSize": 0,
     "m_Theme": 0,
     "m_Position": {
         "serializedVersion": "2",
-        "x": -337.3333435058594,
-        "y": -398.0,
-        "width": 200.00001525878907,
-        "height": 159.99998474121095
+        "x": -389.3333435058594,
+        "y": -414.66668701171877,
+        "width": 230.6666717529297,
+        "height": 205.33334350585938
     },
     "m_Group": {
         "m_Id": ""
@@ -1815,12 +1816,26 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.BooleanMaterialSlot",
+    "m_ObjectId": "728cf357f2fd45529c8f820828eec149",
+    "m_Id": 146103302,
+    "m_DisplayName": "RelativeUVSize",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "_RelativeUVSize",
+    "m_StageCapability": 3,
+    "m_Value": true,
+    "m_DefaultValue": false
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.GroupData",
     "m_ObjectId": "74671d775cca47e4a1438e8a339314a5",
     "m_Title": "Shadow ID Input",
     "m_Position": {
-        "x": 325.3333740234375,
-        "y": -752.0
+        "x": 325.3333435058594,
+        "y": -751.9999389648438
     }
 }
 
@@ -2549,6 +2564,21 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
+    "m_ObjectId": "aa50d86824b34a55967b44a0ac424dc4",
+    "m_Id": 1140770518,
+    "m_DisplayName": "ShadowUVSize",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "_ShadowUVSize",
+    "m_StageCapability": 3,
+    "m_Value": 1.0,
+    "m_DefaultValue": 0.0,
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector3MaterialSlot",
     "m_ObjectId": "ab2f107639854982b92e3928b7e09e38",
     "m_Id": 1279488437,
@@ -2870,7 +2900,7 @@
     "m_Type": "UnityEditor.ShaderGraph.StickyNoteData",
     "m_ObjectId": "c8bdd35bfc85432d8a2cb1a003ec9a60",
     "m_Title": "Sample Shadow+UV+UVsize",
-    "m_Content": "- ShadowID: The ID used to differentiate the shadows. Is Determined by the _ShadowID on the shadow casting object.\n- ShadowUV: The middle UV coordinate relative to the lightUV (used for shadow texture mapping).\n- ShadowSize: The world distance between world min bounds and world max bounds of the object (used for shadow texture mapping).\n- LightUV: The UV coordinate that was used to sample the shadow map (used for shadow texture mapping).\n- LightPos: The position of the light that is casting the shadow.\n- FalloffRange: The fall off range set by the user on the light.\n- Anti Aliasing: Used to blend the shadow with background to prevent jagged edges.\n\n",
+    "m_Content": "- ShadowID: The ID used to differentiate the shadows. Is Determined by the _ShadowID on the shadow casting object.\n- ShadowUV: UV coordinates mapped to the center of the shadow\n- LlightUV Screen UV relative to the lights camera\n- LightPos: The position of the light that is casting the shadow.\n- FalloffRange: The fall off range set by the user on the light.\n- Mask: Used to blend the shadow with background to prevent jagged edges.\n- CustomOutput1/2/3: The custom values set on the custom light in the advanced settings.\n\n",
     "m_TextSize": 0,
     "m_Theme": 0,
     "m_Position": {
@@ -2951,6 +2981,56 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector4MaterialSlot",
+    "m_ObjectId": "cefbb9acca4e47e0aea5b3d008147dd5",
+    "m_Id": 9,
+    "m_DisplayName": "CustomOutput2",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "CustomOutput2",
+    "m_StageCapability": 3,
+    "m_Value": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector4MaterialSlot",
+    "m_ObjectId": "cf45b4fc95434914a8da709e0af0a28b",
+    "m_Id": 10,
+    "m_DisplayName": "CustomOutput3",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "CustomOutput3",
+    "m_StageCapability": 3,
+    "m_Value": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "d09e55e362c84ffd8cfe8af8a0cc5f80",
     "m_Id": 0,
@@ -2969,10 +3049,10 @@
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "d15fbf2b79cf405db13c760987d98e05",
     "m_Id": 5,
-    "m_DisplayName": "Anti_Aliasing",
+    "m_DisplayName": "Mask",
     "m_SlotType": 1,
     "m_Hidden": false,
-    "m_ShaderOutputName": "Anti_Aliasing",
+    "m_ShaderOutputName": "Mask",
     "m_StageCapability": 3,
     "m_Value": 0.0,
     "m_DefaultValue": 0.0,
@@ -3278,6 +3358,31 @@
     },
     "m_Labels": [],
     "m_Space": 0
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector4MaterialSlot",
+    "m_ObjectId": "eb5825728b87469abadef744acc9276d",
+    "m_Id": 8,
+    "m_DisplayName": "CustomOutput1",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "CustomOutput1",
+    "m_StageCapability": 3,
+    "m_Value": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_Labels": []
 }
 
 {

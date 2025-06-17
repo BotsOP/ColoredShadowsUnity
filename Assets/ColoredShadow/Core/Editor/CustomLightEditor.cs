@@ -110,6 +110,14 @@ namespace ColoredShadows.Scripts
                 EditorGUI.indentLevel++;
                 
                 EditorGUILayout.PropertyField(addShadowIDProp);
+                if (currentMode == LightMode.Point)
+                {
+                    shadowTextureSizeProp.intValue = Mathf.Clamp(shadowTextureSizeProp.intValue, 1, 2730);
+                }
+                else
+                {
+                    shadowTextureSizeProp.intValue = Mathf.Clamp(shadowTextureSizeProp.intValue, 1, 16384);
+                }
                 EditorGUILayout.PropertyField(shadowTextureSizeProp);
                 EditorGUILayout.PropertyField(overrideShaderProp);
                 EditorGUILayout.PropertyField(shadowCastingMaskProp);

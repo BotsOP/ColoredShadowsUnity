@@ -261,6 +261,12 @@
     "m_StickyNoteDatas": [
         {
             "m_Id": "2f4f86f605b24b0e889f8797785718e4"
+        },
+        {
+            "m_Id": "2752fa5e95d54abb9be4139d049e6971"
+        },
+        {
+            "m_Id": "9fd083cfde5c4b609eb8c3aa459fc618"
         }
     ],
     "m_Edges": [
@@ -2305,6 +2311,26 @@
         "e31": 0.0,
         "e32": 0.0,
         "e33": 1.0
+    }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.StickyNoteData",
+    "m_ObjectId": "2752fa5e95d54abb9be4139d049e6971",
+    "m_Title": "Sample Shadow+UV+UVsize",
+    "m_Content": "- ShadowID: The ID used to differentiate the shadows. Is Determined by the _ShadowID on the shadow casting object.\n- ShadowUV: UV coordinates mapped to the center of the shadow\n- LlightUV Screen UV relative to the lights camera\n- LightPos: The position of the light that is casting the shadow.\n- FalloffRange: The fall off range set by the user on the light.\n- Mask: Used to blend the shadow with background to prevent jagged edges.\n- CustomOutput1/2/3: The custom values set on the custom light in the advanced settings.\n\n",
+    "m_TextSize": 0,
+    "m_Theme": 0,
+    "m_Position": {
+        "serializedVersion": "2",
+        "x": -1280.6666259765625,
+        "y": -564.6666259765625,
+        "width": 321.33331298828127,
+        "height": 252.66665649414063
+    },
+    "m_Group": {
+        "m_Id": ""
     }
 }
 
@@ -4820,7 +4846,7 @@
     "m_Title": "Get offset from angle",
     "m_Position": {
         "x": 210.0,
-        "y": 553.33349609375
+        "y": 553.3334350585938
     }
 }
 
@@ -5229,8 +5255,8 @@
     "m_ObjectId": "8ccc7db5870b4d5fa3196b7e639cf84b",
     "m_Title": "Offset and rotate UV's for eye",
     "m_Position": {
-        "x": 761.3333740234375,
-        "y": 400.00006103515627
+        "x": 761.3333129882813,
+        "y": 400.0000305175781
     }
 }
 
@@ -5902,6 +5928,26 @@
     "m_SupportsLODCrossFade": false,
     "m_CustomEditorGUI": "",
     "m_SupportVFX": false
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.StickyNoteData",
+    "m_ObjectId": "9fd083cfde5c4b609eb8c3aa459fc618",
+    "m_Title": "Sample Shadow Input",
+    "m_Content": "- UVOffset: The offset added to the uvs when sampling the shadow map.\n- PosOffset: The offset added to the position before calculating the uvs to sample the shadow map.\n-ShadowUVSize: how zoomed in or zoomed out the ShadowUV should be for texture sampling\n-RelativeUVSize: whether the ShadowUV should scale together with the object size",
+    "m_TextSize": 0,
+    "m_Theme": 0,
+    "m_Position": {
+        "serializedVersion": "2",
+        "x": -1611.3333740234375,
+        "y": -542.0,
+        "width": 230.666748046875,
+        "height": 205.33331298828126
+    },
+    "m_Group": {
+        "m_Id": ""
+    }
 }
 
 {
@@ -7524,7 +7570,7 @@
     "m_ObjectId": "ce35451dbee74e88bebcaae402fbf9a2",
     "m_Title": "Eye Shadow",
     "m_Position": {
-        "x": 1483.3330078125,
+        "x": 1483.333251953125,
         "y": 564.6666870117188
     }
 }
@@ -7747,8 +7793,8 @@
     "m_ObjectId": "d59ace0861c9478ba09635b76211ccde",
     "m_Title": "Non Eye Shadow",
     "m_Position": {
-        "x": 1563.999755859375,
-        "y": 999.3331909179688
+        "x": 1564.0,
+        "y": 999.3334350585938
     }
 }
 
@@ -8029,8 +8075,8 @@
     "m_ObjectId": "e2a0b505dceb4b1880d3f48332c49c80",
     "m_Title": "Lerp the distance between the objects",
     "m_Position": {
-        "x": -496.6665344238281,
-        "y": 1198.66650390625
+        "x": -496.66668701171877,
+        "y": 1198.666748046875
     }
 }
 

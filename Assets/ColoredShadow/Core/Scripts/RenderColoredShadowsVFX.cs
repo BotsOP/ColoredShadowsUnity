@@ -279,25 +279,28 @@ namespace ColoredShadows.Scripts
                     cameraData.camera.cullingMatrix = projectionMatrix * viewMatrix;
                     break;
             }
+
+            int textureSizeX = Mathf.Clamp(customLight.shadowTextureSize * textureXMultiplier, 1, 16384);
+            int textureSizeY = Mathf.Clamp(customLight.shadowTextureSize, 1, 16384);
         
             var destinationDescColor = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
             destinationDescColor.format = GraphicsFormat.R32G32B32A32_SInt;
             destinationDescColor.name = "SOURCE_COLOR";
-            destinationDescColor.width = customLight.shadowTextureSize * textureXMultiplier;
-            destinationDescColor.height = customLight.shadowTextureSize;
+            destinationDescColor.width = textureSizeX;
+            destinationDescColor.height = textureSizeY;
             destinationColor = renderGraph.CreateTexture(destinationDescColor);
         
             var destinationDescDepth = renderGraph.GetTextureDesc(resourceData.activeDepthTexture);
             destinationDescDepth.name = "SOURCE_DEPTH";
-            destinationDescDepth.width = customLight.shadowTextureSize * textureXMultiplier;
-            destinationDescDepth.height = customLight.shadowTextureSize;
+            destinationDescDepth.width = textureSizeX;
+            destinationDescDepth.height = textureSizeY;
             destinationDepth = renderGraph.CreateTexture(destinationDescDepth);
         
             RenderTextureDescriptor shadowMapIDDesc = cameraData.cameraTargetDescriptor;
             shadowMapIDDesc.colorFormat = RenderTextureFormat.ARGBInt;
             shadowMapIDDesc.colorFormat = RenderTextureFormat.ARGBFloat;
-            shadowMapIDDesc.width = customLight.shadowTextureSize * textureXMultiplier;
-            shadowMapIDDesc.height = customLight.shadowTextureSize;
+            shadowMapIDDesc.width = textureSizeX;
+            shadowMapIDDesc.height = textureSizeY;
             shadowMapIDDesc.depthBufferBits = 0;
             shadowMapIDDesc.msaaSamples = 1;
             RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: shadowMapIDName + customLight.lightIndex );
@@ -306,8 +309,8 @@ namespace ColoredShadows.Scripts
             // RenderTextureDescriptor shadowMapDepthDesc = cameraData.cameraTargetDescriptor;
             // shadowMapDepthDesc.depthStencilFormat = GraphicsFormat.D32_SFloat;
             // shadowMapDepthDesc.colorFormat = RenderTextureFormat.RFloat;
-            // shadowMapDepthDesc.width = customLight.shadowTextureSize * textureXMultiplier;
-            // shadowMapDepthDesc.height = customLight.shadowTextureSize;
+            // shadowMapDepthDesc.width = textureSizeX;
+            // shadowMapDepthDesc.height = textureSizeY;
             // shadowMapDepthDesc.depthBufferBits = 0;
             // shadowMapDepthDesc.msaaSamples = 1;
             // RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapDepth, shadowMapDepthDesc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: shadowMapDepthName + customLight.lightIndex );

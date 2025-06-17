@@ -189,7 +189,14 @@
             "m_Id": "2fae284a3a18432186a3b2ddd0f15ef1"
         }
     ],
-    "m_StickyNoteDatas": [],
+    "m_StickyNoteDatas": [
+        {
+            "m_Id": "6cdda0f035fe473398394d4e1611f102"
+        },
+        {
+            "m_Id": "b6dd748c0f7c4e5c9e50004161ff6805"
+        }
+    ],
     "m_Edges": [
         {
             "m_OutputSlot": {
@@ -413,6 +420,20 @@
                     "m_Id": "4f96ec33ec1f455b810e2e9daf53f77d"
                 },
                 "m_SlotId": 2
+            }
+        },
+        {
+            "m_OutputSlot": {
+                "m_Node": {
+                    "m_Id": "5c6015c825ce4ec39f7ad7d696e898ad"
+                },
+                "m_SlotId": 0
+            },
+            "m_InputSlot": {
+                "m_Node": {
+                    "m_Id": "34baafbe36e644ab9fa7603eb39a69e7"
+                },
+                "m_SlotId": 1140770518
             }
         },
         {
@@ -1303,8 +1324,8 @@
     "m_ObjectId": "2fae284a3a18432186a3b2ddd0f15ef1",
     "m_Title": "Handle transparency from textures",
     "m_Position": {
-        "x": 868.6666870117188,
-        "y": 53.3333740234375
+        "x": 868.6670532226563,
+        "y": 53.333492279052737
     }
 }
 
@@ -2463,10 +2484,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -1330.0,
-            "y": -196.00010681152345,
-            "width": 136.0,
-            "height": 34.000091552734378
+            "x": -1616.6666259765625,
+            "y": 228.6666717529297,
+            "width": 137.333251953125,
+            "height": 36.00001525878906
         }
     },
     "m_Slots": [
@@ -2803,6 +2824,26 @@
     "m_Value": 0.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.StickyNoteData",
+    "m_ObjectId": "6cdda0f035fe473398394d4e1611f102",
+    "m_Title": "Sample Shadow+UV+UVsize",
+    "m_Content": "- ShadowID: The ID used to differentiate the shadows. Is Determined by the _ShadowID on the shadow casting object.\n- ShadowUV: UV coordinates mapped to the center of the shadow\n- LlightUV Screen UV relative to the lights camera\n- LightPos: The position of the light that is casting the shadow.\n- FalloffRange: The fall off range set by the user on the light.\n- Mask: Used to blend the shadow with background to prevent jagged edges.\n- CustomOutput1/2/3: The custom values set on the custom light in the advanced settings.\n\n",
+    "m_TextSize": 0,
+    "m_Theme": 0,
+    "m_Position": {
+        "serializedVersion": "2",
+        "x": -1320.0,
+        "y": -216.66665649414063,
+        "width": 321.33331298828127,
+        "height": 252.66665649414063
+    },
+    "m_Group": {
+        "m_Id": ""
+    }
 }
 
 {
@@ -4673,6 +4714,26 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.StickyNoteData",
+    "m_ObjectId": "b6dd748c0f7c4e5c9e50004161ff6805",
+    "m_Title": "Sample Shadow Input",
+    "m_Content": "- UVOffset: The offset added to the uvs when sampling the shadow map.\n- PosOffset: The offset added to the position before calculating the uvs to sample the shadow map.\n-ShadowUVSize: how zoomed in or zoomed out the ShadowUV should be for texture sampling\n-RelativeUVSize: whether the ShadowUV should scale together with the object size",
+    "m_TextSize": 0,
+    "m_Theme": 0,
+    "m_Position": {
+        "serializedVersion": "2",
+        "x": -1650.6666259765625,
+        "y": -194.0,
+        "width": 230.6666259765625,
+        "height": 205.33334350585938
+    },
+    "m_Group": {
+        "m_Id": ""
+    }
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "b7192f840d6f411da2449a9cb1e499cb",
     "m_Id": 2,
@@ -4793,7 +4854,7 @@
     "m_Title": "Show UV coordinates",
     "m_Position": {
         "x": -620.0,
-        "y": -1192.6666259765625
+        "y": -1192.66650390625
     }
 }
 
@@ -5648,8 +5709,8 @@
     "m_ObjectId": "e43b5c039d534939bdae286eeab3117d",
     "m_Title": "Map Texture",
     "m_Position": {
-        "x": -411.3333740234375,
-        "y": -679.333251953125
+        "x": -411.333251953125,
+        "y": -679.3333740234375
     }
 }
 
@@ -5727,7 +5788,7 @@
     "m_ObjectId": "e8692ceb5bc8450cbad05186d7a51050",
     "m_Title": "Map alpha map texture",
     "m_Position": {
-        "x": -405.9999694824219,
+        "x": -406.0000305175781,
         "y": -1932.6666259765625
     }
 }
@@ -5834,8 +5895,8 @@
     "m_ObjectId": "f1ec558c9dea4c3b97bb13ebfa531a92",
     "m_Title": "Combine inputs",
     "m_Position": {
-        "x": 27.333250045776368,
-        "y": -19.333328247070314
+        "x": 27.333345413208009,
+        "y": -19.33340072631836
     }
 }
 
