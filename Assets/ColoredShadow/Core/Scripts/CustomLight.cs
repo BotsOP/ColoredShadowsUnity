@@ -41,7 +41,7 @@ namespace ColoredShadows.Scripts
         [SerializeField] public float vfxUVSize = 1;
         [SerializeField] public bool relativeUVSize = true;
 
-        public float nearPlane = 1;
+        public float nearPlane = 0.1f;
 
         public GraphicsBuffer vfxAppendBuffer;
         public int vfxAppendCount;
