@@ -245,7 +245,7 @@ float GetMask(float2 uv, float2 testUV, int mapIndex, int textureSizeX, int text
 
     float mask = NinePointBlend(topLeftSample, topCenterSample, topRightSample, midLeftSample, midCenterSample, midRightSample, bottomLeftSample, bottomCenterSample, bottomRightSample, localUV);
 
-    return mask;
+    return midCenterSample;
 }
 
 struct LightInformation
