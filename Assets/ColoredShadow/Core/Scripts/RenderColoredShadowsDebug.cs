@@ -166,6 +166,7 @@ namespace ColoredShadows.Scripts
                 passData.cameraColor = resourceData.cameraColor;
                 passData.textureSizeX = textureSizeX;
                 passData.textureSizeY = textureSizeY;
+                passData.color = ColShadowDebug.ShadowNumberColor;
                 
                 builder.AllowPassCulling(false);
                 builder.SetRenderFunc((PassDataCompute data, ComputeGraphContext context) =>
@@ -173,6 +174,7 @@ namespace ColoredShadows.Scripts
                     int kernel = data.cs.FindKernel("CSMain");
                     context.cmd.SetComputeTextureParam(passData.cs, kernel, "_ShadowMap", passData.shadowMap);
                     context.cmd.SetComputeTextureParam(passData.cs, kernel, "_CameraColor", passData.cameraColor);
+                    context.cmd.SetComputeVectorParam(passData.cs, "_Color", passData.color);
                     context.cmd.DispatchCompute(passData.cs, kernel, Mathf.CeilToInt(passData.textureSizeX / 32f), Mathf.CeilToInt(passData.textureSizeY / 32f), 1);
                 });
             }
@@ -216,6 +218,7 @@ namespace ColoredShadows.Scripts
             internal TextureHandle shadowMap;
             internal TextureHandle cameraColor;
             internal TextureHandle cameraActiveColor;
+            internal Color color;
             internal int textureSizeX;
             internal int textureSizeY;
         }

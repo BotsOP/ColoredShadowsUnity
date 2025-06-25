@@ -265,6 +265,9 @@ namespace ColoredShadows.Scripts
             {
                 foreach (VisualEffect visualEffect in visualEffects)
                 {
+                    if (!visualEffect.HasGraphicsBuffer("_ShadowPositions") || !visualEffect.HasInt("_ShadowPositionsCount"))
+                        continue;
+                    
                     visualEffect.SetGraphicsBuffer("_ShadowPositions", vfxAppendBuffer);
                     visualEffect.SetInt("_ShadowPositionsCount", vfxAppendCount);
                 }

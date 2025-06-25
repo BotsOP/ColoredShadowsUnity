@@ -19,6 +19,7 @@ public class ColShadowDebugSettings : ScriptableObject
     [Header("Color Settings")]
     public Color casterNumberColor = Color.magenta;
     public Color customLightNumberColor = Color.green;
+    public Color shadowNumberColor = Color.white;
 
     // Static instance for easy access
     private static ColShadowDebugSettings _instance;
@@ -112,6 +113,7 @@ public class ColShadowDebugWindow : EditorWindow
         EditorGUILayout.LabelField("Color Settings", EditorStyles.boldLabel);
         settings.customLightNumberColor = EditorGUILayout.ColorField("Custom Light Number Color", settings.customLightNumberColor);
         settings.casterNumberColor = EditorGUILayout.ColorField("Caster Number Color", settings.casterNumberColor);
+        settings.shadowNumberColor = EditorGUILayout.ColorField("Shadow Number Color", settings.shadowNumberColor);
         
         EditorGUILayout.Space();
 
@@ -148,6 +150,7 @@ public class ColShadowDebugWindow : EditorWindow
         settings.shadowNumberSize = 1.0f;
         settings.casterNumberColor = Color.magenta;
         settings.customLightNumberColor = Color.green;
+        settings.shadowNumberColor = Color.white;
         
         EditorUtility.SetDirty(settings);
         settings.OnSettingsChanged?.Invoke();
@@ -200,7 +203,7 @@ public static class ColShadowDebug
 #if UNITY_EDITOR
             return ColShadowDebugSettings.Instance.casterNumberColor;
 #else
-            return Color.black;
+            return Color.magenta;
 #endif
         }
     }
@@ -212,7 +215,19 @@ public static class ColShadowDebug
 #if UNITY_EDITOR
             return ColShadowDebugSettings.Instance.customLightNumberColor;
 #else
-            return Color.yellow;
+            return Color.green;
+#endif
+        }
+    }
+    
+    public static Color ShadowNumberColor
+    {
+        get
+        {
+#if UNITY_EDITOR
+            return ColShadowDebugSettings.Instance.shadowNumberColor;
+#else
+            return Color.white;
 #endif
         }
     }
