@@ -47,7 +47,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _AngleSpeed: 3
-    - _Creepy: 1
+    - _Creepy: 0.61410666
     - _FalloffSize: 0.1
     - _NoiseSize: 2.99
     - _QueueControl: 0
@@ -60,7 +60,7 @@ Material:
     - _wavelength: 4.52
     m_Colors:
     - _Color: {r: 0.8078432, g: 0, b: 0, a: 0}
-    - _position: {r: 1.58, g: 2.38, b: 0, a: 0}
+    - _position: {r: 1.53, g: 2.04, b: 0, a: 0}
     - _tiling: {r: 2.85, g: 2.66, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

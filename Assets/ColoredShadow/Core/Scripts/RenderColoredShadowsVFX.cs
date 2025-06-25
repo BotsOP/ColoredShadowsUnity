@@ -325,6 +325,14 @@ namespace ColoredShadows.Scripts
                 passData = SetupRenderPassAndPassData(passData, builder);
 
                 builder.UseRendererList(passData.rendererListHdl1);
+                if (customLight.lightMode == LightMode.Point)
+                {
+                    builder.UseRendererList(passData.rendererListHdl2);
+                    builder.UseRendererList(passData.rendererListHdl3);
+                    builder.UseRendererList(passData.rendererListHdl4);
+                    builder.UseRendererList(passData.rendererListHdl5);
+                    builder.UseRendererList(passData.rendererListHdl6);
+                }
             
                 builder.SetRenderFunc((PassData data, RasterGraphContext rgContext) =>
                 {

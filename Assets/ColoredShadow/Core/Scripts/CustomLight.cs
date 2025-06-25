@@ -45,10 +45,154 @@ namespace ColoredShadows.Scripts
 
         public GraphicsBuffer vfxAppendBuffer;
         public int vfxAppendCount;
+        
+        private Mesh[] numberMeshes;
+        private MeshRenderer[] meshRenderers;
+        private void OnDrawGizmos()
+        {
+            if (SceneView.lastActiveSceneView == null || !ColShadowDebug.IsEnabled)
+            {
+                return;
+            }
+            Camera sceneCamera = SceneView.lastActiveSceneView.camera;
+            if (sceneCamera == null)
+            {
+                return;
+            }
+            
+            CustomLight[] customLights = FindObjectsByType<CustomLight>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            if (Time.frameCount % 60 == 0)
+            {
+                meshRenderers = FindObjectsByType<MeshRenderer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            }
+            if (meshRenderers == null)
+            {
+                return;
+            }
+            foreach (MeshRenderer meshRenderer in meshRenderers)
+            {
+                if(meshRenderer == null)
+                        continue;
+                if (!meshRenderer.sharedMaterial.HasProperty("_ShadowID"))
+                    continue;
+
+                Vector3 middlePos = meshRenderer.transform.position;
+                Vector3 dir = sceneCamera.transform.position - middlePos;
+                middlePos = GetRayBoxIntersection(middlePos, dir, middlePos, meshRenderer.bounds.size);
+                float shadowID = meshRenderer.sharedMaterial.GetFloat("_ShadowID");
+                Gizmos.color = ColShadowDebug.CasterNumberColor;
+                Quaternion lookRotation = Quaternion.LookRotation(dir) * Quaternion.Euler(-90, -90, 90);
+                StringToMeshNumber(shadowID.ToString("0.#"), middlePos, lookRotation, ColShadowDebug.CasterNumberSize);
+            }
+            
+            foreach (CustomLight customLight in customLights)
+            {
+                Vector3 dir = sceneCamera.transform.position - customLight.transform.position;
+                Gizmos.color = ColShadowDebug.CustomLightNumberColor;
+                Quaternion lookRotation = Quaternion.LookRotation(dir) * Quaternion.Euler(-90, -90, 90);
+                Vector3 middlePos = customLight.transform.position + dir.normalized * 0f;
+                StringToMeshNumber(customLight.addToShadowID.ToString("0.#"), middlePos, lookRotation, ColShadowDebug.CustomLightNumberSize);
+            }
+        }
+
+        private void StringToMeshNumber(string str, Vector3 middlePos, Quaternion lookRotation, float charSize)
+        {
+            char[] characters = str.ToCharArray();
+            float charSpace = 0.13f * charSize;
+            float meshesWidth = charSpace * (characters.Length - 1);
+            if(str.Contains('.'))
+                meshesWidth -= charSpace * 0.9f;
+            middlePos -= lookRotation * Vector3.left * meshesWidth * 0.5f;
+            foreach (char character in characters)
+            {
+                switch (character)
+                {
+                    case '0':
+                        Gizmos.DrawMesh(numberMeshes[0], middlePos, lookRotation, Vector3.one * charSize);
+                        middlePos += lookRotation * Vector3.left * charSpace;
+                        break;
+                    case '1':
+                        Gizmos.DrawMesh(numberMeshes[1], middlePos, lookRotation, Vector3.one * charSize);
+                        middlePos += lookRotation * Vector3.left * charSpace;
+                        break;
+                    case '2':
+                        Gizmos.DrawMesh(numberMeshes[2], middlePos, lookRotation, Vector3.one * charSize);
+                        middlePos += lookRotation * Vector3.left * charSpace;
+                        break;
+                    case '3':
+                        Gizmos.DrawMesh(numberMeshes[3], middlePos, lookRotation, Vector3.one * charSize);
+                        middlePos += lookRotation * Vector3.left * charSpace;
+                        break;
+                    case '4':
+                        Gizmos.DrawMesh(numberMeshes[4], middlePos, lookRotation, Vector3.one * charSize);
+                        middlePos += lookRotation * Vector3.left * charSpace;
+                        break;
+                    case '5':
+                        Gizmos.DrawMesh(numberMeshes[5], middlePos, lookRotation, Vector3.one * charSize);
+                        middlePos += lookRotation * Vector3.left * charSpace;
+                        break;
+                    case '6':
+                        Gizmos.DrawMesh(numberMeshes[6], middlePos, lookRotation, Vector3.one * charSize);
+                        middlePos += lookRotation * Vector3.left * charSpace;
+                        break;
+                    case '7':
+                        Gizmos.DrawMesh(numberMeshes[7], middlePos, lookRotation, Vector3.one * charSize);
+                        middlePos += lookRotation * Vector3.left * charSpace;
+                        break;
+                    case '8':
+                        Gizmos.DrawMesh(numberMeshes[8], middlePos, lookRotation, Vector3.one * charSize);
+                        middlePos += lookRotation * Vector3.left * charSpace;
+                        break;
+                    case '9':
+                        Gizmos.DrawMesh(numberMeshes[9], middlePos, lookRotation, Vector3.one * charSize);
+                        middlePos += lookRotation * Vector3.left * charSpace;
+                        break;
+                    case '.':
+                        middlePos -= lookRotation * Vector3.left * charSpace * 0.9f;
+                        Gizmos.DrawMesh(numberMeshes[10], middlePos, lookRotation, Vector3.one * charSize);
+                        middlePos += lookRotation * Vector3.left * charSpace;
+                        break;
+                    case '-':
+                        Gizmos.DrawMesh(numberMeshes[11], middlePos, lookRotation, Vector3.one * charSize);
+                        middlePos += lookRotation * Vector3.left * charSpace;
+                        break;
+                }
+            }
+        }
+        
+        public static Vector3 GetRayBoxIntersection(Vector3 rayOrigin, Vector3 rayDirection, Vector3 boxCenter, Vector3 boxSize)
+        {
+            // Since rayOrigin == boxCenter, we can simplify the calculation
+            Vector3 halfSize = boxSize * 0.5f;
+            
+            // Calculate intersection distances for each axis
+            // t = (boxBound - rayOrigin) / rayDirection
+            // Since rayOrigin == boxCenter, this becomes: t = ±halfSize / rayDirection
+            
+            float tX = rayDirection.x > 0 ? halfSize.x / rayDirection.x : -halfSize.x / rayDirection.x;
+            float tY = rayDirection.y > 0 ? halfSize.y / rayDirection.y : -halfSize.y / rayDirection.y;
+            float tZ = rayDirection.z > 0 ? halfSize.z / rayDirection.z : -halfSize.z / rayDirection.z;
+            
+            // Find the smallest positive t (closest intersection)
+            float t = Mathf.Min(tX, Mathf.Min(tY, tZ));
+            
+            // Calculate intersection point
+            return rayOrigin + rayDirection * t;
+        }
+
+        private void SetNumberMeshes()
+        {
+            numberMeshes = new Mesh[12];
+            for (int i = 0; i < 10; i++)
+            {
+                numberMeshes[i] = Resources.Load<Mesh>(i.ToString());
+            }
+            numberMeshes[10] = Resources.Load<Mesh>("dot");
+            numberMeshes[11] = Resources.Load<Mesh>("minus");
+        }
 
         private void OnDrawGizmosSelected()
         {
-            
             Gizmos.matrix = transform.localToWorldMatrix;
             Color farPlaneFillColor = new Color(1, 1, 1, 0.1f);
             Color farPlaneOutlineColor = new Color(1, 1, 1, 0.8f);
@@ -138,6 +282,8 @@ namespace ColoredShadows.Scripts
             {
                 overrideShader = Shader.Find("ColoredShadow/OverrideColShadow_UV_UVSize");
             }
+            
+            SetNumberMeshes();
 
             SceneView.duringSceneGui += SceneViewGUI;
             
