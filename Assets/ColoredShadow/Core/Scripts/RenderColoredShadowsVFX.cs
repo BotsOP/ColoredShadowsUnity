@@ -325,15 +325,6 @@ namespace ColoredShadows.Scripts
                 passData = SetupRenderPassAndPassData(passData, builder);
 
                 builder.UseRendererList(passData.rendererListHdl1);
-                builder.UseRendererList(passData.rendererListHdlVFX1);
-                if (customLight.lightMode == LightMode.Point)
-                {
-                    builder.UseRendererList(passData.rendererListHdl2);
-                    builder.UseRendererList(passData.rendererListHdl3);
-                    builder.UseRendererList(passData.rendererListHdl4);
-                    builder.UseRendererList(passData.rendererListHdl5);
-                    builder.UseRendererList(passData.rendererListHdl6);
-                }
             
                 builder.SetRenderFunc((PassData data, RasterGraphContext rgContext) =>
                 {
@@ -352,7 +343,6 @@ namespace ColoredShadows.Scripts
 
             Shader.SetGlobalTexture("_ColoredShadowMap" + customLight.lightIndex, shadowMapID);
             Shader.SetGlobalTexture("_ColoredShadowMapDepth" + customLight.lightIndex, shadowMapDepth);
-            Shader.SetGlobalVector("_ColoredLightPos", customLight.transform.position);
 
             List<float> customValuesCopy = new List<float>(customLight.customValues);
 
