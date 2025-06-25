@@ -24,16 +24,12 @@ namespace ColoredShadows.Scripts
         private RenderStateBlock renderStateBlock;
 
         private ComputeShader cs;
-        private Texture2D texture;
-        private Material overrideMat;
 
-        public RenderColoredShadowsDebug(string profilerTag, Texture2D texture, Material material)            
+        public RenderColoredShadowsDebug(string profilerTag)            
         {
             profilingSampler = new ProfilingSampler(profilerTag);
             
             cs = Resources.Load<ComputeShader>("DebugColShadowView");
-            this.texture = texture;
-            overrideMat = material;
             
             Init(renderPassEvent);
         }
@@ -132,9 +128,7 @@ namespace ColoredShadows.Scripts
             RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: shadowMapIDName);
             TextureHandle destinationColorRT = renderGraph.ImportTexture(shadowMapID);
             
-            RTHandle renderTexture = RTHandles.Alloc(texture);
-            TextureHandle textureHandle = renderGraph.ImportTexture(renderTexture);
-            
+            Shader.SetGlobalFloat("_NumberSize", ColShadowDebug.ShadowNumberSize * 4);
 
             using (var builder = renderGraph.AddRasterRenderPass<PassData>("Capture Scene Custom Shadow Data", out var passData, profilingSampler))
             {
@@ -154,7 +148,6 @@ namespace ColoredShadows.Scripts
                 builder.AllowGlobalStateModification(true);
             
                 builder.UseRendererList(passData.rendererListHdl1);
-                builder.UseTexture(textureHandle);
                 
                 builder.SetRenderFunc((PassData data, RasterGraphContext rgContext) =>
                 {
@@ -186,8 +179,6 @@ namespace ColoredShadows.Scripts
             
             RenderGraphUtils.BlitMaterialParameters para2 = new(destinationColor, resourceData.activeColorTexture, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
             renderGraph.AddBlitPass(para2, "CaptureSceneShadowsColor");
-            
-            Shader.SetGlobalTexture("_UV_Image", texture);
         }
         
         static ShaderTagId[] s_ShaderTagValues = new ShaderTagId[1];

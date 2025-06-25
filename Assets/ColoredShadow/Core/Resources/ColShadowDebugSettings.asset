@@ -9,13 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 64f8530bb6cf0ee47adba8233cbd15fd, type: 3}
   m_Name: ColShadowDebugSettings
-  m_EditorClassIdentifier: Assembly-CSharp::ColShadowDebugSettings
+  m_EditorClassIdentifier: 
   enableDebugMode: 1
   customLightNumberSize: 4
   casterNumberSize: 2
   shadowNumberSize: 1
   casterNumberColor: {r: 1, g: 0, b: 1, a: 1}
   customLightNumberColor: {r: 0, g: 1, b: 0, a: 1}
-  shadowNumberColor: {r: 1, g: 1, b: 1, a: 1}

@@ -1,15 +1,12 @@
-// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
 RWTexture2D<float4> _ShadowMap;
 Texture2D<float4> _CameraColor;
 
 [numthreads(32,32,1)]
 void CSMain (uint2 id : SV_DispatchThreadID)
 {
-    if (_ShadowMap[id].r == 0)
+    if (_ShadowMap[id].r != 1)
     {
         _ShadowMap[id] = _CameraColor[id];
     }

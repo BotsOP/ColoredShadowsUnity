@@ -8,21 +8,19 @@ namespace ColoredShadows.Scripts
 {
     public class ColoredShadowsDebugRenderFeature : ScriptableRendererFeature
     {
-        public Texture2D texture;
-        public Material material;
         private RenderColoredShadowsDebug renderShadowObjectsPassDebug;
         public override void Create()
         {
-            renderShadowObjectsPassDebug = new RenderColoredShadowsDebug("Render Scene view Custom Shadows", texture, material);
+            renderShadowObjectsPassDebug = new RenderColoredShadowsDebug("Render Scene view Custom Shadows");
         }
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
-            if (renderingData.cameraData.cameraType == CameraType.SceneView)
-            {
-                renderShadowObjectsPassDebug.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
-                renderer.EnqueuePass(renderShadowObjectsPassDebug);
-            }
+            if (renderingData.cameraData.cameraType != CameraType.SceneView || !ColShadowDebug.IsEnabled)
+                return;
+            
+            renderShadowObjectsPassDebug.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
+            renderer.EnqueuePass(renderShadowObjectsPassDebug);
         }
     }
 }
