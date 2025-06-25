@@ -3,11 +3,17 @@
 RWTexture2D<float4> _ShadowMap;
 Texture2D<float4> _CameraColor;
 
+float4 _Color;
+
 [numthreads(32,32,1)]
 void CSMain (uint2 id : SV_DispatchThreadID)
 {
     if (_ShadowMap[id].r != 1)
     {
         _ShadowMap[id] = _CameraColor[id];
+    }
+    else
+    {
+        _ShadowMap[id] = _ShadowMap[id] * _Color;
     }
 }

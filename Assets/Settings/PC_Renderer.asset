@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-6073806677770159073
+--- !u!114 &-7863716797878829369
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -13,8 +13,6 @@ MonoBehaviour:
   m_Name: ColoredShadowsDebugRenderFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  texture: {fileID: 2800000, guid: 8a4d10d643fc16a49911de408cf43e6d, type: 3}
-  material: {fileID: 2100000, guid: 0be3d153c9fb16644833443050a648fb, type: 2}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -41,8 +39,8 @@ MonoBehaviour:
     probeVolumeBlendStatesCS: {fileID: 7200000, guid: b9a23f869c4fd45f19c5ada54dd82176, type: 3}
   m_RendererFeatures:
   - {fileID: 7833122117494664109}
-  - {fileID: -6073806677770159073}
-  m_RendererFeatureMap: ad6b866f10d7b46c1f3c1dc90181b5ab
+  - {fileID: -7863716797878829369}
+  m_RendererFeatureMap: ad6b866f10d7b46cc7fe28703c77de92
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}

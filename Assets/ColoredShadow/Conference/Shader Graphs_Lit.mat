@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-1289563009230947257
+--- !u!114 &-506739669017487785
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
@@ -20,8 +20,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Shader Graphs_One object multiple shadows
-  m_Shader: {fileID: -6465566751694194690, guid: 144f517bc42716a4a90abab863df397d, type: 3}
+  m_Name: Shader Graphs_Lit
+  m_Shader: {fileID: -6465566751694194690, guid: 3b7e48f87031fdf46a6eb8354d6d9608, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -37,18 +37,6 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _SampleTexture2D_4da41e486b9f4d0cb36615a25669a899_Texture_1_Texture2D:
-        m_Texture: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _SampleTexture2D_4f92e138942047fd8db7b802c0e136e1_Texture_1_Texture2D:
-        m_Texture: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _SampleTexture2D_fca4534d202d4cbb99e92e370bb83e2a_Texture_1_Texture2D:
-        m_Texture: {fileID: 2800000, guid: dadc5bf3d2050e547a28ddb525c3c462, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -63,12 +51,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _NoiseSize: 0.01
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _ScrollSpeed: 0.2
-    - _ShadowTextureSize: 0
-    - _ShadowTransparency: 1
-    m_Colors: []
+    - _ShadowID: 1
+    m_Colors:
+    - _Color: {r: 0.9245283, g: 0.06541473, b: 0.092903554, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
