@@ -11,16 +11,20 @@ namespace ColoredShadows.Scripts
         private RenderColoredShadowsDebug renderShadowObjectsPassDebug;
         public override void Create()
         {
+#if UNITY_EDITOR
             renderShadowObjectsPassDebug = new RenderColoredShadowsDebug("Render Scene view Custom Shadows");
+#endif
         }
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
+            #if UNITY_EDITOR
             if (renderingData.cameraData.cameraType != CameraType.SceneView || !ColShadowDebug.IsEnabled)
                 return;
             
             renderShadowObjectsPassDebug.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
             renderer.EnqueuePass(renderShadowObjectsPassDebug);
+            #endif
         }
     }
 }

@@ -14,6 +14,6 @@ void CSMain (uint2 id : SV_DispatchThreadID)
     }
     else
     {
-        _ShadowMap[id] = _ShadowMap[id] * _Color;
+        _ShadowMap[id] = (_ShadowMap[id]) * _Color;
     }
 }

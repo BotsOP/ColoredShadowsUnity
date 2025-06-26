@@ -353,7 +353,7 @@ VisualEffect:
       m_Array: []
     m_Int:
       m_Array:
-      - m_Value: 5661
+      - m_Value: 2604
         m_Name: _ShadowPositionsCount
         m_Overridden: 1
     m_Matrix4x4f:
@@ -951,59 +951,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 193086111}
   m_CullTransparentMesh: 1
---- !u!1 &195430744
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 195430745}
-  - component: {fileID: 195430746}
-  m_Layer: 0
-  m_Name: Quad
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &195430745
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 195430744}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: -0.000000044703484, z: 0.000000044703484, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1468366417}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!65 &195430746
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 195430744}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 10.054221, y: 9.9692335, z: 0.0591463}
-  m_Center: {x: -0.025969738, y: -0.011959551, z: 0.05272307}
 --- !u!1 &211305049
 GameObject:
   m_ObjectHideFlags: 0
@@ -1125,7 +1072,7 @@ GameObject:
   - component: {fileID: 221449116}
   - component: {fileID: 221449115}
   - component: {fileID: 221449118}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Cube
   m_TagString: DynamicShadowObject
   m_Icon: {fileID: 0}
@@ -1523,8 +1470,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.15216969, y: 0.8016554, z: -0.24021718, w: -0.52582204}
-  m_LocalPosition: {x: 14.12405, y: 14.060959, z: 131.88313}
+  m_LocalRotation: {x: 0.14209649, y: -0.779132, z: 0.19093274, w: 0.5799195}
+  m_LocalPosition: {x: 12.480824, y: 10.197317, z: 128.56}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2788,7 +2735,7 @@ Transform:
   m_GameObject: {fileID: 708709849}
   serializedVersion: 2
   m_LocalRotation: {x: -0.11178024, y: -0.0090452125, z: -0.11308278, w: 0.9872364}
-  m_LocalPosition: {x: -0.62, y: 1.35, z: -3.06}
+  m_LocalPosition: {x: 1.06, y: 1.35, z: -1.69}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3276,7 +3223,7 @@ GameObject:
   - component: {fileID: 841848266}
   - component: {fileID: 841848267}
   - component: {fileID: 841848270}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Cube (5)
   m_TagString: DynamicShadowObject
   m_Icon: {fileID: 0}
@@ -3955,15 +3902,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4835934202178952837, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.744
+      value: 4.51
       objectReference: {fileID: 0}
     - target: {fileID: 4835934202178952837, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 9.017
+      value: 10.87
       objectReference: {fileID: 0}
     - target: {fileID: 4835934202178952837, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3.667
+      value: 5.62
       objectReference: {fileID: 0}
     - target: {fileID: 4835934202178952837, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4007,11 +3954,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8686053663121692227, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: vfxAppendCount
-      value: 22686
-      objectReference: {fileID: 0}
-    - target: {fileID: 8686053663121692227, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
-      propertyPath: vfxSamplingSize
-      value: 256
+      value: 935
       objectReference: {fileID: 0}
     - target: {fileID: 8686053663121692227, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: enableVFXSupport
@@ -4024,10 +3967,6 @@ PrefabInstance:
     - target: {fileID: 8686053663121692227, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: lightData.radius
       value: 4.07
-      objectReference: {fileID: 0}
-    - target: {fileID: 8686053663121692227, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
-      propertyPath: shadowTextureSize
-      value: 4096
       objectReference: {fileID: 0}
     - target: {fileID: 8686053663121692227, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: lightData.fallOffRange
@@ -4492,59 +4431,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 503325534}
   m_LocalEulerAnglesHint: {x: 180, y: 90, z: 180}
---- !u!1 &1096065711
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1096065712}
-  - component: {fileID: 1096065713}
-  m_Layer: 0
-  m_Name: Quad (1)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1096065712
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1096065711}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.49999988, y: -0.5000003, z: -0.50000006, w: 0.49999982}
-  m_LocalPosition: {x: -4.9732447, y: 4.9213133, z: 0.0000023348077}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1468366417}
-  m_LocalEulerAnglesHint: {x: 0, y: -90, z: -90}
---- !u!65 &1096065713
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1096065711}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 10.054221, y: 9.9692335, z: 0.0591463}
-  m_Center: {x: -0.025969738, y: -0.011959551, z: 0.05272307}
 --- !u!1 &1108971170
 GameObject:
   m_ObjectHideFlags: 0
@@ -5320,59 +5206,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1305389968}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1337355666
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1337355667}
-  - component: {fileID: 1337355668}
-  m_Layer: 0
-  m_Name: Quad (2)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1337355667
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1337355666}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.7071067, y: -0.70710677, z: -0.00000037252894, w: 0.00000046193588}
-  m_LocalPosition: {x: -0.037916303, y: 4.92131, z: -4.959233}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1468366417}
-  m_LocalEulerAnglesHint: {x: 0, y: -180, z: -90}
---- !u!65 &1337355668
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1337355666}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 10.054221, y: 9.9692335, z: 0.0591463}
-  m_Center: {x: -0.025969738, y: -0.011959551, z: 0.05272307}
 --- !u!1001 &1338767750
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5523,7 +5356,7 @@ GameObject:
   - component: {fileID: 1418226729}
   - component: {fileID: 1418226730}
   - component: {fileID: 1418226733}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Cube (4)
   m_TagString: DynamicShadowObject
   m_Icon: {fileID: 0}
@@ -5734,7 +5567,7 @@ GameObject:
   - component: {fileID: 1452398102}
   - component: {fileID: 1452398101}
   - component: {fileID: 1452398104}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Cube (1)
   m_TagString: DynamicShadowObject
   m_Icon: {fileID: 0}
@@ -5989,9 +5822,6 @@ Transform:
   - {fileID: 1861733918}
   - {fileID: 249988606}
   - {fileID: 1201556737}
-  - {fileID: 195430745}
-  - {fileID: 1096065712}
-  - {fileID: 1337355667}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 45, z: 0}
 --- !u!114 &1468366418
@@ -6008,7 +5838,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   layerMask:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 0
   meshRenderers:
   - {fileID: 221449116}
   - {fileID: 1671999682}
@@ -6323,7 +6153,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1615797643
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6420,7 +6250,7 @@ GameObject:
   - component: {fileID: 1648107569}
   - component: {fileID: 1648107568}
   - component: {fileID: 1648107571}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Cube (2)
   m_TagString: DynamicShadowObject
   m_Icon: {fileID: 0}
@@ -6545,7 +6375,7 @@ GameObject:
   - component: {fileID: 1671999682}
   - component: {fileID: 1671999683}
   - component: {fileID: 1671999686}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Cube (6)
   m_TagString: DynamicShadowObject
   m_Icon: {fileID: 0}
@@ -7418,10 +7248,6 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8686053663121692227, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
-      propertyPath: lightMode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8686053663121692227, guid: 8ea2dac1befb2cd43a297799c8ad3985, type: 3}
       propertyPath: lightIndex
       value: 6
       objectReference: {fileID: 0}
@@ -7962,7 +7788,7 @@ GameObject:
   - component: {fileID: 2035894517}
   - component: {fileID: 2035894518}
   - component: {fileID: 2035894521}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Cube (3)
   m_TagString: DynamicShadowObject
   m_Icon: {fileID: 0}
