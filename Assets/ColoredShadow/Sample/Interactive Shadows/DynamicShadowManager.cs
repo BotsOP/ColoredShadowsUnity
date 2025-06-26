@@ -53,11 +53,16 @@ public class DynamicShadowManager : MonoBehaviour
         
         RaycastHit hit;
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-
+        
         if (Physics.Raycast(ray, out hit) && Input.GetMouseButtonDown(0))
         {
-            if (hit.transform.gameObject.tag == "DynamicShadowObject")
+            Vector3 dir = renderCamera.transform.position - hit.point;
+            Debug.DrawRay(hit.point, dir);
+            if (Physics.Raycast(hit.point, dir, out hit, 9999f, layerMask) && Input.GetMouseButtonDown(0))
             {
+                if(hit.transform.GetComponent<MeshRenderer>() != goToMeshRenderer)
+                    return;
+                
                 MeshRenderer meshRenderer = meshRenderers[Random.Range(0, meshRenderers.Length)];
                 while (meshRenderer == goToMeshRenderer)
                 {

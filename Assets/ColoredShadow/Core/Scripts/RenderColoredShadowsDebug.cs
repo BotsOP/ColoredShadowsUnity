@@ -14,6 +14,7 @@ namespace ColoredShadows.Scripts
 {
     public class RenderColoredShadowsDebug : ScriptableRenderPass
     {
+#if UNITY_EDITOR
         private RTHandle shadowMapID;
         private RTHandle shadowMapDepth;
         private const string shadowMapIDName = "_CustomSceneShadowMapID";
@@ -127,7 +128,7 @@ namespace ColoredShadows.Scripts
             shadowMapIDDesc.msaaSamples = 1;
             RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: shadowMapIDName);
             TextureHandle destinationColorRT = renderGraph.ImportTexture(shadowMapID);
-            
+
             Shader.SetGlobalFloat("_NumberSize", ColShadowDebug.ShadowNumberSize * 4);
 
             using (var builder = renderGraph.AddRasterRenderPass<PassData>("Capture Scene Custom Shadow Data", out var passData, profilingSampler))
@@ -418,5 +419,6 @@ namespace ColoredShadows.Scripts
         }
 
         #endregion
+    #endif
     }
 }

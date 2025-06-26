@@ -48,6 +48,7 @@ namespace ColoredShadows.Scripts
         
         private Mesh[] numberMeshes;
         private MeshRenderer[] meshRenderers;
+        #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
             if (SceneView.lastActiveSceneView == null || !ColShadowDebug.IsEnabled)
@@ -91,6 +92,7 @@ namespace ColoredShadows.Scripts
                 Gizmos.color = ColShadowDebug.CustomLightNumberColor;
                 Quaternion lookRotation = Quaternion.LookRotation(dir) * Quaternion.Euler(-90, -90, 90);
                 Vector3 middlePos = customLight.transform.position + dir.normalized * 0f;
+                middlePos.y += 0.4f + ColShadowDebug.CustomLightNumberSize * 0.15f;
                 StringToMeshNumber(customLight.addToShadowID.ToString("0.#"), middlePos, lookRotation, ColShadowDebug.CustomLightNumberSize);
             }
         }
@@ -228,7 +230,6 @@ namespace ColoredShadows.Scripts
                     break;
             }
         }
-
         private void SceneViewGUI(SceneView sceneView)
         {
             if(!Selection.Contains(gameObject))
@@ -258,6 +259,7 @@ namespace ColoredShadows.Scripts
 
             Handles.EndGUI();
         }
+        #endif
 
         private void Update()
         {
@@ -265,6 +267,7 @@ namespace ColoredShadows.Scripts
             {
                 foreach (VisualEffect visualEffect in visualEffects)
                 {
+                    // Debug.Log($"{!visualEffect.HasGraphicsBuffer("_ShadowPositions")} {!visualEffect.HasInt("_ShadowPositionsCount")}");
                     if (!visualEffect.HasGraphicsBuffer("_ShadowPositions") || !visualEffect.HasInt("_ShadowPositionsCount"))
                         continue;
                     
@@ -285,16 +288,19 @@ namespace ColoredShadows.Scripts
             {
                 overrideShader = Shader.Find("ColoredShadow/OverrideColShadow_UV_UVSize");
             }
-            
-            SetNumberMeshes();
 
-            SceneView.duringSceneGui += SceneViewGUI;
             
+#if UNITY_EDITOR
+            SetNumberMeshes();
+            SceneView.duringSceneGui += SceneViewGUI;
+#endif
             UpdateLightIndices();
         }
         private void OnDisable()
         {
+#if UNITY_EDITOR
             SceneView.duringSceneGui -= SceneViewGUI;
+#endif
             UpdateLightIndices();
         }
         

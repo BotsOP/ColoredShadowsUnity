@@ -78,13 +78,16 @@ void SampleShadowMap (uint2 id : SV_DispatchThreadID)
         ShadowData shadowData;
         shadowData.pos = worldPos;
         shadowData.normal = CalculateWorldNormal(worldPos, worldPosY, worldPosX);
+        shadowData.shadowID = shadow.r;
+
+        //Particle UV
         float shadowSize = _RelativeUVSize == 1 ? shadow.a : 1;
         shadowSize *= _ShadowUVMultiplier;
         float2 shadowUVX = float2(shadow.g - shadowSize, shadow.g + shadowSize);
         float2 shadowUVY = float2(shadow.b - shadowSize, shadow.b + shadowSize);
         float2 shadowUV = float2(remap(uv.x, shadowUVX.x, shadowUVX.y, 0, 1), remap(uv.y, shadowUVY.x, shadowUVY.y, 0, 1));
         shadowData.uv = shadowUV;
-        shadowData.shadowID = shadow.r;
+        
         _OutputBuffer.Append(shadowData);
     }
 }

@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enableDebugMode: 1
   customLightNumberSize: 4
-  casterNumberSize: 2
-  shadowNumberSize: 1
-  casterNumberColor: {r: 1, g: 0, b: 1, a: 1}
-  customLightNumberColor: {r: 0, g: 1, b: 0, a: 1}
-  shadowNumberColor: {r: 0, g: 0, b: 0, a: 1}
+  casterNumberSize: 3.85
+  shadowNumberSize: 0.63
+  casterNumberColor: {r: 0, g: 0, b: 0, a: 1}
+  customLightNumberColor: {r: 0.029230118, g: 0, b: 1, a: 1}
+  shadowNumberColor: {r: 1, g: 1, b: 1, a: 1}
