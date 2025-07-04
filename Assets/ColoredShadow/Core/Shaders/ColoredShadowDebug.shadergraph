@@ -262,9 +262,6 @@
             "m_Id": "53d055d05b2945259f76a1f7f6a499a0"
         },
         {
-            "m_Id": "809f86da2d6d43a3aa1efa9e61dfd023"
-        },
-        {
             "m_Id": "0447282917834e97b2d698b7826d9e33"
         },
         {
@@ -5957,44 +5954,6 @@
 
 {
     "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.UVNode",
-    "m_ObjectId": "809f86da2d6d43a3aa1efa9e61dfd023",
-    "m_Group": {
-        "m_Id": ""
-    },
-    "m_Name": "UV",
-    "m_DrawState": {
-        "m_Expanded": true,
-        "m_Position": {
-            "serializedVersion": "2",
-            "x": -2700.6669921875,
-            "y": 1314.0,
-            "width": 147.33349609375,
-            "height": 132.0
-        }
-    },
-    "m_Slots": [
-        {
-            "m_Id": "c00823bb9c84465c8ae39ad8f431eeeb"
-        }
-    ],
-    "synonyms": [
-        "texcoords",
-        "coords",
-        "coordinates"
-    ],
-    "m_Precision": 0,
-    "m_PreviewExpanded": false,
-    "m_DismissedVersion": 0,
-    "m_PreviewMode": 0,
-    "m_CustomColors": {
-        "m_SerializableColors": []
-    },
-    "m_OutputChannel": 0
-}
-
-{
-    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.SampleTexture2DNode",
     "m_ObjectId": "81437362798640a4a1ae382a21803ba9",
     "m_Group": {
@@ -8332,31 +8291,6 @@
         "z": 0.0,
         "w": 0.0
     }
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.Vector4MaterialSlot",
-    "m_ObjectId": "c00823bb9c84465c8ae39ad8f431eeeb",
-    "m_Id": 0,
-    "m_DisplayName": "Out",
-    "m_SlotType": 1,
-    "m_Hidden": false,
-    "m_ShaderOutputName": "Out",
-    "m_StageCapability": 3,
-    "m_Value": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0,
-        "w": 0.0
-    },
-    "m_DefaultValue": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0,
-        "w": 0.0
-    },
-    "m_Labels": []
 }
 
 {
