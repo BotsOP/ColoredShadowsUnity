@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/ColoredShadow/Conference/SampleColoredShadowScene.unity.meta
 guid: 11a9d13bece3ae6429dcb4917b1d449c
+========
+guid: a67d8841a6789ce45a06c10984550f0f
+>>>>>>>> origin/Exposure:Assets/ColoredShadow/Conference/VFX/VFX.unity.meta
 DefaultImporter:
   externalObjects: {}
   userData: 

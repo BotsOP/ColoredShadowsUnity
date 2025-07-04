@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/ColoredShadow/Core/Shaders.meta
 guid: 444ce99f06debad428d5dd6d0a3ecee1
+========
+guid: e9f693669af91aa45ad615fc681ed29f
+>>>>>>>> origin/Exposure:Assets/TextMesh Pro/Shaders.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}

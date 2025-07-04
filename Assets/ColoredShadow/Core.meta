@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/ColoredShadow/Core.meta
 guid: fa68cd2f530a5264490302b9418f5e8a
+========
+guid: 70d1f7576afabcd46ae214b87268403c
+>>>>>>>> origin/Exposure:Assets/ColoredShadow/Core/Scripts.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}

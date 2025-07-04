@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/ColoredShadow/Conference/ColoredShadow_Floor1.shadergraph.meta
 guid: 0cf279e0a50eb6a4eacafe83ca38c838
+========
+guid: cd37fc8ecddb8b64296494692be87950
+>>>>>>>> origin/Exposure:Assets/ColoredShadow/Conference/FloorCon 1.shadergraph.meta
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}

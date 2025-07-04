@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/ColoredShadow/Conference/New Material 1.mat.meta
 guid: 36821a2337b6f6a4e93cd891d10eb5b7
+========
+guid: 9977eca507db1ea44ab75eb5e6060673
+>>>>>>>> origin/Exposure:Assets/ColoredShadow/Conference/Shader Graphs_FloorCon.mat.meta
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 2100000

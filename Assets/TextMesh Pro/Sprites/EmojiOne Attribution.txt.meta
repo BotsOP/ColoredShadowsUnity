@@ -1,6 +1,11 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/TextMesh Pro/Sprites/EmojiOne Attribution.txt.meta
 guid: 381dcb09d5029d14897e55f98031fca5
 TextScriptImporter:
+========
+guid: 8ea2dac1befb2cd43a297799c8ad3985
+PrefabImporter:
+>>>>>>>> origin/Exposure:Assets/ColoredShadow/Core/Prefabs/CustomLight.prefab.meta
   externalObjects: {}
   userData: 
   assetBundleName: 

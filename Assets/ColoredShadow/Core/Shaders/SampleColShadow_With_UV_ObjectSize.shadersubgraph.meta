@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/ColoredShadow/Core/Shaders/SampleColShadow_With_UV_ObjectSize.shadersubgraph.meta
 guid: c70a81a2f2f651741ad59d47d71b8c42
+========
+guid: 9dbbb85b0801b1c47959819c9f51a01d
+>>>>>>>> origin/Exposure:Assets/ColoredShadow/Core/Shaders/SampleColShadow_Custom_Output.shadersubgraph.meta
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}

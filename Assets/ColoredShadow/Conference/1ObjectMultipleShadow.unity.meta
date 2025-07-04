@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/ColoredShadow/Conference/1ObjectMultipleShadow.unity.meta
 guid: b83cc5a103ca49741827290bb31c1612
+========
+guid: a60aee347891522499c945742c9fccea
+>>>>>>>> origin/Exposure:Assets/ColoredShadow/Conference/DebugShadowIDNummersShowcase.unity.meta
 DefaultImporter:
   externalObjects: {}
   userData: 
