@@ -1,0 +1,22 @@
+{
+    "name": "ShadowVFX",
+    "rootNamespace": "",
+    "references": [
+        "Unity.VisualEffectGraph.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.visualeffectgraph",
+            "expression": "",
+            "define": "VFX_AVAILABLE"
+        }
+    ],
+    "noEngineReferences": false
+}
