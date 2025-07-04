@@ -5,6 +5,7 @@ using Random = UnityEngine.Random;
 public class DynamicShadowManager : MonoBehaviour
 {
     public LayerMask layerMask;
+    public LayerMask layerMask2;
     [SerializeField] private MeshRenderer[] meshRenderers;
     [SerializeField] private Camera renderCamera;
     [SerializeField] private Camera mainCamera;
@@ -54,7 +55,7 @@ public class DynamicShadowManager : MonoBehaviour
         RaycastHit hit;
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         
-        if (Physics.Raycast(ray, out hit) && Input.GetMouseButtonDown(0))
+        if (Physics.Raycast(ray, out hit, 9999, layerMask2) && Input.GetMouseButtonDown(0))
         {
             Vector3 dir = renderCamera.transform.position - hit.point;
             Debug.DrawRay(hit.point, dir);

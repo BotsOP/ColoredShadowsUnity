@@ -48,7 +48,7 @@ namespace ColoredShadows.Scripts
             debugBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, sizeof(float));
         }
 
-        internal void Init(RenderPassEvent renderPassEvent)
+        private void Init(RenderPassEvent renderPassEvent)
         {
             this.renderPassEvent = renderPassEvent;
             RenderQueueRange renderQueueRange = RenderQueueRange.transparent;
@@ -72,32 +72,32 @@ namespace ColoredShadows.Scripts
             cmd.SetViewport(new Rect(0, 0, resolutionSizeX, resolutionSizeY));
             cmd.SetViewProjectionMatrices(passData.viewMatrix, projectionMatrix);
             cmd.DrawRendererList(passData.rendererListHdl1);
+
+            if (passData.lightMode != LightMode.Point)
+                return;
             
-            if (passData.lightMode == LightMode.Point)
-            {
-                cmd.SetViewport(new Rect(resolutionSizeX * 1, 0, resolutionSizeX, resolutionSizeY));
-                cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * passData.viewMatrix, projectionMatrix);
-                cmd.DrawRendererList(passData.rendererListHdl2);
+            cmd.SetViewport(new Rect(resolutionSizeX * 1, 0, resolutionSizeX, resolutionSizeY));
+            cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * passData.viewMatrix, projectionMatrix);
+            cmd.DrawRendererList(passData.rendererListHdl2);
 
-                cmd.SetViewport(new Rect(resolutionSizeX * 2, 0, resolutionSizeX, resolutionSizeY));
-                cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0)) * passData.viewMatrix, projectionMatrix);
-                cmd.DrawRendererList(passData.rendererListHdl3);
+            cmd.SetViewport(new Rect(resolutionSizeX * 2, 0, resolutionSizeX, resolutionSizeY));
+            cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0)) * passData.viewMatrix, projectionMatrix);
+            cmd.DrawRendererList(passData.rendererListHdl3);
 
-                cmd.SetViewport(new Rect(resolutionSizeX * 3, 0, resolutionSizeX, resolutionSizeY));
-                cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 270, 0)) * passData.viewMatrix, projectionMatrix);
-                cmd.DrawRendererList(passData.rendererListHdl4);
+            cmd.SetViewport(new Rect(resolutionSizeX * 3, 0, resolutionSizeX, resolutionSizeY));
+            cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 270, 0)) * passData.viewMatrix, projectionMatrix);
+            cmd.DrawRendererList(passData.rendererListHdl4);
 
-                cmd.SetViewport(new Rect(resolutionSizeX * 4, 0, resolutionSizeX, resolutionSizeY));
-                cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(90, 0, 0)) * passData.viewMatrix, projectionMatrix);
-                cmd.DrawRendererList(passData.rendererListHdl5);
+            cmd.SetViewport(new Rect(resolutionSizeX * 4, 0, resolutionSizeX, resolutionSizeY));
+            cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(90, 0, 0)) * passData.viewMatrix, projectionMatrix);
+            cmd.DrawRendererList(passData.rendererListHdl5);
 
-                cmd.SetViewport(new Rect(resolutionSizeX * 5, 0, resolutionSizeX, resolutionSizeY));
-                cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(270, 0, 0)) * passData.viewMatrix, projectionMatrix);
-                cmd.DrawRendererList(passData.rendererListHdl6);
-            }
+            cmd.SetViewport(new Rect(resolutionSizeX * 5, 0, resolutionSizeX, resolutionSizeY));
+            cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(270, 0, 0)) * passData.viewMatrix, projectionMatrix);
+            cmd.DrawRendererList(passData.rendererListHdl6);
         }
         
-        private static void ExecutePass2(PassData passData, RasterCommandBuffer cmd, bool isYFlipped)
+        private static void ExecutePassVFX(PassData passData, RasterCommandBuffer cmd, bool isYFlipped)
         {
             Matrix4x4 projectionMatrix = passData.projectionMatrix;
             cmd.DisableScissorRect();
@@ -108,32 +108,32 @@ namespace ColoredShadows.Scripts
             cmd.SetViewport(new Rect(0, 0, resolutionSizeX, resolutionSizeY));
             cmd.SetViewProjectionMatrices(passData.viewMatrix, projectionMatrix);
             cmd.DrawRendererList(passData.rendererListHdlVFX1);
+
+            if (passData.lightMode != LightMode.Point)
+                return;
             
-            if (passData.lightMode == LightMode.Point)
-            {
-                cmd.SetViewport(new Rect(resolutionSizeX * 1, 0, resolutionSizeX, resolutionSizeY));
-                cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * passData.viewMatrix, projectionMatrix);
-                cmd.DrawRendererList(passData.rendererListHdlVFX2);
+            cmd.SetViewport(new Rect(resolutionSizeX * 1, 0, resolutionSizeX, resolutionSizeY));
+            cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * passData.viewMatrix, projectionMatrix);
+            cmd.DrawRendererList(passData.rendererListHdlVFX2);
 
-                cmd.SetViewport(new Rect(resolutionSizeX * 2, 0, resolutionSizeX, resolutionSizeY));
-                cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0)) * passData.viewMatrix, projectionMatrix);
-                cmd.DrawRendererList(passData.rendererListHdlVFX3);
+            cmd.SetViewport(new Rect(resolutionSizeX * 2, 0, resolutionSizeX, resolutionSizeY));
+            cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0)) * passData.viewMatrix, projectionMatrix);
+            cmd.DrawRendererList(passData.rendererListHdlVFX3);
 
-                cmd.SetViewport(new Rect(resolutionSizeX * 3, 0, resolutionSizeX, resolutionSizeY));
-                cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 270, 0)) * passData.viewMatrix, projectionMatrix);
-                cmd.DrawRendererList(passData.rendererListHdlVFX4);
+            cmd.SetViewport(new Rect(resolutionSizeX * 3, 0, resolutionSizeX, resolutionSizeY));
+            cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(0, 270, 0)) * passData.viewMatrix, projectionMatrix);
+            cmd.DrawRendererList(passData.rendererListHdlVFX4);
 
-                cmd.SetViewport(new Rect(resolutionSizeX * 4, 0, resolutionSizeX, resolutionSizeY));
-                cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(90, 0, 0)) * passData.viewMatrix, projectionMatrix);
-                cmd.DrawRendererList(passData.rendererListHdlVFX5);
+            cmd.SetViewport(new Rect(resolutionSizeX * 4, 0, resolutionSizeX, resolutionSizeY));
+            cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(90, 0, 0)) * passData.viewMatrix, projectionMatrix);
+            cmd.DrawRendererList(passData.rendererListHdlVFX5);
 
-                cmd.SetViewport(new Rect(resolutionSizeX * 5, 0, resolutionSizeX, resolutionSizeY));
-                cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(270, 0, 0)) * passData.viewMatrix, projectionMatrix);
-                cmd.DrawRendererList(passData.rendererListHdlVFX6);
-            }
+            cmd.SetViewport(new Rect(resolutionSizeX * 5, 0, resolutionSizeX, resolutionSizeY));
+            cmd.SetViewProjectionMatrices(Matrix4x4.Rotate(Quaternion.Euler(270, 0, 0)) * passData.viewMatrix, projectionMatrix);
+            cmd.DrawRendererList(passData.rendererListHdlVFX6);
         }
         
-        static void ExecutePassCompute(PassDataCompute data, ComputeGraphContext cgContext)
+        static void ExecutePassVFXCompute(PassDataCompute data, ComputeGraphContext cgContext)
         {
             cgContext.cmd.SetComputeMatrixParam(data.cs, "_InvProjViewMatrix1", Matrix4x4.Inverse(data.projMatrix * data.viewMatrix));
             cgContext.cmd.SetComputeFloatParam(data.cs, "_NearPlane", data.nearPlane);
@@ -226,10 +226,6 @@ namespace ColoredShadows.Scripts
 
             Matrix4x4 viewMatrix = Matrix4x4.zero;
             Matrix4x4 projectionMatrix = Matrix4x4.zero;
-            TextureHandle destinationColor;
-            TextureHandle destinationDepth;
-            TextureHandle destinationColorRT;
-            TextureHandle destinationDepthRT;
             int textureXMultiplier = 1;
 
             int vfxSamplingSize = Mathf.Max(customLight.vfxSamplingSize, 1);
@@ -288,13 +284,13 @@ namespace ColoredShadows.Scripts
             destinationDescColor.name = "SOURCE_COLOR";
             destinationDescColor.width = textureSizeX;
             destinationDescColor.height = textureSizeY;
-            destinationColor = renderGraph.CreateTexture(destinationDescColor);
+            TextureHandle destinationColor = renderGraph.CreateTexture(destinationDescColor);
         
             var destinationDescDepth = renderGraph.GetTextureDesc(resourceData.activeDepthTexture);
             destinationDescDepth.name = "SOURCE_DEPTH";
             destinationDescDepth.width = textureSizeX;
             destinationDescDepth.height = textureSizeY;
-            destinationDepth = renderGraph.CreateTexture(destinationDescDepth);
+            TextureHandle destinationDepth = renderGraph.CreateTexture(destinationDescDepth);
         
             RenderTextureDescriptor shadowMapIDDesc = cameraData.cameraTargetDescriptor;
             shadowMapIDDesc.colorFormat = RenderTextureFormat.ARGBInt;
@@ -304,18 +300,8 @@ namespace ColoredShadows.Scripts
             shadowMapIDDesc.depthBufferBits = 0;
             shadowMapIDDesc.msaaSamples = 1;
             RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: shadowMapIDName + customLight.lightIndex );
-            destinationColorRT = renderGraph.ImportTexture(shadowMapID);
+            TextureHandle destinationColorRT = renderGraph.ImportTexture(shadowMapID);
             
-            // RenderTextureDescriptor shadowMapDepthDesc = cameraData.cameraTargetDescriptor;
-            // shadowMapDepthDesc.depthStencilFormat = GraphicsFormat.D32_SFloat;
-            // shadowMapDepthDesc.colorFormat = RenderTextureFormat.RFloat;
-            // shadowMapDepthDesc.width = textureSizeX;
-            // shadowMapDepthDesc.height = textureSizeY;
-            // shadowMapDepthDesc.depthBufferBits = 0;
-            // shadowMapDepthDesc.msaaSamples = 1;
-            // RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapDepth, shadowMapDepthDesc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: shadowMapDepthName + customLight.lightIndex );
-            // destinationDepthRT = renderGraph.ImportTexture(shadowMapDepth);
-        
             using (var builder = renderGraph.AddRasterRenderPass<PassData>("Capture Custom Shadow Data", out var passData, profilingSampler))
             {
                 passData.color = destinationColor;
@@ -357,11 +343,11 @@ namespace ColoredShadows.Scripts
             for (int i = 0; customValuesCopy.Count < 12; i++)
             {
                 customValuesCopy.Add(0);
-                if (i > 12)
-                {
-                    Debug.LogError($"Cannot fill Custom Values list up to 12 entries");
-                    break;
-                }
+                if (i <= 12)
+                    continue;
+                
+                Debug.LogError($"Cannot fill Custom Values list up to 12 entries");
+                break;
             }
 
             lightInformations[customLight.lightIndex] = new LightInformation(
@@ -420,7 +406,7 @@ namespace ColoredShadows.Scripts
                     builder.SetRenderFunc((PassData data, RasterGraphContext rgContext) =>
                     {
                         var isYFlipped = data.cameraData.IsRenderTargetProjectionMatrixFlipped(data.color);
-                        ExecutePass2(data, rgContext.cmd, isYFlipped);
+                        ExecutePassVFX(data, rgContext.cmd, isYFlipped);
                     });
                 }
             
@@ -457,7 +443,7 @@ namespace ColoredShadows.Scripts
                     builder.AllowPassCulling(false);
                     builder.UseTexture(destinationColor);
                     builder.UseTexture(destinationDepth);
-                    builder.SetRenderFunc((PassDataCompute data, ComputeGraphContext context) => ExecutePassCompute(data, context));
+                    builder.SetRenderFunc((PassDataCompute data, ComputeGraphContext context) => ExecutePassVFXCompute(data, context));
                 }
                 customLight.vfxAppendBuffer = outputBuffer;
                 customLight.vfxAppendCount = outputDebug[0];
@@ -591,22 +577,8 @@ namespace ColoredShadows.Scripts
             debugBuffer?.Release();
             debugBuffer = null;
         }
-
-        #region BoilerPlate
-
-        // public static readonly int viewMatrixID = Shader.PropertyToID("unity_MatrixV");
-        // public static readonly int projectionMatrixID = Shader.PropertyToID("glstate_matrix_projection");
-        // public static readonly int viewAndProjectionMatrixID = Shader.PropertyToID("unity_MatrixVP");
-        //
-        // static void SetViewAndProjectionMatrices(RasterCommandBuffer cmd, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
-        // {
-        //     Matrix4x4 viewAndProjectionMatrix = projectionMatrix * viewMatrix;
-        //     cmd.SetGlobalMatrix(viewMatrixID, viewMatrix);
-        //     cmd.SetGlobalMatrix(projectionMatrixID, projectionMatrix);
-        //     cmd.SetGlobalMatrix(viewAndProjectionMatrixID, viewAndProjectionMatrix);
-        // }
-    
-        public static Matrix4x4 GetViewMatrix(Vector3 cameraPosition, Quaternion cameraRotation)
+        
+        private static Matrix4x4 GetViewMatrix(Vector3 cameraPosition, Quaternion cameraRotation)
         {
             Matrix4x4 rotationMatrix = Matrix4x4.Rotate(Quaternion.Inverse(cameraRotation));
             Matrix4x4 translationMatrix = Matrix4x4.Translate(-cameraPosition);
@@ -618,117 +590,5 @@ namespace ColoredShadows.Scripts
         
             return viewMatrix;
         }
-    
-        public static Matrix4x4 LookAtLH(Vector3 eye, Vector3 center, Vector3 up)
-        {
-            Vector3 f = (center - eye).normalized;        // Forward (Z+)
-            Vector3 s = Vector3.Cross(up, f).normalized;  // Right (X+)
-            Vector3 u = Vector3.Cross(f, s);              // Up (Y+)
-
-            Matrix4x4 result = Matrix4x4.identity;
-
-            result[0, 0] = -s.x;
-            result[0, 1] = -s.y;
-            result[0, 2] = -s.z;
-
-            result[1, 0] = u.x;
-            result[1, 1] = u.y;
-            result[1, 2] = u.z;
-
-            result[2, 0] = f.x;
-            result[2, 1] = f.y;
-            result[2, 2] = f.z;
-
-            result[3, 0] = -Vector3.Dot(s, eye);
-            result[3, 1] = -Vector3.Dot(u, eye);
-            result[2, 3] = -Vector3.Dot(f, eye);
-
-            return result;
-        }
-
-    
-    
-        internal enum URPProfileId
-        {
-            // CPU
-            UniversalRenderTotal,
-            UpdateVolumeFramework,
-            RenderCameraStack,
-
-            // GPU
-            AdditionalLightsShadow,
-            ColorGradingLUT,
-            CopyColor,
-            CopyDepth,
-            DrawDepthNormalPrepass,
-            DepthPrepass,
-            UpdateReflectionProbeAtlas,
-
-            // DrawObjectsPass
-            DrawOpaqueObjects,
-            DrawTransparentObjects,
-            DrawScreenSpaceUI,
-
-            //Full Record Render Graph
-            RecordRenderGraph,
-
-            // RenderObjectsPass
-            //RenderObjects,
-
-            LightCookies,
-
-            MainLightShadow,
-            ResolveShadows,
-            SSAO,
-
-            // PostProcessPass
-            StopNaNs,
-            SMAA,
-            GaussianDepthOfField,
-            BokehDepthOfField,
-            TemporalAA,
-            MotionBlur,
-            PaniniProjection,
-            UberPostProcess,
-            Bloom,
-            LensFlareDataDrivenComputeOcclusion,
-            LensFlareDataDriven,
-            LensFlareScreenSpace,
-            DrawMotionVectors,
-            DrawFullscreen,
-
-            // PostProcessPass RenderGraph
-            [HideInDebugUI] RG_SetupPostFX,
-            [HideInDebugUI] RG_StopNaNs,
-            [HideInDebugUI] RG_SMAAMaterialSetup,
-            [HideInDebugUI] RG_SMAAEdgeDetection,
-            [HideInDebugUI] RG_SMAABlendWeight,
-            [HideInDebugUI] RG_SMAANeighborhoodBlend,
-            [HideInDebugUI] RG_SetupDoF,
-            [HideInDebugUI] RG_DOFComputeCOC,
-            [HideInDebugUI] RG_DOFDownscalePrefilter,
-            [HideInDebugUI] RG_DOFBlurH,
-            [HideInDebugUI] RG_DOFBlurV,
-            [HideInDebugUI] RG_DOFBlurBokeh,
-            [HideInDebugUI] RG_DOFPostFilter,
-            [HideInDebugUI] RG_DOFComposite,
-            [HideInDebugUI] RG_TAA,
-            [HideInDebugUI] RG_TAACopyHistory,
-            [HideInDebugUI] RG_MotionBlur,
-            [HideInDebugUI] RG_BloomSetup,
-            [HideInDebugUI] RG_BloomPrefilter,
-            [HideInDebugUI] RG_BloomDownsample,
-            [HideInDebugUI] RG_BloomUpsample,
-            [HideInDebugUI] RG_UberPostSetupBloomPass,
-            [HideInDebugUI] RG_UberPost,
-            [HideInDebugUI] RG_FinalSetup,
-            [HideInDebugUI] RG_FinalFSRScale,
-            [HideInDebugUI] RG_FinalBlit,
-
-            BlitFinalToBackBuffer,
-            DrawSkybox
-        }
-
-        #endregion
     }
 }

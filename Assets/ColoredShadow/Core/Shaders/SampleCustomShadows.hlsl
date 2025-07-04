@@ -217,10 +217,6 @@ float2 ConstrainToCardinalDirectionsFast(float2 direction)
 float GetMask(float2 uv, float2 testUV, int mapIndex, int textureSizeX, int textureSizeY, float2 offset = float2(0, 0))
 {
     float2 texelSize = float2(1, 1) / int2(textureSizeX, textureSizeY);
-    // float2 dir = float2(-1, 0) * length(texelSize);
-    // float2 dir = normalize(float2(uv - offset)) * length(texelSize);
-    // float2 dir = ConstrainToCardinalDirectionsFast(uv - offset) * length(texelSize);
-    // uv += dir;
     
     float2 subPixelOffset = ((frac(uv * int2(textureSizeX, textureSizeY)) - 0.5) * -1) / int2(textureSizeX, textureSizeY);
     float2 centerUV = uv;
@@ -285,7 +281,8 @@ struct LightInformation
 
 int CurrentAmountCustomLights;
 StructuredBuffer<LightInformation> ColoredShadowLightInformation;
-void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUVMultiplier, bool relativeUVSize, out float4 output, out float2 shadowUV, out float2 finalUV, out float3 lightPos, out float fallOffRange, out float mask, out float4 customValues1, out float4 customValues2, out float4 customValues3)
+void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUVMultiplier, bool relativeUVSize, out float4 output, out float2 shadowUV,
+    out float2 finalUV, out float3 lightPos, out float fallOffRange, out float mask, out float4 customValues1, out float4 customValues2, out float4 customValues3)
 {
     output = float4(0, 0, 0, 0);
     lightPos = float3(-999999999, -999999999, -999999999);
@@ -335,7 +332,6 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
                 fallOffRange = 1 - dist;
                 highestMask = tempMask;
                 mask = tempMask;
-                // mask = pow(tempMask * ceil(saturate(tempOutput.r)), 4);
                 finalUV = lightUv;
                 lowestDist = dist;
                 output = tempOutput;
