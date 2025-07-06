@@ -15,6 +15,7 @@ public class ColoredShadowsRenderFeature2 : ScriptableRendererFeature
         if (renderingData.cameraData.cameraType == CameraType.Preview
             || UniversalRenderer.IsOffscreenDepthTexture(ref renderingData.cameraData))
             return;
+        
         renderer.EnqueuePass(renderColoredShadows2);
     }
     

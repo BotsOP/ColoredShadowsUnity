@@ -25,10 +25,10 @@ namespace ColoredShadow.Core.Scripts
             );
         
             cameraLightPair = new Dictionary<Camera, CustomLight>();
-            foreach (CustomLight light in lights)
-            {
-                cameraLightPair.Add(light.transform.GetComponent<Camera>(), light);
-            }
+            // foreach (CustomLight light in lights)
+            // {
+            //     cameraLightPair.Add(light.transform.GetComponent<Camera>(), light);
+            // }
             lightInformations = new RenderColoredShadows.LightInformation[MAX_AMOUNT_CUSTOM_LIGHTS];
             lightInformationBuffer = new GraphicsBuffer(
                 GraphicsBuffer.Target.Structured,
