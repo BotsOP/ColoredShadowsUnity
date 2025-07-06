@@ -1,20 +1,22 @@
 using System.Collections.Generic;
+using ColoredShadows.Scripts;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.Universal;
 
-namespace ColoredShadows.Scripts
+namespace ColoredShadow.Core.Scripts
 {
     public class ColoredShadowsRenderFeature : ScriptableRendererFeature
     {
         public const int MAX_AMOUNT_CUSTOM_LIGHTS = 10;
         public ComputeShader cs;
     
-        private RenderColoredShadowsVFX renderShadowObjectsPassPoint;
+        private RenderColoredShadows renderShadowObjectsPassPoint;
         private Dictionary<Camera, CustomLight> cameraLightPair;
-        private RenderColoredShadowsVFX.LightInformation[] lightInformations;
+        private RenderColoredShadows.LightInformation[] lightInformations;
         private GraphicsBuffer lightInformationBuffer;
+        private MergeShadowMaps mergeShadowMaps;
         public override void Create()
         {
             CustomLight[] lights = FindObjectsByType<CustomLight>(
@@ -27,7 +29,7 @@ namespace ColoredShadows.Scripts
             {
                 cameraLightPair.Add(light.transform.GetComponent<Camera>(), light);
             }
-            lightInformations = new RenderColoredShadowsVFX.LightInformation[MAX_AMOUNT_CUSTOM_LIGHTS];
+            lightInformations = new RenderColoredShadows.LightInformation[MAX_AMOUNT_CUSTOM_LIGHTS];
             lightInformationBuffer = new GraphicsBuffer(
                 GraphicsBuffer.Target.Structured,
                 MAX_AMOUNT_CUSTOM_LIGHTS,
@@ -40,7 +42,8 @@ namespace ColoredShadows.Scripts
                 sizeof(float) * 12
             );
         
-            renderShadowObjectsPassPoint = new RenderColoredShadowsVFX("Render Custom Point Shadows depth", cs, lightInformations, lightInformationBuffer);
+            renderShadowObjectsPassPoint = new RenderColoredShadows("Render Custom Point Shadows depth", cs, lightInformations, lightInformationBuffer);
+            mergeShadowMaps = new MergeShadowMaps();
         }
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -65,6 +68,11 @@ namespace ColoredShadows.Scripts
             renderShadowObjectsPassPoint.customLight = cameraLightPair[camera];
         
             renderer.EnqueuePass(renderShadowObjectsPassPoint);
+
+            if (cameraLightPair[camera].lightIndex == 0)
+            {
+                renderer.EnqueuePass(mergeShadowMaps);
+            }
         }
 
         protected override void Dispose(bool disposing)
@@ -73,6 +81,15 @@ namespace ColoredShadows.Scripts
             lightInformationBuffer = null;
             renderShadowObjectsPassPoint?.Dispose();
             renderShadowObjectsPassPoint = null;
+        }
+    }
+    
+    public class CustomData : ContextItem {
+        public TextureHandle testTexture1;
+
+        public override void Reset()
+        {
+            testTexture1 = TextureHandle.nullHandle;
         }
     }
 }

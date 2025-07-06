@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using ColoredShadow.Core.Scripts;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
@@ -288,6 +289,7 @@ namespace ColoredShadows.Scripts
             {
                 overrideShader = Shader.Find("ColoredShadow/OverrideColShadow_UV_UVSize");
             }
+            CustomLightManager.customLights.Add(this);
 
             
 #if UNITY_EDITOR
@@ -298,6 +300,7 @@ namespace ColoredShadows.Scripts
         }
         private void OnDisable()
         {
+            CustomLightManager.customLights.Remove(this);
 #if UNITY_EDITOR
             SceneView.duringSceneGui -= SceneViewGUI;
 #endif

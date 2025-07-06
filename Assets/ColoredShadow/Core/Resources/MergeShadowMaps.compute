@@ -1,0 +1,15 @@
+#pragma kernel SampleShadowMap
+
+Texture2D<float4> _ColoredShadowMap1;
+Texture2D<float4> _ColoredShadowMap0;
+RWTexture2D<float4> _ShadowAtlas;
+
+[numthreads(32,32,1)]
+void SampleShadowMap (uint2 id : SV_DispatchThreadID)
+{
+    if (id.x < 1024 && id.y < 1024)
+    {
+        _ShadowAtlas[id] = _ColoredShadowMap1[id];
+    }
+}
+

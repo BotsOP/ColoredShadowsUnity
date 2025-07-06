@@ -67,14 +67,11 @@ namespace ColoredShadows.Scripts
             SortingCriteria sortingCriteria = passData.cameraData.defaultOpaqueSortFlags;
             DrawingSettings drawingSettings = RenderingUtils.CreateDrawingSettings(shaderTagIdList, renderingData,
                 passData.cameraData, lightData, sortingCriteria);
-            // drawingSettings.enableInstancing = true;
-            // drawingSettings.enableDynamicBatching = true;
+            drawingSettings.enableInstancing = true;
+            drawingSettings.enableDynamicBatching = true;
 
-            // drawingSettings.overrideMaterial = overrideMat;
             drawingSettings.overrideShader = (Shader.Find("ColoredShadow/OverrideColShadow_Debug"));
-            // drawingSettings.overrideMaterial.SetTexture("_UV_Image", texture);
             drawingSettings.overrideShaderPassIndex = 0;
-            // drawingSettings.overrideMaterialPassIndex = 0;
 
             CreateRendererListWithRenderStateBlock(renderGraph, ref renderingData.cullResults, drawingSettings, filteringSettings, renderStateBlock, ref passData.rendererListHdl1);
         }
@@ -105,29 +102,28 @@ namespace ColoredShadows.Scripts
             int textureSizeX = cameraData.cameraTargetDescriptor.width;
             int textureSizeY = cameraData.cameraTargetDescriptor.height + 1;
         
-            var destinationDescColor = renderGraph.GetTextureDesc(resourceData.cameraColor);
-            destinationDescColor.format = GraphicsFormat.R32G32B32A32_SFloat;
-            destinationDescColor.name = "SOURCE_COLOR";
+            var destinationDescColor = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
+            // destinationDescColor.format = GraphicsFormat.R32G32B32A32_SFloat;
+            destinationDescColor.name = "SOURCE_COLOR_DEBUG";
             destinationDescColor.width = textureSizeX;
             destinationDescColor.height = textureSizeY;
             destinationDescColor.enableRandomWrite = true;
+            // destinationDescColor.clearBuffer = false;
             TextureHandle destinationColor = renderGraph.CreateTexture(destinationDescColor);
         
             var destinationDescDepth = renderGraph.GetTextureDesc(resourceData.activeDepthTexture);
-            destinationDescDepth.name = "SOURCE_DEPTH";
+            destinationDescDepth.name = "SOURCE_DEPTH_DEBUG";
             destinationDescDepth.width = textureSizeX;
             destinationDescDepth.height = textureSizeY;
             TextureHandle destinationDepth = renderGraph.CreateTexture(destinationDescDepth);
         
-            RenderTextureDescriptor shadowMapIDDesc = cameraData.cameraTargetDescriptor;
-            // shadowMapIDDesc.colorFormat = RenderTextureFormat.ARGBInt;
-            // shadowMapIDDesc.colorFormat = RenderTextureFormat.ARGBFloat;
-            shadowMapIDDesc.width = textureSizeX;
-            shadowMapIDDesc.height = textureSizeY;
-            shadowMapIDDesc.depthBufferBits = 0;
-            shadowMapIDDesc.msaaSamples = 1;
-            RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: shadowMapIDName);
-            TextureHandle destinationColorRT = renderGraph.ImportTexture(shadowMapID);
+            // RenderTextureDescriptor shadowMapIDDesc = cameraData.cameraTargetDescriptor;
+            // shadowMapIDDesc.width = textureSizeX;
+            // shadowMapIDDesc.height = textureSizeY;
+            // shadowMapIDDesc.depthBufferBits = 0;
+            // shadowMapIDDesc.msaaSamples = 1;
+            // RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: shadowMapIDName);
+            // TextureHandle destinationColorRT = renderGraph.ImportTexture(shadowMapID);
 
             Shader.SetGlobalFloat("_NumberSize", ColShadowDebug.ShadowNumberSize * 4);
 
@@ -182,6 +178,8 @@ namespace ColoredShadows.Scripts
             
             RenderGraphUtils.BlitMaterialParameters para2 = new(destinationColor, resourceData.activeColorTexture, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
             renderGraph.AddBlitPass(para2, "CaptureSceneShadowsColor");
+
+            // resourceData.cameraColor = destinationColor;
         }
         
         static ShaderTagId[] s_ShaderTagValues = new ShaderTagId[1];
