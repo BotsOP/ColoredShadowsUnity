@@ -52,6 +52,8 @@ namespace ColoredShadows.Scripts
         public int TextureWidth => lightMode == LightMode.Point ? shadowTextureSize * 3 : shadowTextureSize;
         public int TextureHeight => lightMode == LightMode.Point ? shadowTextureSize * 2 : shadowTextureSize;
         public int TextureSurfaceArea => lightMode == LightMode.Point ? shadowTextureSize * 6 * shadowTextureSize : shadowTextureSize * shadowTextureSize;
+        public Matrix4x4 ProjectionMatrix => lightMode == LightMode.Point ? Matrix4x4.Ortho(-size, size, -size, size, nearPlane, farPlane) : Matrix4x4.Perspective(fov, aspectRatio, nearPlane, farPlane);
+        public Matrix4x4 ViewMatrix => GetViewMatrix();
 
         private int previousShadowTextureSize;
         
@@ -333,6 +335,18 @@ namespace ColoredShadows.Scripts
             {
                 lights[i].lightIndex = i;
             }
+        }
+        
+        public Matrix4x4 GetViewMatrix()
+        {
+            Matrix4x4 rotationMatrix = Matrix4x4.Rotate(Quaternion.Inverse(transform.rotation));
+            Matrix4x4 translationMatrix = Matrix4x4.Translate(-transform.position);
+            Matrix4x4 viewMatrix = rotationMatrix * translationMatrix;
+            viewMatrix.m20 *= -1;
+            viewMatrix.m21 *= -1;
+            viewMatrix.m22 *= -1;
+            viewMatrix.m23 *= -1;
+            return viewMatrix;
         }
     }
 

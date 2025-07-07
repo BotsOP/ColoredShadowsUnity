@@ -7,16 +7,14 @@ namespace ColoredShadow.Core.Scripts
 {
     public static class CustomLightManager
     {
-        private const int MAX_SIZE = 16384;
+        private const int MAX_SIZE = 16320;
         public static int CustomLightCount => _customLights.Count;
         private static List<CustomLight> _customLights;
-        private static List<Vector2Int> _shadowAtlasesSize;
+        private static Vector2Int _shadowAtlasesSize;
 
         static CustomLightManager()
         {
             _customLights = new List<CustomLight>();
-            _shadowAtlasesSize = new List<Vector2Int>();
-            _shadowAtlasesSize.Add(new Vector2Int(MAX_SIZE, MAX_SIZE));
         }
 
         public static CustomLight GetCustomLight(int index)
@@ -24,9 +22,9 @@ namespace ColoredShadow.Core.Scripts
             return _customLights[index];
         }
 
-        public static Vector2Int GetShadowAtlasSize(int index)
+        public static Vector2Int GetShadowAtlasSize()
         {
-            return _shadowAtlasesSize[index];
+            return _shadowAtlasesSize;
         }
 
         public static void AddCustomLight(CustomLight customLight)
@@ -51,49 +49,51 @@ namespace ColoredShadow.Core.Scripts
 
             Queue<CustomLight> remainingLights = new Queue<CustomLight>();
 
-            for (int i = 0; i < 5; i++)
+            int maxWidth = 0;
+            int maxHeight = 0;
+            while (availableSpaces.Count > 0 && customLightsQueue.Count > 0)
             {
-                int maxWidth = 0;
-                int maxHeight = 0;
-                while (availableSpaces.Count > 0 && customLightsQueue.Count > 0)
+                CustomLight customLight = customLightsQueue.Dequeue();
+                bool foundSpot = false;
+                for (int j = 0; j < availableSpaces.Count; j++)
                 {
-                    CustomLight customLight = customLightsQueue.Dequeue();
-                    if (Fits(customLight, availableSpaces.Peek))
-                    {
-                        Square square = availableSpaces.Pop();
-                        
-                        Square square1 = new Square(square.width, square.height - customLight.TextureHeight, square.minX, square.minY + customLight.TextureHeight);
-                        if(square1.width > 0 && square1.height > 0)
-                            availableSpaces.Insert(square1);
-                        
-                        Square square2 = new Square(square.width - customLight.TextureWidth, customLight.TextureHeight, square.minX + customLight.TextureWidth, square.minY);
-                        if(square2.width > 0 && square2.height > 0)
-                            availableSpaces.Insert(square2);
-                        
-                        customLight.shadowAtlasPosX = square.minX;
-                        customLight.shadowAtlasPosY = square.minY;
-                        customLight.shadowAtlasIndex = i;
+                    if (!Fits(customLight, availableSpaces.items[j]))
+                        continue;
 
-                        if (square.minX + customLight.TextureWidth > maxWidth)
-                            maxWidth = square.minX + customLight.TextureWidth;
-                        if (square.minY + customLight.TextureHeight > maxHeight)
-                            maxHeight = square.minY + customLight.TextureHeight;
-                    }
-                    else
-                    {
-                        remainingLights.Enqueue(customLight);
-                    }
+                    foundSpot = true;
+                    Square square = availableSpaces.Pop();
+                    
+                    Square square1 = new Square(square.width, square.height - customLight.TextureHeight, square.minX, square.minY + customLight.TextureHeight);
+                    if(square1.width > 0 && square1.height > 0)
+                        availableSpaces.Insert(square1);
+                    
+                    Square square2 = new Square(square.width - customLight.TextureWidth, customLight.TextureHeight, square.minX + customLight.TextureWidth, square.minY);
+                    if(square2.width > 0 && square2.height > 0)
+                        availableSpaces.Insert(square2);
+                    
+                    customLight.shadowAtlasPosX = square.minX;
+                    customLight.shadowAtlasPosY = square.minY;
+
+                    if (square.minX + customLight.TextureWidth > maxWidth)
+                        maxWidth = square.minX + customLight.TextureWidth;
+                    if (square.minY + customLight.TextureHeight > maxHeight)
+                        maxHeight = square.minY + customLight.TextureHeight;
+                    
+                    break;
                 }
                 
-                if(_shadowAtlasesSize.Count <= i)
-                    _shadowAtlasesSize.Add(new Vector2Int(maxWidth, maxHeight));
-                _shadowAtlasesSize[i] = new Vector2Int(maxWidth, maxHeight);
+                if(!foundSpot)
+                    remainingLights.Enqueue(customLight);
                 
                 if(customLightsQueue.Count <= 0)
                     break;
+            }
 
-                customLightsQueue = new Queue<CustomLight>(remainingLights);
-                remainingLights.Clear();
+            _shadowAtlasesSize = new Vector2Int(maxWidth, maxHeight);
+            
+            foreach (CustomLight remainingLight in remainingLights)
+            {
+                Debug.Log($"Couldnt find space for {remainingLight.gameObject.name}");
             }
         }
 
@@ -126,7 +126,7 @@ namespace ColoredShadow.Core.Scripts
     public enum HeapType { MinHeap, MaxHeap }
     public class Heap<T> where T : IComparable<T>
     {
-        private readonly List<T> items = new List<T>();
+        public List<T> items = new List<T>();
         private readonly HeapType type;
 
         public T Peek => items.Count > 0 ? items[0] : throw new InvalidOperationException("Heap is empty.");

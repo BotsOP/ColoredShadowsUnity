@@ -1,23 +1,46 @@
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
-public class ColoredShadowsRenderFeature2 : ScriptableRendererFeature
+namespace ColoredShadow.Core.Scripts
 {
-    private RenderColoredShadows2 renderColoredShadows2;
+    public class ColoredShadowsRenderFeature2 : ScriptableRendererFeature
+    {
+        private RenderColoredShadows2 renderColoredShadows2;
+        private RenderColoredShadows.LightInformation[] lightInformations;
+        private GraphicsBuffer lightInformationBuffer;
 
-    public override void Create()
-    {
-        renderColoredShadows2 = new RenderColoredShadows2();
-    }
-    
-    public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
-    {
-        if (renderingData.cameraData.cameraType == CameraType.Preview
-            || UniversalRenderer.IsOffscreenDepthTexture(ref renderingData.cameraData))
-            return;
+        public override void Create()
+        {
+            lightInformationBuffer = new GraphicsBuffer(
+                GraphicsBuffer.Target.Structured,
+                100,
+                sizeof(int) * 2 +
+                sizeof(float) * 16 +
+                sizeof(float) * 3 +
+                sizeof(float) * 2 +
+                sizeof(float) * 3 +
+                sizeof(int) * 6 +
+                sizeof(float) * 12
+            );
         
-        renderer.EnqueuePass(renderColoredShadows2);
+            renderColoredShadows2 = new RenderColoredShadows2(lightInformationBuffer);
+        }
+    
+        public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
+        {
+            if (renderingData.cameraData.cameraType == CameraType.Preview
+                || UniversalRenderer.IsOffscreenDepthTexture(ref renderingData.cameraData))
+                return;
+        
+            renderer.EnqueuePass(renderColoredShadows2);
+        }
+        
+        protected override void Dispose(bool disposing)
+        {
+            lightInformationBuffer?.Release();
+            lightInformationBuffer = null;
+            renderColoredShadows2?.Dispose();
+            renderColoredShadows2 = null;
+        }
     }
-    
-    
 }

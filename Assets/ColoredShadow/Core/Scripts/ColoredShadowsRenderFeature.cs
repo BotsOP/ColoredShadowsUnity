@@ -83,13 +83,4 @@ namespace ColoredShadow.Core.Scripts
             renderShadowObjectsPassPoint = null;
         }
     }
-    
-    public class CustomData : ContextItem {
-        public TextureHandle testTexture1;
-
-        public override void Reset()
-        {
-            testTexture1 = TextureHandle.nullHandle;
-        }
-    }
 }
