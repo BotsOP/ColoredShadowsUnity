@@ -42,14 +42,22 @@ namespace ColoredShadows.Scripts
         [SerializeField] public float vfxUVSize = 1;
         [SerializeField] public bool relativeUVSize = true;
 
+        public int shadowAtlasIndex;
+        public int shadowAtlasPosX;
+        public int shadowAtlasPosY;
         public float nearPlane = 0.1f;
-
         public GraphicsBuffer vfxAppendBuffer;
         public int vfxAppendCount;
         
+        public int TextureWidth => lightMode == LightMode.Point ? shadowTextureSize * 3 : shadowTextureSize;
+        public int TextureHeight => lightMode == LightMode.Point ? shadowTextureSize * 2 : shadowTextureSize;
+        public int TextureSurfaceArea => lightMode == LightMode.Point ? shadowTextureSize * 6 * shadowTextureSize : shadowTextureSize * shadowTextureSize;
+
+        private int previousShadowTextureSize;
+        
         private Mesh[] numberMeshes;
         private MeshRenderer[] meshRenderers;
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         private void OnDrawGizmos()
         {
             if (SceneView.lastActiveSceneView == null || !ColShadowDebug.IsEnabled)
@@ -165,21 +173,11 @@ namespace ColoredShadows.Scripts
         
         public static Vector3 GetRayBoxIntersection(Vector3 rayOrigin, Vector3 rayDirection, Vector3 boxCenter, Vector3 boxSize)
         {
-            // Since rayOrigin == boxCenter, we can simplify the calculation
             Vector3 halfSize = boxSize * 0.5f;
-            
-            // Calculate intersection distances for each axis
-            // t = (boxBound - rayOrigin) / rayDirection
-            // Since rayOrigin == boxCenter, this becomes: t = ±halfSize / rayDirection
-            
             float tX = rayDirection.x > 0 ? halfSize.x / rayDirection.x : -halfSize.x / rayDirection.x;
             float tY = rayDirection.y > 0 ? halfSize.y / rayDirection.y : -halfSize.y / rayDirection.y;
             float tZ = rayDirection.z > 0 ? halfSize.z / rayDirection.z : -halfSize.z / rayDirection.z;
-            
-            // Find the smallest positive t (closest intersection)
             float t = Mathf.Min(tX, Mathf.Min(tY, tZ));
-            
-            // Calculate intersection point
             return rayOrigin + rayDirection * t;
         }
 
@@ -260,7 +258,16 @@ namespace ColoredShadows.Scripts
 
             Handles.EndGUI();
         }
-        #endif
+
+        private void OnValidate()
+        {
+            if (previousShadowTextureSize == shadowTextureSize)
+                return;
+            
+            previousShadowTextureSize = shadowTextureSize;
+            CustomLightManager.RefreshShadowAtlas();
+        }
+#endif
 
         private void Update()
         {
@@ -280,16 +287,18 @@ namespace ColoredShadows.Scripts
 
         private void Reset()
         {
+            Debug.Log($"Reset");
             overrideShader = Shader.Find("ColoredShadow/OverrideColShadow_UV_UVSize");
         }
 
         private void OnEnable()
         {
+            Debug.Log($"Enabled");
             if (overrideShader == null)
             {
                 overrideShader = Shader.Find("ColoredShadow/OverrideColShadow_UV_UVSize");
             }
-            CustomLightManager.customLights.Add(this);
+            CustomLightManager.AddCustomLight(this);
 
             
 #if UNITY_EDITOR
@@ -300,7 +309,8 @@ namespace ColoredShadows.Scripts
         }
         private void OnDisable()
         {
-            CustomLightManager.customLights.Remove(this);
+            Debug.Log($"Disabled");
+            CustomLightManager.RemoveCustomLight(this);
 #if UNITY_EDITOR
             SceneView.duringSceneGui -= SceneViewGUI;
 #endif

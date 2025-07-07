@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ColoredShadow.Core.Scripts;
 using ColoredShadows.Scripts;
 using Unity.Collections;
 using UnityEngine;
@@ -10,6 +11,7 @@ using UnityEngine.Rendering.Universal;
 
 public class RenderColoredShadows2 : ScriptableRenderPass
 {
+    private const int MAX_TEXTURE_SIZE = 16320;
     private RTHandle shadowMapID;
     private RTHandle shadowMapID2;
     private FilteringSettings filteringSettings;
@@ -48,7 +50,7 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         );
         drawingSettings.enableInstancing = true;
         drawingSettings.enableDynamicBatching = true;
-        drawingSettings.overrideShader = CustomLightManager.customLights[0].overrideShader;
+        drawingSettings.overrideShader = CustomLightManager.GetCustomLight(0).overrideShader;
 
         s_ShaderTagValues[0] = ShaderTagId.none;
         s_RenderStateBlocks[0] = renderStateBlock;
@@ -84,35 +86,32 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         
         Matrix4x4 viewMatrix = Matrix4x4.zero;
         Matrix4x4 projectionMatrix = Matrix4x4.zero;
+
+        Vector2Int shadowAtlasSize = CustomLightManager.GetShadowAtlasSize(0);
+        int shadowAtlasWidth = Mathf.Max(256, shadowAtlasSize.x);
+        int shadowAtlasHeight = Mathf.Max(256, shadowAtlasSize.y);
     
         var destinationDescColor = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
+        // destinationDescColor.format = GraphicsFormat.R16G16B16A16_SInt;
         destinationDescColor.format = GraphicsFormat.R32G32B32A32_SInt;
         destinationDescColor.name = "SOURCE_COLOR";
-        destinationDescColor.width = 4096;
-        destinationDescColor.height = 4096;
+        destinationDescColor.width = shadowAtlasWidth;
+        destinationDescColor.height = shadowAtlasHeight;
         TextureHandle destinationColor = renderGraph.CreateTexture(destinationDescColor);
     
         var destinationDescDepth = renderGraph.GetTextureDesc(resourceData.activeDepthTexture);
         destinationDescDepth.name = "SOURCE_DEPTH";
-        destinationDescDepth.width = 4096;
-        destinationDescDepth.height = 4096;
+        destinationDescDepth.width = shadowAtlasWidth;
+        destinationDescDepth.height = shadowAtlasHeight;
         TextureHandle destinationDepth = renderGraph.CreateTexture(destinationDescDepth);
     
         RenderTextureDescriptor shadowMapIDDesc = cameraData.cameraTargetDescriptor;
-        shadowMapIDDesc.width = 4096;
-        shadowMapIDDesc.height = 4096;
+        shadowMapIDDesc.width = shadowAtlasWidth;
+        shadowMapIDDesc.height = shadowAtlasHeight;
         shadowMapIDDesc.depthBufferBits = 0;
         shadowMapIDDesc.msaaSamples = 1;
         RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: "Test_RT");
         TextureHandle destinationColorRT = renderGraph.ImportTexture(shadowMapID);
-        
-        RenderTextureDescriptor shadowMapIDDesc2 = cameraData.cameraTargetDescriptor;
-        shadowMapIDDesc2.width = 4096;
-        shadowMapIDDesc2.height = 4096;
-        shadowMapIDDesc2.depthBufferBits = 0;
-        shadowMapIDDesc2.msaaSamples = 1;
-        RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID2, shadowMapIDDesc2, FilterMode.Bilinear, TextureWrapMode.Clamp, name: "Test_RT2");
-        TextureHandle destinationColorRT2 = renderGraph.ImportTexture(shadowMapID2);
         
         
         filteringSettings.layerMask = int.MaxValue;
@@ -123,9 +122,9 @@ public class RenderColoredShadows2 : ScriptableRenderPass
             builder.SetRenderAttachmentDepth(destinationDepth, AccessFlags.Write);
 
             List<ShadowPass> shadowPasses = new List<ShadowPass>();
-            for (int i = 0; i < CustomLightManager.customLights.Count; i++)
+            for (int i = 0; i < CustomLightManager.CustomLightCount; i++)
             {
-                CustomLight light = CustomLightManager.customLights[i];
+                CustomLight light = CustomLightManager.GetCustomLight(i);
                 projectionMatrix = Matrix4x4.Ortho(
                     -light.size,
                     light.size,
@@ -144,10 +143,10 @@ public class RenderColoredShadows2 : ScriptableRenderPass
                     RendererListHandle rendererList = InitRendererLists(renderingData, lightData, renderGraph, cullingResults, cameraData);
                     builder.UseRendererList(rendererList);
                     ShadowPass newShadowPass = new ShadowPass(
-                        light.shadowTextureSize,
-                        light.shadowTextureSize,
-                        1024 * i,
-                        0,
+                        light.TextureWidth,
+                        light.TextureHeight,
+                        light.shadowAtlasPosX,
+                        light.shadowAtlasPosY,
                         rendererList,
                         viewMatrix,
                         projectionMatrix
