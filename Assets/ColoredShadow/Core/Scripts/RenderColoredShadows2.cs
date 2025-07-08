@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using ColoredShadow.Core.Scripts;
 using ColoredShadows.Scripts;
 using NUnit.Framework;
 using Unity.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
@@ -46,6 +48,8 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         shadowMapID = null;
     }
 
+
+    
     static ShaderTagId[] s_ShaderTagValues = new ShaderTagId[1];
     static RenderStateBlock[] s_RenderStateBlocks = new RenderStateBlock[1];
     private RendererListHandle InitRendererLists(UniversalRenderingData renderingData, UniversalLightData lightData, 
@@ -95,14 +99,11 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
         CullContextData cullContextData = frameData.Get<CullContextData>();
         
-        Matrix4x4 viewMatrix = Matrix4x4.zero;
-        Matrix4x4 projectionMatrix = Matrix4x4.zero;
-
         Vector2Int shadowAtlasSize = CustomLightManager.GetShadowAtlasSize();
         int shadowAtlasWidth = Mathf.Max(1, shadowAtlasSize.x);
         int shadowAtlasHeight = Mathf.Max(1, shadowAtlasSize.y);
-        Shader.SetGlobalInt("_ShadowAtlasWidth", shadowAtlasWidth);
-        Shader.SetGlobalInt("_ShadowAtlasHeight", shadowAtlasHeight);
+        Shader.SetGlobalInt("_CustomShadowAtlasWidth", shadowAtlasWidth);
+        Shader.SetGlobalInt("_CustomShadowAtlasHeight", shadowAtlasHeight);
         Shader.SetGlobalInt("_CurrentAmountCustomLights", CustomLightManager.CustomLightCount);
     
         TextureDesc destinationDescColor = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
@@ -120,8 +121,6 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         destinationDescDepth.height = shadowAtlasHeight;
         TextureHandle destinationDepth = renderGraph.CreateTexture(destinationDescDepth);
         
-        filteringSettings.layerMask = int.MaxValue;
-
         LightInformation[] lightInformations = new LightInformation[CustomLightManager.CustomLightCount];
         using (var builder = renderGraph.AddRasterRenderPass<PassData>("TEST_CAPTURE", out var passData, profilingSampler))
         {
@@ -132,28 +131,11 @@ public class RenderColoredShadows2 : ScriptableRenderPass
             for (int i = 0; i < CustomLightManager.CustomLightCount; i++)
             {
                 CustomLight light = CustomLightManager.GetCustomLight(i);
-                projectionMatrix = light.ProjectionMatrix;
-                viewMatrix = light.ViewMatrix;
-                Matrix4x4 cullingMatrix = projectionMatrix * viewMatrix;
-
-                cameraData.camera.cullingMatrix = cullingMatrix;
-                if (cameraData.camera.TryGetCullingParameters(false, out ScriptableCullingParameters scriptableCullingParameters))
+                if (GetShadowPass(light, builder, out List<ShadowPass> tempShadowPasses))
                 {
-                    CullingResults cullingResults = cullContextData.Cull(ref scriptableCullingParameters);
-                    RendererListHandle rendererList = InitRendererLists(renderingData, lightData, renderGraph, cullingResults, cameraData);
-                    builder.UseRendererList(rendererList);
-                    ShadowPass newShadowPass = new ShadowPass(
-                        light.TextureWidth,
-                        light.TextureHeight,
-                        light.shadowAtlasPosX,
-                        light.shadowAtlasPosY,
-                        rendererList,
-                        viewMatrix,
-                        projectionMatrix
-                    );
-                    shadowPasses.Add(newShadowPass);
+                    shadowPasses.AddRange(tempShadowPasses);
                 }
-                
+
                 lightInformations[i] = GetLightInformation(light);
             }
             passData.shadowPasses = shadowPasses;
@@ -181,6 +163,32 @@ public class RenderColoredShadows2 : ScriptableRenderPass
                 ctx.cmd.SetGlobalTexture(Shader.PropertyToID("_ColoredShadowMap0"), data.color);
             });
         }
+        return;
+
+        bool GetShadowPass(CustomLight light, IRasterRenderGraphBuilder builder, out List<ShadowPass> shadowPasses)
+        {
+            shadowPasses = new List<ShadowPass>();
+            List<(Matrix4x4, Matrix4x4)> projViewMatrices = light.GetCullingMatrices();
+
+            for (int i = 0; i < projViewMatrices.Count; i++)
+            {
+                (Matrix4x4, Matrix4x4) projViewMatrix = projViewMatrices[i];
+                cameraData.camera.cullingMatrix = projViewMatrix.Item1 * projViewMatrix.Item2;
+                if (!cameraData.camera.TryGetCullingParameters(false, out ScriptableCullingParameters scriptableCullingParameters))
+                {
+                    Debug.LogError($"Couldnt get ScriptableCullingParameters from {light.gameObject.name}");
+                    return false;
+                }
+
+                CullingResults cullingResults = cullContextData.Cull(ref scriptableCullingParameters);
+                filteringSettings.layerMask = light.shadowCastingMask;
+                RendererListHandle rendererList = InitRendererLists(renderingData, lightData, renderGraph, cullingResults, cameraData);
+                builder.UseRendererList(rendererList);
+                shadowPasses.Add(new ShadowPass(light.GetLocalShadowAtlasPos(i), light.shadowTextureSize, light.shadowTextureSize, rendererList, projViewMatrix.Item2, projViewMatrix.Item1));
+            }
+
+            return true;
+        }
     }
     private static LightInformation GetLightInformation(CustomLight light)
     {
@@ -204,8 +212,8 @@ public class RenderColoredShadows2 : ScriptableRenderPass
             light.lightMode == LightMode.Directional ? float.MaxValue : light.fallOffRange,
             light.farPlane,
             light.transform.position,
-            light.shadowTextureSize,
-            light.shadowTextureSize,
+            light.TextureWidth,
+            light.TextureHeight,
             light.addToShadowID,
             light.shadowAtlasPosX,
             light.shadowAtlasPosY,
@@ -229,19 +237,20 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         public Matrix4x4 viewMatrix;
         public Matrix4x4 projectionMatrix;
 
-        public ShadowPass(int textureWidth, int textureHeight, int texturePosX, int texturePosY, RendererListHandle rendererList, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
+        public ShadowPass(Vector2Int atlasPos, int textureWidth, int textureHeight, RendererListHandle rendererList, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
         {
+            texturePosX = atlasPos.x;
+            texturePosY = atlasPos.y;
             this.textureWidth = textureWidth;
             this.textureHeight = textureHeight;
-            this.texturePosX = texturePosX;
-            this.texturePosY = texturePosY;
             this.rendererList = rendererList;
             this.viewMatrix = viewMatrix;
             this.projectionMatrix = projectionMatrix;
         }
     }
-    
-    public struct LightInformation
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct LightInformation
     {
         public int index;
         public int lightMode;

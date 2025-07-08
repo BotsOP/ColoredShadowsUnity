@@ -75,7 +75,7 @@ void GetCubemapUV(float3 direction, out float2 uv, out int faceIndex)
     case 1: // POSITIVE_X
         uv = float2(-direction.z, -direction.y) / abs(direction.x);
         break;
-    case 3: // NEGATIVE_X
+    case 3: // NEGATIVE_X 
         uv = float2(direction.z, -direction.y) / abs(direction.x);
         break;
     case 5: // POSITIVE_Y
@@ -90,9 +90,10 @@ void GetCubemapUV(float3 direction, out float2 uv, out int faceIndex)
     case 2: // NEGATIVE_Z
         uv = float2(-direction.x, -direction.y) / abs(direction.z);
         break;
+    default: break;
     }
     uv = uv * 0.5 + 0.5;
-    uv = float2(1 - uv.x, uv.y);
+    uv = float2(uv.x, uv.y);
 }
 
 float BilinearSampleCompact(float bottomLeft, float bottomRight, float topLeft, float topRight, float2 uv)
@@ -104,21 +105,21 @@ float BilinearSampleCompact(float bottomLeft, float bottomRight, float topLeft, 
     );
 }
 
-int _ShadowAtlasWidth;
-int _ShadowAtlasHeight;
+int _CustomShadowAtlasWidth;
+int _CustomShadowAtlasHeight;
 SamplerState trilinear_clamp_sampler;
 SamplerState point_clamp_sampler;
 Texture2D _ColoredShadowMap0;
 
-float4 SampleColoredShadowMap(float2 uv, LightInformation lightInformation)
+float2 GetLocalShadowAtlasUV(float2 uv, LightInformation lightInformation)
 {
     int shadowAtlasPosX = lightInformation.shadowAtlasPosX;
     int shadowAtlasPosY = lightInformation.shadowAtlasPosY;
     int textureWidth = lightInformation.textureSizeX;
     int textureHeight = lightInformation.textureSizeY;
-    uv *= float2(textureWidth / (float)_ShadowAtlasWidth, textureHeight / (float)_ShadowAtlasHeight);;
-    uv += float2(shadowAtlasPosX / (float)_ShadowAtlasWidth, shadowAtlasPosY / (float)_ShadowAtlasHeight);
-    return _ColoredShadowMap0.Sample(point_clamp_sampler, uv);
+    uv *= float2(textureWidth / (float)_CustomShadowAtlasWidth, textureHeight / (float)_CustomShadowAtlasHeight);
+    uv += float2(shadowAtlasPosX / (float)_CustomShadowAtlasWidth, shadowAtlasPosY / (float)_CustomShadowAtlasHeight);
+    return uv;
 }
 
 float NinePointBlend(
@@ -210,24 +211,31 @@ float GetMask(float2 uv, float2 testUV, LightInformation lightInformation)
     float2 topRight = uv + subPixelOffset + texelSize;
     float2 localUV = float2(remap(uv.x, bottomLeft.x, topRight.x, 0, 1), remap(uv.y, bottomLeft.y, topRight.y, 0, 1));
 
-    float midCenterSample = ceil(saturate(SampleColoredShadowMap(centerUV, lightInformation).r));
+    float midCenterSample = ceil(saturate(_ColoredShadowMap0.Sample(point_clamp_sampler, centerUV).r));
+    return midCenterSample;
     if (testUV.x < texelSize.x * 3.0 || testUV.y < texelSize.x * 3.0 || testUV.x > 1 - texelSize.x * 3.0 || testUV.y > 1 - texelSize.x * 3.0)
     {
         return midCenterSample;
     }
     
-    float topLeftSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(-texelSize.x, texelSize.y), lightInformation).r));
-    float topCenterSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(0, texelSize.y), lightInformation).r));
-    float topRightSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(texelSize.x, texelSize.y), lightInformation).r));
-    float midLeftSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(-texelSize.x, 0), lightInformation).r));
-    float midRightSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(texelSize.x, 0), lightInformation).r));
-    float bottomLeftSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(-texelSize.x, -texelSize.y), lightInformation).r));
-    float bottomCenterSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(0, -texelSize.y), lightInformation).r));
-    float bottomRightSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(texelSize.x, -texelSize.y), lightInformation).r));
+    float topLeftSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(-texelSize.x, texelSize.y), lightInformation).r));
+    float topCenterSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(0, texelSize.y), lightInformation).r));
+    float topRightSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(texelSize.x, texelSize.y), lightInformation).r));
+    float midLeftSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(-texelSize.x, 0), lightInformation).r));
+    float midRightSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(texelSize.x, 0), lightInformation).r));
+    float bottomLeftSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(-texelSize.x, -texelSize.y), lightInformation).r));
+    float bottomCenterSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(0, -texelSize.y), lightInformation).r));
+    float bottomRightSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(texelSize.x, -texelSize.y), lightInformation).r));
 
     float mask = NinePointBlend(topLeftSample, topCenterSample, topRightSample, midLeftSample, midCenterSample, midRightSample, bottomLeftSample, bottomCenterSample, bottomRightSample, localUV);
 
     return mask;
+}
+
+bool CheckIsInBounds(LightInformation lightInformation, float2 lightUv)
+{
+    return lightUv.x < (lightInformation.shadowAtlasPosX + lightInformation.textureSizeX) / (float)_CustomShadowAtlasWidth && lightUv.x >  lightInformation.shadowAtlasPosX / (float)_CustomShadowAtlasWidth &&
+                lightUv.y < (lightInformation.shadowAtlasPosY + lightInformation.textureSizeY) / (float)_CustomShadowAtlasHeight && lightUv.y >  lightInformation.shadowAtlasPosY / (float)_CustomShadowAtlasHeight;
 }
 
 int _CurrentAmountCustomLights;
@@ -266,12 +274,12 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             lightUv *= 0.5;
             lightUv += 0.5;
             lightUv.xy += uvOffset;
+            lightUv.xy = GetLocalShadowAtlasUV(lightUv.rg, lightInformation);
         
-            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation);
+            tempOutput = _ColoredShadowMap0.Sample(point_clamp_sampler, lightUv.xy);
             tempMask = GetMask(lightUv.rg, lightUv.rg, lightInformation);
 
-            if (tempMask > highestMask && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX &&
-                lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY && dist <= lowestDist && dist < 1)
+            if (tempMask > highestMask && dist <= lowestDist && dist < 1 && CheckIsInBounds(lightInformation, lightUv))
             {
                 float shadowSize = relativeUVSize ? tempOutput.a : 1;
                 shadowSize *= shadowUVMultiplier;
@@ -296,11 +304,12 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             lightUv *= 0.5;
             lightUv += 0.5;
             lightUv.xy += uvOffset;
+            lightUv.xy = GetLocalShadowAtlasUV(lightUv.rg, lightInformation);
 
-            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation);
+            tempOutput = _ColoredShadowMap0.Sample(point_clamp_sampler, lightUv.xy);
             tempMask = GetMask(lightUv.rg, lightUv.rg, lightInformation);
 
-            if (tempMask > highestMask && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX && lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY && dist <= lowestDist && dist < 1)
+            if (tempMask > highestMask && dist <= lowestDist && dist < 1 && CheckIsInBounds(lightInformation, lightUv))
             {
                 float shadowSize = relativeUVSize ? tempOutput.a : 1;
                 shadowSize *= shadowUVMultiplier;
@@ -320,16 +329,23 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             break;
         case 2: //Point
             float3 dir = normalize(lightInformation.lightPos - worldPos);
-            int faceIndex;
+            int faceIndex = 0;
             GetCubemapUV(dir, uv, faceIndex);
+            uv.x = 1 - uv.x;
             uv += uvOffset;
-            
-            float2 cubemapUV = float2((uv.x / 6.0) + ((1.0/6.0) * faceIndex), uv.y);
+            // uv = GetLocalShadowAtlasUV(uv, lightInformation);
+            float2 minCorner = float2(lightInformation.shadowAtlasPosX / _CustomShadowAtlasWidth, lightInformation.shadowAtlasPosY / _CustomShadowAtlasHeight);
+            // float2 minCorner = float2(lightInformation.shadowAtlasPosX / _ShadowAtlasWidth, lightInformation.shadowAtlasPosY / _ShadowAtlasHeight);
+            minCorner.x += (float)1024.0 / _CustomShadowAtlasWidth * (faceIndex % 3);
+            minCorner.y += (float)1024.0 / _CustomShadowAtlasHeight * floor(faceIndex / 3);
+            float2 maxCorner = float2(minCorner.x + (float)1024.0 / _CustomShadowAtlasWidth, minCorner.y + (float)1024.0 / _CustomShadowAtlasHeight);
+            float2 cubemapUV = float2(remap(uv.x, 0, 1, minCorner.x, maxCorner.x), remap(uv.y, 0, 1, minCorner.y, maxCorner.y));
+            finalUV = cubemapUV;
 
-            tempOutput = SampleColoredShadowMap(cubemapUV, lightInformation);
+            tempOutput = _ColoredShadowMap0.Sample(point_clamp_sampler, cubemapUV);
             tempMask = GetMask(cubemapUV, uv, lightInformation);
 
-            if (tempMask > highestMask && dist < lowestDist && dist < 1)
+            if (tempMask > highestMask && dist < lowestDist && dist < 1 && CheckIsInBounds(lightInformation, cubemapUV))
             {
                 float shadowSize = relativeUVSize ? tempOutput.a : 1;
                 shadowSize *= shadowUVMultiplier;
@@ -340,7 +356,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
                 fallOffRange = 1 - dist;
                 highestMask = tempMask * fallOffRange;
                 mask = tempMask;
-                finalUV = uv;
+                finalUV = cubemapUV;
                 lowestDist = dist;
                 output = tempOutput;
                 output.r += lightInformation.lightIDMultiplier;

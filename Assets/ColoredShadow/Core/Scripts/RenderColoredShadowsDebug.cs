@@ -116,14 +116,6 @@ namespace ColoredShadows.Scripts
             destinationDescDepth.width = textureSizeX;
             destinationDescDepth.height = textureSizeY;
             TextureHandle destinationDepth = renderGraph.CreateTexture(destinationDescDepth);
-        
-            // RenderTextureDescriptor shadowMapIDDesc = cameraData.cameraTargetDescriptor;
-            // shadowMapIDDesc.width = textureSizeX;
-            // shadowMapIDDesc.height = textureSizeY;
-            // shadowMapIDDesc.depthBufferBits = 0;
-            // shadowMapIDDesc.msaaSamples = 1;
-            // RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: shadowMapIDName);
-            // TextureHandle destinationColorRT = renderGraph.ImportTexture(shadowMapID);
 
             Shader.SetGlobalFloat("_NumberSize", ColShadowDebug.ShadowNumberSize * 4);
 
@@ -178,8 +170,6 @@ namespace ColoredShadows.Scripts
             
             RenderGraphUtils.BlitMaterialParameters para2 = new(destinationColor, resourceData.activeColorTexture, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
             renderGraph.AddBlitPass(para2, "CaptureSceneShadowsColor");
-
-            // resourceData.cameraColor = destinationColor;
         }
         
         static ShaderTagId[] s_ShaderTagValues = new ShaderTagId[1];

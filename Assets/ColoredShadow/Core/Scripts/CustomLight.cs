@@ -51,13 +51,44 @@ namespace ColoredShadows.Scripts
         public int TextureWidth => lightMode == LightMode.Point ? shadowTextureSize * 3 : shadowTextureSize;
         public int TextureHeight => lightMode == LightMode.Point ? shadowTextureSize * 2 : shadowTextureSize;
         public int TextureSurfaceArea => lightMode == LightMode.Point ? shadowTextureSize * 6 * shadowTextureSize : shadowTextureSize * shadowTextureSize;
-        public Matrix4x4 ProjectionMatrix => lightMode == LightMode.Point ? Matrix4x4.Ortho(-size, size, -size, size, nearPlane, farPlane) : Matrix4x4.Perspective(fov, aspectRatio, nearPlane, farPlane);
-        public Matrix4x4 ViewMatrix => GetViewMatrix();
+        public Matrix4x4 ProjectionMatrix
+        {
+            get
+            {
+                switch (lightMode)
+                {
+                    case LightMode.Directional:
+                        return Matrix4x4.Ortho(-size, size, -size, size, nearPlane, farPlane);
+                    case LightMode.Spot:
+                        return Matrix4x4.Perspective(fov, aspectRatio, nearPlane, farPlane);
+                    case LightMode.Point:
+                        return Matrix4x4.Perspective(90, 1, nearPlane, radius);
+                    default:
+                        Debug.LogError($"Couldnt match lightmode. Did you add an extra lightmode?");
+                        return Matrix4x4.zero;
+                }
+            }
+        }
+        public Matrix4x4 ViewMatrix
+        {
+            get
+            {
+                Matrix4x4 rotationMatrix = Matrix4x4.Rotate(Quaternion.Inverse(transform.rotation));
+                Matrix4x4 translationMatrix = Matrix4x4.Translate(-transform.position);
+                Matrix4x4 viewMatrix = rotationMatrix * translationMatrix;
+                viewMatrix.m20 *= -1;
+                viewMatrix.m21 *= -1;
+                viewMatrix.m22 *= -1;
+                viewMatrix.m23 *= -1;
+                return viewMatrix;
+            }
+        }
 
         private int previousShadowTextureSize;
         
         private Mesh[] numberMeshes;
         private MeshRenderer[] meshRenderers;
+        private List<(Matrix4x4, Matrix4x4)> cullingMatrices;
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
@@ -295,6 +326,7 @@ namespace ColoredShadows.Scripts
         private void OnEnable()
         {
             Debug.Log($"Enabled");
+            cullingMatrices = new List<(Matrix4x4, Matrix4x4)>(6);
             if (overrideShader == null)
             {
                 overrideShader = Shader.Find("ColoredShadow/OverrideColShadow_UV_UVSize");
@@ -321,31 +353,59 @@ namespace ColoredShadows.Scripts
         private static void UpdateLightIndices()
         {
             CustomLight[] lights = FindObjectsByType<CustomLight>(
-                FindObjectsInactive.Include,
+                FindObjectsInactive.Exclude,
                 FindObjectsSortMode.InstanceID
             );
-            if (lights.Length >= ColoredShadowsRenderFeature.MAX_AMOUNT_CUSTOM_LIGHTS)
-            {
-                Debug.LogError($"Cannot have more then {ColoredShadowsRenderFeature.MAX_AMOUNT_CUSTOM_LIGHTS} amount of custom lights");
-                return;
-            }
             Shader.SetGlobalInt("CurrentAmountCustomLights", lights.Length);
             for (int i = 0; i < lights.Length; i++)
             {
                 lights[i].lightIndex = i;
             }
         }
-        
-        public Matrix4x4 GetViewMatrix()
+
+        public Vector2Int GetLocalShadowAtlasPos(int index = 0)
         {
-            Matrix4x4 rotationMatrix = Matrix4x4.Rotate(Quaternion.Inverse(transform.rotation));
-            Matrix4x4 translationMatrix = Matrix4x4.Translate(-transform.position);
-            Matrix4x4 viewMatrix = rotationMatrix * translationMatrix;
-            viewMatrix.m20 *= -1;
-            viewMatrix.m21 *= -1;
-            viewMatrix.m22 *= -1;
-            viewMatrix.m23 *= -1;
-            return viewMatrix;
+            switch (lightMode)
+            {
+                case LightMode.Directional:
+                    return new Vector2Int(shadowAtlasPosX, shadowAtlasPosY);
+                case LightMode.Spot:
+                    return new Vector2Int(shadowAtlasPosX, shadowAtlasPosY);
+                case LightMode.Point:
+                    return new Vector2Int(shadowAtlasPosX + shadowTextureSize * (index % 3), shadowAtlasPosY + shadowTextureSize * (index / 3));
+                default:
+                    Debug.LogError($"Couldnt match lightmode. Did you add an extra lightmode?");
+                    return Vector2Int.one * -1;
+            }
+        }
+
+        public List<(Matrix4x4, Matrix4x4)> GetCullingMatrices()
+        {
+            Matrix4x4 viewMatrix = ViewMatrix;
+            Matrix4x4 projectionMatrix = ProjectionMatrix;
+            cullingMatrices.Clear();
+            
+            switch (lightMode)
+            {
+                case LightMode.Point:
+                    cullingMatrices.Add((projectionMatrix, viewMatrix));
+                    cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * viewMatrix));
+                    cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0)) * viewMatrix));
+                    cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(0, 270, 0)) * viewMatrix));
+                    cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(90, 0, 0)) * viewMatrix));
+                    cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(270, 0, 0)) * viewMatrix));
+                    break;
+                case LightMode.Spot:
+                    cullingMatrices.Add((projectionMatrix, viewMatrix));
+                    break;
+                case LightMode.Directional:
+                    cullingMatrices.Add((projectionMatrix, viewMatrix));
+                    break;
+                default:
+                    Debug.LogError($"Couldnt match lightmode. Did you add an extra lightmode?");
+                    break;
+            }
+            return cullingMatrices;
         }
     }
 

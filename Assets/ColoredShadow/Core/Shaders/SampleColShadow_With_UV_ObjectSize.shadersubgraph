@@ -1192,6 +1192,7 @@
     "m_SourceType": 0,
     "m_FunctionName": "SampleColoredShadows",
     "m_FunctionSource": "973853bbb0e720f4d97292627d4ccb04",
+    "m_FunctionSourceUsePragmas": true,
     "m_FunctionBody": "Enter function body here..."
 }
 

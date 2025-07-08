@@ -1128,6 +1128,7 @@
     "m_SourceType": 0,
     "m_FunctionName": "DoDebug",
     "m_FunctionSource": "3fed0b3baccf0dd49b2d1e33c2813ad0",
+    "m_FunctionSourceUsePragmas": true,
     "m_FunctionBody": "Enter function body here..."
 }
 
