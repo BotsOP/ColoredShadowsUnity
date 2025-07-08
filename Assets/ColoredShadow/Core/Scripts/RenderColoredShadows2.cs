@@ -101,6 +101,9 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         Vector2Int shadowAtlasSize = CustomLightManager.GetShadowAtlasSize();
         int shadowAtlasWidth = Mathf.Max(1, shadowAtlasSize.x);
         int shadowAtlasHeight = Mathf.Max(1, shadowAtlasSize.y);
+        Shader.SetGlobalInt("_ShadowAtlasWidth", shadowAtlasWidth);
+        Shader.SetGlobalInt("_ShadowAtlasHeight", shadowAtlasHeight);
+        Shader.SetGlobalInt("_CurrentAmountCustomLights", CustomLightManager.CustomLightCount);
     
         TextureDesc destinationDescColor = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
         // destinationDescColor.format = GraphicsFormat.R16G16B16A16_SFloat;
@@ -108,6 +111,7 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         destinationDescColor.name = "SOURCE_COLOR";
         destinationDescColor.width = shadowAtlasWidth;
         destinationDescColor.height = shadowAtlasHeight;
+        destinationDescColor.clearBuffer = false;
         TextureHandle destinationColor = renderGraph.CreateTexture(destinationDescColor);
     
         TextureDesc destinationDescDepth = renderGraph.GetTextureDesc(resourceData.activeDepthTexture);
@@ -115,15 +119,6 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         destinationDescDepth.width = shadowAtlasWidth;
         destinationDescDepth.height = shadowAtlasHeight;
         TextureHandle destinationDepth = renderGraph.CreateTexture(destinationDescDepth);
-    
-        RenderTextureDescriptor shadowMapIDDesc = cameraData.cameraTargetDescriptor;
-        shadowMapIDDesc.width = shadowAtlasWidth;
-        shadowMapIDDesc.height = shadowAtlasHeight;
-        shadowMapIDDesc.depthBufferBits = 0;
-        shadowMapIDDesc.msaaSamples = 1;
-        RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapIDDesc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: "Test_RT");
-        TextureHandle destinationColorRT = renderGraph.ImportTexture(shadowMapID);
-        
         
         filteringSettings.layerMask = int.MaxValue;
 
@@ -162,6 +157,7 @@ public class RenderColoredShadows2 : ScriptableRenderPass
                 lightInformations[i] = GetLightInformation(light);
             }
             passData.shadowPasses = shadowPasses;
+            passData.color = destinationColor;
 
             builder.AllowPassCulling(false);
             builder.AllowGlobalStateModification(true);
@@ -173,11 +169,18 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         }
         
         lightInformationBuffer.SetData(lightInformations);
+        Shader.SetGlobalBuffer("_ColoredShadowLightInformation", lightInformationBuffer);
         cameraData.camera.ResetCullingMatrix();
-
-        RenderGraphUtils.BlitMaterialParameters para2 = new(destinationColor, destinationColorRT, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
-        renderGraph.AddBlitPass(para2, "TEST_BLIT");
-        Shader.SetGlobalTexture("_ColoredShadowMap" + 0, shadowMapID);
+        
+        using (var builder = renderGraph.AddRasterRenderPass<PassData>("SET_GLOBAL_TEX", out var pd2)) {
+            pd2.color = destinationColor;
+            builder.AllowPassCulling(false);
+            builder.AllowGlobalStateModification(true);
+            builder.UseTexture(destinationColor);
+            builder.SetRenderFunc<PassData>((data, ctx) => {
+                ctx.cmd.SetGlobalTexture(Shader.PropertyToID("_ColoredShadowMap0"), data.color);
+            });
+        }
     }
     private static LightInformation GetLightInformation(CustomLight light)
     {
@@ -204,7 +207,6 @@ public class RenderColoredShadows2 : ScriptableRenderPass
             light.shadowTextureSize,
             light.shadowTextureSize,
             light.addToShadowID,
-            light.shadowAtlasIndex,
             light.shadowAtlasPosX,
             light.shadowAtlasPosY,
             customValuesCopy
@@ -213,6 +215,7 @@ public class RenderColoredShadows2 : ScriptableRenderPass
 
     private class PassData
     {
+        internal TextureHandle color;
         internal List<ShadowPass> shadowPasses;
     }
 
@@ -250,7 +253,6 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         public int textureSizeX;
         public int textureSizeY;
         public int lightIDMultiplier;
-        public int shadowAtlasIndex;
         public int shadowAtlasPosX;
         public int shadowAtlasPosY;
         public float customValue0;
@@ -265,7 +267,7 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         public float customValue9;
         public float customValue10;
         public float customValue11;
-        public LightInformation(int index, int lightMode, Matrix4x4 lightMatrix, Vector3 lightPos, float fallOffRange, float farPlane, Vector3 cameraPos, int textureSizeX, int textureSizeY, int lightIDMultiplier, int shadowAtlasIndex, int shadowAtlasPosX, int shadowAtlasPosY, List<float> customValues) : this()
+        public LightInformation(int index, int lightMode, Matrix4x4 lightMatrix, Vector3 lightPos, float fallOffRange, float farPlane, Vector3 cameraPos, int textureSizeX, int textureSizeY, int lightIDMultiplier, int shadowAtlasPosX, int shadowAtlasPosY, List<float> customValues) : this()
         {
             this.index = index;
             this.lightMode = lightMode;
@@ -277,7 +279,6 @@ public class RenderColoredShadows2 : ScriptableRenderPass
             this.textureSizeX = textureSizeX;
             this.textureSizeY = textureSizeY;
             this.lightIDMultiplier = lightIDMultiplier;
-            this.shadowAtlasIndex = shadowAtlasIndex;
             this.shadowAtlasPosX = shadowAtlasPosX;
             this.shadowAtlasPosY = shadowAtlasPosY;
             customValue0 = customValues[0];

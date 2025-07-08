@@ -1,6 +1,34 @@
 #ifndef SAMPLE_CUSTOM_CUBEMAP_INCLUDED
 #define SAMPLE_CUSTOM_CUBEMAP_INCLUDED
 
+struct LightInformation
+{
+    int index;
+    int lightMode;
+    float4x4 lightMatrix;
+    float3 lightPos;
+    float fallOffRange;
+    float farPlane;
+    float3 cameraPos;
+    int textureSizeX;
+    int textureSizeY;
+    int lightIDMultiplier;
+    int shadowAtlasPosX;
+    int shadowAtlasPosY;
+    float customValue0;
+    float customValue1;
+    float customValue2;
+    float customValue3;
+    float customValue4;
+    float customValue5;
+    float customValue6;
+    float customValue7;
+    float customValue8;
+    float customValue9;
+    float customValue10;
+    float customValue11;
+};
+
 float remap(float value, float oldMin, float oldMax, float newMin, float newMax)
 {
     float a = newMin + (value - oldMin) * (newMax - newMin);
@@ -76,63 +104,21 @@ float BilinearSampleCompact(float bottomLeft, float bottomRight, float topLeft, 
     );
 }
 
+int _ShadowAtlasWidth;
+int _ShadowAtlasHeight;
 SamplerState trilinear_clamp_sampler;
 SamplerState point_clamp_sampler;
 Texture2D _ColoredShadowMap0;
-Texture2D _ColoredShadowMap1;
-Texture2D _ColoredShadowMap2;
-Texture2D _ColoredShadowMap3;
-Texture2D _ColoredShadowMap4;
-Texture2D _ColoredShadowMap5;
-Texture2D _ColoredShadowMap6;
-Texture2D _ColoredShadowMap7;
-Texture2D _ColoredShadowMap8;
-Texture2D _ColoredShadowMap9;
 
-float4 SampleColoredShadowMap(float2 uv, int mapIndex)
+float4 SampleColoredShadowMap(float2 uv, LightInformation lightInformation)
 {
-    float4 output;
-    // mask = 0;
-    
-    switch (mapIndex)
-    {
-    case 0:
-        output = (_ColoredShadowMap0.Sample(point_clamp_sampler, uv));
-        break;
-    case 1:
-        output = (_ColoredShadowMap1.Sample(point_clamp_sampler, uv));
-        break;
-    case 2:
-        output = (_ColoredShadowMap2.Sample(point_clamp_sampler, uv));
-        break;
-    case 3:
-        output = (_ColoredShadowMap3.Sample(point_clamp_sampler, uv));
-        break;
-    case 4:
-        output = (_ColoredShadowMap4.Sample(point_clamp_sampler, uv));
-        break;
-    case 5:
-        output = (_ColoredShadowMap5.Sample(point_clamp_sampler, uv));
-        break;
-    case 6:
-        output = (_ColoredShadowMap6.Sample(point_clamp_sampler, uv));
-        break;
-    case 7:
-        output = (_ColoredShadowMap7.Sample(point_clamp_sampler, uv));
-        break;
-    case 8:
-        output = (_ColoredShadowMap8.Sample(point_clamp_sampler, uv));
-        break;
-    case 9:
-        output = (_ColoredShadowMap9.Sample(point_clamp_sampler, uv));
-        break;
-    default:
-        output = float4(0, 0, 0, 0);
-        break;
-    }
-    
-    // mask = ceil(saturate(output.r));
-    return output;
+    int shadowAtlasPosX = lightInformation.shadowAtlasPosX;
+    int shadowAtlasPosY = lightInformation.shadowAtlasPosY;
+    int textureWidth = lightInformation.textureSizeX;
+    int textureHeight = lightInformation.textureSizeY;
+    uv *= float2(textureWidth / (float)_ShadowAtlasWidth, textureHeight / (float)_ShadowAtlasHeight);;
+    uv += float2(shadowAtlasPosX / (float)_ShadowAtlasWidth, shadowAtlasPosY / (float)_ShadowAtlasHeight);
+    return _ColoredShadowMap0.Sample(point_clamp_sampler, uv);
 }
 
 float NinePointBlend(
@@ -214,77 +200,38 @@ float2 ConstrainToCardinalDirectionsFast(float2 direction)
     }
 }
 
-float GetMask(float2 uv, float2 testUV, int mapIndex, int textureSizeX, int textureSizeY, float2 offset = float2(0, 0))
+float GetMask(float2 uv, float2 testUV, LightInformation lightInformation)
 {
-    float2 texelSize = float2(1, 1) / int2(textureSizeX, textureSizeY);
-    // float2 dir = float2(-1, 0) * length(texelSize);
-    // float2 dir = normalize(float2(uv - offset)) * length(texelSize);
-    // float2 dir = ConstrainToCardinalDirectionsFast(uv - offset) * length(texelSize);
-    // uv += dir;
+    float2 texelSize = float2(1, 1) / int2(lightInformation.textureSizeX, lightInformation.textureSizeY);
     
-    float2 subPixelOffset = ((frac(uv * int2(textureSizeX, textureSizeY)) - 0.5) * -1) / int2(textureSizeX, textureSizeY);
+    float2 subPixelOffset = ((frac(uv * int2(lightInformation.textureSizeX, lightInformation.textureSizeY)) - 0.5) * -1) / int2(lightInformation.textureSizeX, lightInformation.textureSizeY);
     float2 centerUV = uv;
     float2 bottomLeft = uv + subPixelOffset - texelSize;
     float2 topRight = uv + subPixelOffset + texelSize;
     float2 localUV = float2(remap(uv.x, bottomLeft.x, topRight.x, 0, 1), remap(uv.y, bottomLeft.y, topRight.y, 0, 1));
 
-    float midCenterSample = ceil(saturate(SampleColoredShadowMap(centerUV, mapIndex).r));
+    float midCenterSample = ceil(saturate(SampleColoredShadowMap(centerUV, lightInformation).r));
     if (testUV.x < texelSize.x * 3.0 || testUV.y < texelSize.x * 3.0 || testUV.x > 1 - texelSize.x * 3.0 || testUV.y > 1 - texelSize.x * 3.0)
     {
         return midCenterSample;
     }
     
-    float topLeftSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(-texelSize.x, texelSize.y), mapIndex).r));
-    float topCenterSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(0, texelSize.y), mapIndex).r));
-    float topRightSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(texelSize.x, texelSize.y), mapIndex).r));
-    float midLeftSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(-texelSize.x, 0), mapIndex).r));
-    float midRightSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(texelSize.x, 0), mapIndex).r));
-    float bottomLeftSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(-texelSize.x, -texelSize.y), mapIndex).r));
-    float bottomCenterSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(0, -texelSize.y), mapIndex).r));
-    float bottomRightSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(texelSize.x, -texelSize.y), mapIndex).r));
+    float topLeftSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(-texelSize.x, texelSize.y), lightInformation).r));
+    float topCenterSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(0, texelSize.y), lightInformation).r));
+    float topRightSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(texelSize.x, texelSize.y), lightInformation).r));
+    float midLeftSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(-texelSize.x, 0), lightInformation).r));
+    float midRightSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(texelSize.x, 0), lightInformation).r));
+    float bottomLeftSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(-texelSize.x, -texelSize.y), lightInformation).r));
+    float bottomCenterSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(0, -texelSize.y), lightInformation).r));
+    float bottomRightSample = ceil(saturate(SampleColoredShadowMap(centerUV + float2(texelSize.x, -texelSize.y), lightInformation).r));
 
     float mask = NinePointBlend(topLeftSample, topCenterSample, topRightSample, midLeftSample, midCenterSample, midRightSample, bottomLeftSample, bottomCenterSample, bottomRightSample, localUV);
 
     return mask;
 }
 
-struct LightInformation
-{
-    int index;
-    int lightMode;
-    float4x4 lightMatrix;
-    float3 lightPos;
-    float fallOffRange;
-    float farPlane;
-    float3 cameraPos;
-    int textureSizeX;
-    int textureSizeY;
-    int lightIDMultiplier;
-    float customValue0;
-    float customValue1;
-    float customValue2;
-    float customValue3;
-    float customValue4;
-    float customValue5;
-    float customValue6;
-    float customValue7;
-    float customValue8;
-    float customValue9;
-    float customValue10;
-    float customValue11;
-};
-
-// float invLerp(float from, float to, float value){
-//     return (value - from) / (to - from);
-// }
-//
-// float remap(float origFrom, float origTo, float targetFrom, float targetTo, float value){
-//     float rel = invLerp(origFrom, origTo, value);
-//     return lerp(targetFrom, targetTo, rel);
-// }
-
-int CurrentAmountCustomLights;
-StructuredBuffer<LightInformation> ColoredShadowLightInformation;
+int _CurrentAmountCustomLights;
+StructuredBuffer<LightInformation> _ColoredShadowLightInformation;
 void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUVMultiplier, bool relativeUVSize, out float4 output, out float2 shadowUV, out float2 finalUV, out float3 lightPos, out float fallOffRange, out float mask, out float4 customValues1, out float4 customValues2, out float4 customValues3)
 {
     output = float4(0, 0, 0, 0);
@@ -299,9 +246,9 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
     customValues2 = float4(0, 0, 0, 0);
     customValues3 = float4(0, 0, 0, 0);
 
-    for (int i = 0; i < CurrentAmountCustomLights; ++i)
+    for (int i = 0; i < _CurrentAmountCustomLights; ++i)
     {
-        LightInformation lightInformation = ColoredShadowLightInformation[i];
+        LightInformation lightInformation = _ColoredShadowLightInformation[i];
         float2 uv = float2(0, 0);
         float4 tempOutput;
         float4 lightSpace;
@@ -320,8 +267,8 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             lightUv += 0.5;
             lightUv.xy += uvOffset;
         
-            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index);
-            tempMask = GetMask(lightUv.rg, lightUv.rg, lightInformation.index, lightInformation.textureSizeX, lightInformation.textureSizeX, tempOutput.gb);
+            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation);
+            tempMask = GetMask(lightUv.rg, lightUv.rg, lightInformation);
 
             if (tempMask > highestMask && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX &&
                 lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY && dist <= lowestDist && dist < 1)
@@ -350,8 +297,8 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             lightUv += 0.5;
             lightUv.xy += uvOffset;
 
-            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation.index);
-            tempMask = GetMask(lightUv.rg, lightUv.rg, lightInformation.index, lightInformation.textureSizeX, lightInformation.textureSizeX);
+            tempOutput = SampleColoredShadowMap(lightUv.rg, lightInformation);
+            tempMask = GetMask(lightUv.rg, lightUv.rg, lightInformation);
 
             if (tempMask > highestMask && lightUv.x > 1.0 / textureSizeX && lightUv.x < (textureSizeX - 1) / textureSizeX && lightUv.y > 1.0 / textureSizeY && lightUv.y < (textureSizeY - 1) / textureSizeY && dist <= lowestDist && dist < 1)
             {
@@ -379,8 +326,8 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             
             float2 cubemapUV = float2((uv.x / 6.0) + ((1.0/6.0) * faceIndex), uv.y);
 
-            tempOutput = SampleColoredShadowMap(cubemapUV, lightInformation.index);
-            tempMask = GetMask(cubemapUV, uv, lightInformation.index, lightInformation.textureSizeX * 6, lightInformation.textureSizeX);
+            tempOutput = SampleColoredShadowMap(cubemapUV, lightInformation);
+            tempMask = GetMask(cubemapUV, uv, lightInformation);
 
             if (tempMask > highestMask && dist < lowestDist && dist < 1)
             {
@@ -400,6 +347,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
                 lightPos = lightInformation.lightPos;
             }
             break;
+        default: break;
         }
     }
 }

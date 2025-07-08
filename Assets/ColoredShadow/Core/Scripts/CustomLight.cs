@@ -42,7 +42,6 @@ namespace ColoredShadows.Scripts
         [SerializeField] public float vfxUVSize = 1;
         [SerializeField] public bool relativeUVSize = true;
 
-        public int shadowAtlasIndex;
         public int shadowAtlasPosX;
         public int shadowAtlasPosY;
         public float nearPlane = 0.1f;
