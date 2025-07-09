@@ -11,12 +11,10 @@ namespace ColoredShadow.Core.Scripts
         public static int CustomLightCount => _customLights.Count;
         private static List<CustomLight> _customLights;
         private static Vector2Int _shadowAtlasesSize;
-        private static RectanglePacker rectanglePacker;
 
         static CustomLightManager()
         {
             _customLights = new List<CustomLight>();
-            rectanglePacker = new RectanglePacker();
         }
 
         public static CustomLight GetCustomLight(int index)
@@ -44,9 +42,6 @@ namespace ColoredShadow.Core.Scripts
         public static void RefreshShadowAtlas()
         {
             _customLights.Sort((a, b) => b.TextureSurfaceArea.CompareTo(a.TextureSurfaceArea));
-            // rectanglePacker.PackRectangles(_customLights, out int width, out int height);
-            // _shadowAtlasesSize = new Vector2Int(width, height);
-            // return;
             Queue<CustomLight> customLightsQueue = new Queue<CustomLight>(_customLights);
             
             Heap<Square> availableSpaces = new Heap<Square>(HeapType.MaxHeap);
@@ -125,7 +120,6 @@ namespace ColoredShadow.Core.Scripts
             }
             public int CompareTo(Square other)
             {
-                Debug.Log($"1: min pos: {minX} {minY} dist: {DistBottomLeftCorner} 2: min pos: {other.minX} {other.minY} dist:  {other.DistBottomLeftCorner}");
                 return DistBottomLeftCorner.CompareTo(other.DistBottomLeftCorner);
             }
         }
@@ -184,174 +178,5 @@ namespace ColoredShadow.Core.Scripts
             }
             return root;
         }
-    }
-}
-
-public class RectanglePacker
-{
-    private struct Shelf
-    {
-        public int y;
-        public int height;
-        public int usedWidth;
-        public int availableWidth;
-        
-        public Shelf(int y, int height, int totalWidth)
-        {
-            this.y = y;
-            this.height = height;
-            this.usedWidth = 0;
-            this.availableWidth = totalWidth;
-        }
-    }
-
-    private List<Shelf> shelves;
-    private int atlasWidth;
-    private int atlasHeight;
-    private int currentHeight;
-
-    public RectanglePacker()
-    {
-        shelves = new List<Shelf>(50); // Pre-allocate for performance
-    }
-
-    /// <summary>
-    /// Packs rectangles into the smallest possible atlas size
-    /// </summary>
-    /// <param name="rectangles">Pre-sorted rectangles from largest to smallest surface area</param>
-    /// <param name="finalAtlasWidth">Output: final atlas width</param>
-    /// <param name="finalAtlasHeight">Output: final atlas height</param>
-    /// <returns>True if packing was successful</returns>
-    public bool PackRectangles(List<CustomLight> rectangles, out int finalAtlasWidth, out int finalAtlasHeight)
-    {
-        if (rectangles == null || rectangles.Count == 0)
-        {
-            finalAtlasWidth = 0;
-            finalAtlasHeight = 0;
-            return true;
-        }
-
-        // Find the minimum possible atlas width based on the largest rectangle
-        int minWidth = GetMinimumAtlasWidth(rectangles);
-        
-        // Try progressively larger atlas sizes until we find one that works
-        for (int tryWidth = minWidth; tryWidth <= 4096; tryWidth = GetNextPowerOfTwo(tryWidth))
-        {
-            if (TryPackWithWidth(rectangles, tryWidth, out int height))
-            {
-                finalAtlasWidth = tryWidth;
-                finalAtlasHeight = GetNextPowerOfTwo(height);
-                return true;
-            }
-        }
-
-        finalAtlasWidth = 0;
-        finalAtlasHeight = 0;
-        return false;
-    }
-
-    private bool TryPackWithWidth(List<CustomLight> rectangles, int width, out int height)
-    {
-        // Reset state
-        shelves.Clear();
-        atlasWidth = width;
-        currentHeight = 0;
-
-        // Try to pack all rectangles
-        for (int i = 0; i < rectangles.Count; i++)
-        {
-            CustomLight rect = rectangles[i];
-            if (!PackRectangle(rect))
-            {
-                height = 0;
-                return false;
-            }
-        }
-
-        height = currentHeight;
-        return true;
-    }
-
-    private bool PackRectangle(CustomLight rect)
-    {
-        int rectWidth = rect.TextureWidth;
-        int rectHeight = rect.TextureHeight;
-
-        // Try to fit on existing shelves first
-        for (int i = 0; i < shelves.Count; i++)
-        {
-            Shelf shelf = shelves[i];
-            
-            // Check if rectangle fits on this shelf
-            if (rectWidth <= shelf.availableWidth && rectHeight <= shelf.height)
-            {
-                // Place rectangle on this shelf
-                rect.shadowAtlasPosX = shelf.usedWidth;
-                rect.shadowAtlasPosY = shelf.y;
-                
-                // Update shelf
-                shelf.usedWidth += rectWidth;
-                shelf.availableWidth -= rectWidth;
-                shelves[i] = shelf;
-                
-                return true;
-            }
-        }
-
-        // Need to create a new shelf
-        if (rectWidth > atlasWidth)
-        {
-            return false; // Rectangle too wide
-        }
-
-        // Create new shelf
-        Shelf newShelf = new Shelf(currentHeight, rectHeight, atlasWidth);
-        
-        // Place rectangle on new shelf
-        rect.shadowAtlasPosX = 0;
-        rect.shadowAtlasPosY = currentHeight;
-        
-        // Update shelf
-        newShelf.usedWidth = rectWidth;
-        newShelf.availableWidth = atlasWidth - rectWidth;
-        
-        shelves.Add(newShelf);
-        currentHeight += rectHeight;
-        
-        return true;
-    }
-
-    private int GetMinimumAtlasWidth(List<CustomLight> rectangles)
-    {
-        int maxWidth = 0;
-        long totalArea = 0;
-        
-        for (int i = 0; i < rectangles.Count; i++)
-        {
-            CustomLight rect = rectangles[i];
-            if (rect.TextureWidth > maxWidth)
-                maxWidth = rect.TextureWidth;
-            totalArea += (long)rect.TextureWidth * rect.TextureHeight;
-        }
-        
-        // Atlas width must be at least as wide as the widest rectangle
-        // and should accommodate the total area
-        int minWidthFromArea = Mathf.CeilToInt(Mathf.Sqrt(totalArea));
-        return Mathf.Max(maxWidth, minWidthFromArea);
-    }
-
-    private int GetNextPowerOfTwo(int value)
-    {
-        if (value <= 0) return 1;
-        
-        value--;
-        value |= value >> 1;
-        value |= value >> 2;
-        value |= value >> 4;
-        value |= value >> 8;
-        value |= value >> 16;
-        value++;
-        
-        return value;
     }
 }

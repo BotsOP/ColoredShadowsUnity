@@ -20,6 +20,7 @@ public class RenderColoredShadows2 : ScriptableRenderPass
     private readonly List<ShaderTagId> shaderTagIdList = new List<ShaderTagId>();
     private readonly RenderStateBlock renderStateBlock;
     private GraphicsBuffer lightInformationBuffer;
+    private Shader depthShader;
     
 
     public RenderColoredShadows2(GraphicsBuffer lightInformationBuffer)
@@ -31,15 +32,14 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         shaderTagIdList.Add(new ShaderTagId("SRPDefaultUnlit"));
         shaderTagIdList.Add(new ShaderTagId("UniversalForward"));
         shaderTagIdList.Add(new ShaderTagId("UniversalForwardOnly"));
+
+        depthShader = Resources.Load<Shader>("DepthOverrideShader");
         
-        filteringSettings = new FilteringSettings(RenderQueueRange.transparent, int.MaxValue);
+        filteringSettings = new FilteringSettings(RenderQueueRange.all, int.MaxValue);
         
         renderStateBlock = new RenderStateBlock(RenderStateMask.Depth) {
             depthState = new DepthState(true, CompareFunction.Less),
         };
-
-        // renderStateBlock = new RenderStateBlock(RenderStateMask.Depth);
-        // renderStateBlock.depthState = new DepthState(true, CompareFunction.Less);
     }
 
     public void Dispose()
@@ -53,7 +53,7 @@ public class RenderColoredShadows2 : ScriptableRenderPass
     static ShaderTagId[] s_ShaderTagValues = new ShaderTagId[1];
     static RenderStateBlock[] s_RenderStateBlocks = new RenderStateBlock[1];
     private RendererListHandle InitRendererLists(UniversalRenderingData renderingData, UniversalLightData lightData, 
-        RenderGraph renderGraph, CullingResults cullingResults, UniversalCameraData cameraData)
+        RenderGraph renderGraph, CullingResults cullingResults, UniversalCameraData cameraData, Shader overrideShader)
     {
         SortingCriteria sortingCriteria = SortingCriteria.CommonTransparent;
         DrawingSettings drawingSettings = RenderingUtils.CreateDrawingSettings(
@@ -65,7 +65,7 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         );
         drawingSettings.enableInstancing = true;
         drawingSettings.enableDynamicBatching = true;
-        drawingSettings.overrideShader = CustomLightManager.GetCustomLight(0).overrideShader;
+        drawingSettings.overrideShader = overrideShader;
 
         s_ShaderTagValues[0] = ShaderTagId.none;
         s_RenderStateBlocks[0] = renderStateBlock;
@@ -80,8 +80,11 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         return renderGraph.CreateRendererList(param);
     }
 
-    private static void ExecutePass(PassData passData, RasterCommandBuffer cmd)
+    private static void ExecutePass(PassData passData, RasterCommandBuffer cmd, bool clearDepth)
     {
+        if(clearDepth)
+            cmd.ClearRenderTarget(true, false, Color.blueViolet);
+        
         cmd.DisableScissorRect();
         foreach (ShadowPass shadowPass in passData.shadowPasses)
         {
@@ -121,23 +124,46 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         destinationDescDepth.height = shadowAtlasHeight;
         TextureHandle destinationDepth = renderGraph.CreateTexture(destinationDescDepth);
         
+        RenderTextureDescriptor shadowMapDepthDesc = cameraData.cameraTargetDescriptor;
+        shadowMapDepthDesc.depthStencilFormat = GraphicsFormat.D32_SFloat;
+        shadowMapDepthDesc.colorFormat = RenderTextureFormat.RFloat;
+        shadowMapDepthDesc.width = shadowAtlasWidth;
+        shadowMapDepthDesc.height = shadowAtlasHeight;
+        shadowMapDepthDesc.depthBufferBits = 0;
+        shadowMapDepthDesc.msaaSamples = 1;
+        RenderingUtils.ReAllocateHandleIfNeeded(ref shadowMapID, shadowMapDepthDesc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: "RT_COLSHADOW_DEPTH" );
+        TextureHandle destinationDepthRT = renderGraph.ImportTexture(shadowMapID);
+        
+        List<ShadowPass> shadowPasses = new List<ShadowPass>();
+        List<ShadowPass> shadowPassesReceivingDepth = new List<ShadowPass>();
+        bool anyVFXPass = false;
         LightInformation[] lightInformations = new LightInformation[CustomLightManager.CustomLightCount];
+        
+        for (int i = 0; i < CustomLightManager.CustomLightCount; i++)
+        {
+            CustomLight light = CustomLightManager.GetCustomLight(i);
+            if (GetShadowPass(light, out List<ShadowPass> tempShadowPasses, out List<ShadowPass> tempShadowPassesReceivingDepth))
+            {
+                shadowPasses.AddRange(tempShadowPasses);
+                shadowPassesReceivingDepth.AddRange(tempShadowPassesReceivingDepth);
+            }
+
+            if (light.enableVFXSupport)
+                anyVFXPass = true;
+
+            lightInformations[i] = GetLightInformation(light);
+        }
+        
         using (var builder = renderGraph.AddRasterRenderPass<PassData>("TEST_CAPTURE", out var passData, profilingSampler))
         {
             builder.SetRenderAttachment(destinationColor, 0, AccessFlags.Write);
             builder.SetRenderAttachmentDepth(destinationDepth, AccessFlags.Write);
 
-            List<ShadowPass> shadowPasses = new List<ShadowPass>();
-            for (int i = 0; i < CustomLightManager.CustomLightCount; i++)
-            {
-                CustomLight light = CustomLightManager.GetCustomLight(i);
-                if (GetShadowPass(light, builder, out List<ShadowPass> tempShadowPasses))
-                {
-                    shadowPasses.AddRange(tempShadowPasses);
-                }
-
-                lightInformations[i] = GetLightInformation(light);
+            foreach (ShadowPass shadowPass in shadowPasses)
+            { 
+                builder.UseRendererList(shadowPass.rendererList);
             }
+
             passData.shadowPasses = shadowPasses;
             passData.color = destinationColor;
 
@@ -146,9 +172,33 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         
             builder.SetRenderFunc((PassData data, RasterGraphContext rgContext) =>
             {
-                ExecutePass(data, rgContext.cmd);
+                ExecutePass(data, rgContext.cmd, false);
             });
         }
+
+        if (anyVFXPass)
+        {
+            using var builder = renderGraph.AddRasterRenderPass<PassData>("TEST_CAPTURE_DEPTH", out var passData, profilingSampler);
+            builder.SetRenderAttachmentDepth(destinationDepth, AccessFlags.Write);
+
+            foreach (ShadowPass shadowPass in shadowPassesReceivingDepth)
+            { 
+                builder.UseRendererList(shadowPass.rendererList);
+            }
+
+            passData.shadowPasses = shadowPassesReceivingDepth;
+
+            builder.AllowPassCulling(false);
+            builder.AllowGlobalStateModification(true);
+        
+            builder.SetRenderFunc((PassData data, RasterGraphContext rgContext) =>
+            {
+                ExecutePass(data, rgContext.cmd, true);
+            });
+        }
+        
+        RenderGraphUtils.BlitMaterialParameters para2 = new(destinationDepth, destinationDepthRT, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
+        renderGraph.AddBlitPass(para2, "CaptureShadowsColor");
         
         lightInformationBuffer.SetData(lightInformations);
         Shader.SetGlobalBuffer("_ColoredShadowLightInformation", lightInformationBuffer);
@@ -165,9 +215,10 @@ public class RenderColoredShadows2 : ScriptableRenderPass
         }
         return;
 
-        bool GetShadowPass(CustomLight light, IRasterRenderGraphBuilder builder, out List<ShadowPass> shadowPasses)
+        bool GetShadowPass(CustomLight light, out List<ShadowPass> shadowPases, out List<ShadowPass> shadowPasesReceivingDepth)
         {
-            shadowPasses = new List<ShadowPass>();
+            shadowPases = new List<ShadowPass>();
+            shadowPasesReceivingDepth = new List<ShadowPass>();
             List<(Matrix4x4, Matrix4x4)> projViewMatrices = light.GetCullingMatrices();
 
             for (int i = 0; i < projViewMatrices.Count; i++)
@@ -182,9 +233,14 @@ public class RenderColoredShadows2 : ScriptableRenderPass
 
                 CullingResults cullingResults = cullContextData.Cull(ref scriptableCullingParameters);
                 filteringSettings.layerMask = light.shadowCastingMask;
-                RendererListHandle rendererList = InitRendererLists(renderingData, lightData, renderGraph, cullingResults, cameraData);
-                builder.UseRendererList(rendererList);
-                shadowPasses.Add(new ShadowPass(light.GetLocalShadowAtlasPos(i), light.shadowTextureSize, light.shadowTextureSize, rendererList, projViewMatrix.Item2, projViewMatrix.Item1));
+                RendererListHandle rendererList = InitRendererLists(renderingData, lightData, renderGraph, cullingResults, cameraData, light.overrideShader);
+                shadowPases.Add(new ShadowPass(light.GetLocalShadowAtlasPos(i), light.shadowTextureSize, light.shadowTextureSize, rendererList, projViewMatrix.Item2, projViewMatrix.Item1));
+                
+                if(!light.enableVFXSupport)
+                    continue;
+                
+                rendererList = InitRendererLists(renderingData, lightData, renderGraph, cullingResults, cameraData, depthShader);
+                shadowPasesReceivingDepth.Add(new ShadowPass(light.GetLocalShadowAtlasPos(i), light.shadowTextureSize, light.shadowTextureSize, rendererList, projViewMatrix.Item2, projViewMatrix.Item1));
             }
 
             return true;
