@@ -1,0 +1,13 @@
+#pragma kernel DepthAndBlur1
+
+RWTexture2D<float4> _ShadowAtlas;
+Texture2D<float> _DepthMap;
+
+[numthreads(32,32,1)]
+void DepthAndBlur1 (uint2 id : SV_DispatchThreadID)
+{
+    float4 output = _ShadowAtlas[id];
+    output.b = _DepthMap[id];
+    _ShadowAtlas[id] = output;
+}
+

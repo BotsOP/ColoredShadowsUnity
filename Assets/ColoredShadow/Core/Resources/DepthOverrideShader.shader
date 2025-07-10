@@ -8,7 +8,6 @@ Shader "Custom/ColorOnlyNoDepth"
         Tags { "RenderType"="Opaque" }
         Pass
         {
-
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
