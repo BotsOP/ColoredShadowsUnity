@@ -41,6 +41,7 @@ namespace ColoredShadows.Scripts
         [SerializeField] public int vfxSamplingSize = 256;
         [SerializeField] public float vfxUVSize = 1;
         [SerializeField] public bool relativeUVSize = true;
+        [SerializeField] public bool blockPassthroughShadows = true;
 
         public int shadowAtlasPosX;
         public int shadowAtlasPosY;
@@ -92,7 +93,7 @@ namespace ColoredShadows.Scripts
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
-            if (SceneView.lastActiveSceneView == null || !ColShadowDebug.IsEnabled)
+            if (SceneView.lastActiveSceneView == null || !ColShadowSettings.IsEnabled)
             {
                 return;
             }
@@ -122,19 +123,19 @@ namespace ColoredShadows.Scripts
                 Vector3 dir = sceneCamera.transform.position - middlePos;
                 middlePos = GetRayBoxIntersection(middlePos, dir, middlePos, meshRenderer.bounds.size);
                 float shadowID = meshRenderer.sharedMaterial.GetFloat("_ShadowID");
-                Gizmos.color = ColShadowDebug.CasterNumberColor;
+                Gizmos.color = ColShadowSettings.CasterNumberColor;
                 Quaternion lookRotation = Quaternion.LookRotation(dir) * Quaternion.Euler(-90, -90, 90);
-                StringToMeshNumber(shadowID.ToString("0.#"), middlePos, lookRotation, ColShadowDebug.CasterNumberSize);
+                StringToMeshNumber(shadowID.ToString("0.#"), middlePos, lookRotation, ColShadowSettings.CasterNumberSize);
             }
             
             foreach (CustomLight customLight in customLights)
             {
                 Vector3 dir = sceneCamera.transform.position - customLight.transform.position;
-                Gizmos.color = ColShadowDebug.CustomLightNumberColor;
+                Gizmos.color = ColShadowSettings.CustomLightNumberColor;
                 Quaternion lookRotation = Quaternion.LookRotation(dir) * Quaternion.Euler(-90, -90, 90);
                 Vector3 middlePos = customLight.transform.position + dir.normalized * 0f;
-                middlePos.y += 0.4f + ColShadowDebug.CustomLightNumberSize * 0.15f;
-                StringToMeshNumber(customLight.addToShadowID.ToString("0.#"), middlePos, lookRotation, ColShadowDebug.CustomLightNumberSize);
+                middlePos.y += 0.4f + ColShadowSettings.CustomLightNumberSize * 0.15f;
+                StringToMeshNumber(customLight.addToShadowID.ToString("0.#"), middlePos, lookRotation, ColShadowSettings.CustomLightNumberSize);
             }
         }
 
@@ -388,6 +389,11 @@ namespace ColoredShadows.Scripts
             switch (lightMode)
             {
                 case LightMode.Point:
+                    viewMatrix = Matrix4x4.Rotate(Quaternion.Euler(0f, 180f, 0f));
+                    viewMatrix.m03 = transform.position.x;
+                    viewMatrix.m13 = transform.position.y;
+                    viewMatrix.m23 = transform.position.z;
+                    viewMatrix = viewMatrix.inverse;
                     cullingMatrices.Add((projectionMatrix, viewMatrix));
                     cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * viewMatrix));
                     cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0)) * viewMatrix));

@@ -117,7 +117,7 @@ namespace ColoredShadows.Scripts
             destinationDescDepth.height = textureSizeY;
             TextureHandle destinationDepth = renderGraph.CreateTexture(destinationDescDepth);
 
-            Shader.SetGlobalFloat("_NumberSize", ColShadowDebug.ShadowNumberSize * 4);
+            Shader.SetGlobalFloat("_NumberSize", ColShadowSettings.ShadowNumberSize * 4);
 
             using (var builder = renderGraph.AddRasterRenderPass<PassData>("Capture Scene Custom Shadow Data", out var passData, profilingSampler))
             {
@@ -155,7 +155,7 @@ namespace ColoredShadows.Scripts
                 passData.cameraColor = resourceData.cameraColor;
                 passData.textureSizeX = textureSizeX;
                 passData.textureSizeY = textureSizeY;
-                passData.color = ColShadowDebug.ShadowNumberColor;
+                passData.color = ColShadowSettings.ShadowNumberColor;
                 
                 builder.AllowPassCulling(false);
                 builder.SetRenderFunc((PassDataCompute data, ComputeGraphContext context) =>

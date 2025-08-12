@@ -119,7 +119,7 @@ public class RenderColoredShadows : ScriptableRenderPass
         destinationDescColor.width = shadowAtlasWidth;
         destinationDescColor.height = shadowAtlasHeight;
         destinationDescColor.enableRandomWrite = true;
-        destinationDescColor.clearBuffer = false;
+        destinationDescColor.clearBuffer = true;
         TextureHandle destinationColor = renderGraph.CreateTexture(destinationDescColor);
     
         TextureDesc destinationDescDepth = renderGraph.GetTextureDesc(resourceData.activeDepthTexture);
@@ -141,6 +141,7 @@ public class RenderColoredShadows : ScriptableRenderPass
         List<ShadowPass> shadowPasses = new List<ShadowPass>();
         List<ShadowPass> shadowPassesReceivingDepth = new List<ShadowPass>();
         bool anyVFXPass = false;
+        bool anyDepthMergePass = false;
         LightInformation[] lightInformations = new LightInformation[CustomLightManager.CustomLightCount];
         
         for (int i = 0; i < CustomLightManager.CustomLightCount; i++)
@@ -149,7 +150,12 @@ public class RenderColoredShadows : ScriptableRenderPass
             if (GetShadowPass(light, out List<ShadowPass> tempShadowPasses, out List<ShadowPass> tempShadowPassesReceivingDepth))
             {
                 shadowPasses.AddRange(tempShadowPasses);
-                shadowPassesReceivingDepth.AddRange(tempShadowPassesReceivingDepth);
+                
+                if(light.blockPassthroughShadows)
+                {
+                    anyDepthMergePass = true;
+                    shadowPassesReceivingDepth.AddRange(tempShadowPassesReceivingDepth);
+                }
             }
 
             if (light.enableVFXSupport)
@@ -158,7 +164,7 @@ public class RenderColoredShadows : ScriptableRenderPass
             lightInformations[i] = GetLightInformation(light);
         }
         
-        using (var builder = renderGraph.AddRasterRenderPass<PassData>("TEST_CAPTURE", out var passData, profilingSampler))
+        using (var builder = renderGraph.AddRasterRenderPass<PassData>("CAPTURE_COL_SHADOWS", out var passData, profilingSampler))
         {
             builder.SetRenderAttachment(destinationColor, 0, AccessFlags.Write);
             builder.SetRenderAttachmentDepth(destinationDepth, AccessFlags.Write);
@@ -180,7 +186,7 @@ public class RenderColoredShadows : ScriptableRenderPass
             });
         }
 
-        if (anyVFXPass)
+        if (anyDepthMergePass)
         {
             using (var builder = renderGraph.AddRasterRenderPass<PassData>("GET_DEPTH_OF_SHADOW_RECEIVERS", out var passData, profilingSampler))
             {
@@ -201,13 +207,16 @@ public class RenderColoredShadows : ScriptableRenderPass
                     ExecutePass(data, rgContext.cmd, true);
                 });
             }
+        }
 
+        if (anyVFXPass)
+        {
             using (var builder = renderGraph.AddComputePass("PP_SHADOWMAP", out PassDataCompute passData))
             {
                 passData.cs = postProcessShadowMap;
                 passData.shadowMap = destinationColor;
                 passData.depthMap = destinationDepth;
-                
+                passData.amountBlurEdges = ColShadowSettings.AmountShadowBlur;
                 
                 builder.UseTexture(destinationColor);
                 builder.UseTexture(destinationDepth);
@@ -218,10 +227,29 @@ public class RenderColoredShadows : ScriptableRenderPass
                 {
                     int threadGroupX = Mathf.CeilToInt(shadowAtlasWidth / 32.0f);
                     int threadGroupY = Mathf.CeilToInt(shadowAtlasHeight / 32.0f);
-                    int kernel = data.cs.FindKernel("DepthAndBlur1");
-                    cgContext.cmd.SetComputeTextureParam(data.cs, kernel, "_ShadowAtlas", data.shadowMap);
-                    cgContext.cmd.SetComputeTextureParam(data.cs, kernel, "_DepthMap", data.depthMap);
-                    cgContext.cmd.DispatchCompute(data.cs, kernel, threadGroupX, threadGroupY, 1);
+
+                    if (data.amountBlurEdges > 0)
+                    {
+                        cgContext.cmd.SetComputeIntParam(data.cs, "sampleSize", data.amountBlurEdges);
+                            
+                        int blur1 = data.cs.FindKernel("Blur1");
+                        cgContext.cmd.SetComputeTextureParam(data.cs, blur1, "_ShadowAtlas", data.shadowMap);
+                        cgContext.cmd.SetComputeTextureParam(data.cs, blur1, "_DepthMap", data.depthMap);
+                        cgContext.cmd.DispatchCompute(data.cs, blur1, threadGroupX, threadGroupY, 1);
+                    
+                        int blur2 = data.cs.FindKernel("Blur2");
+                        cgContext.cmd.SetComputeTextureParam(data.cs, blur2, "_ShadowAtlas", data.shadowMap);
+                        cgContext.cmd.SetComputeTextureParam(data.cs, blur2, "_DepthMap", data.depthMap);
+                        cgContext.cmd.DispatchCompute(data.cs, blur2, threadGroupX, threadGroupY, 1);
+                    }
+
+                    if (anyDepthMergePass)
+                    {
+                        int depthMerge = data.cs.FindKernel("DepthMerge");
+                        cgContext.cmd.SetComputeTextureParam(data.cs, depthMerge, "_ShadowAtlas", data.shadowMap);
+                        cgContext.cmd.SetComputeTextureParam(data.cs, depthMerge, "_DepthMap", data.depthMap);
+                        cgContext.cmd.DispatchCompute(data.cs, depthMerge, threadGroupX, threadGroupY, 1);
+                    }
                 });
             }
         }
@@ -284,7 +312,7 @@ public class RenderColoredShadows : ScriptableRenderPass
             customValuesCopy.Add(0);
             if (j > 12)
             {
-                Debug.LogError($"Cannot fill Custom Values list up to 12 entries");
+                Debug.LogError($"Cannot fill Custom Values list above 12 entries");
                 break;
             }
         }
@@ -303,6 +331,8 @@ public class RenderColoredShadows : ScriptableRenderPass
             light.addToShadowID,
             light.shadowAtlasPosX,
             light.shadowAtlasPosY,
+            light.blockPassthroughShadows,
+            ColShadowSettings.AmountShadowBlur > 0,
             customValuesCopy
         );
     }
@@ -320,6 +350,7 @@ public class RenderColoredShadows : ScriptableRenderPass
         internal TextureHandle depthMap;
         internal int textureWidth;
         internal int textureHeight;
+        internal int amountBlurEdges;
     }
 
     private struct ShadowPass
@@ -347,19 +378,21 @@ public class RenderColoredShadows : ScriptableRenderPass
     [StructLayout(LayoutKind.Sequential)]
     private struct LightInformation
     {
-        public int index;
-        public int lightMode;
+        public int index; //up to 1024 - 10 bit
+        public int lightMode; // up to 8 - 4 bit
         public Matrix4x4 lightMatrix;
         public Matrix4x4 invLightMatrix;
         public Vector3 lightPos;
         public float fallOffRange;
         public float farPlane;
         public Vector3 cameraPos;
-        public int textureSizeX;
-        public int textureSizeY;
+        public int textureSizeX; // up to 16.384 - 14 bit
+        public int textureSizeY; // up to 16.384 - 14 bit
         public int lightIDMultiplier;
-        public int shadowAtlasPosX;
-        public int shadowAtlasPosY;
+        public int shadowAtlasPosX; // up to 16.384 - 14 bit
+        public int shadowAtlasPosY; // up to 16.384 - 14 bit
+        public int passthroughShadows; // 1 bit
+        public int blurredEdges; // 1 bit
         public float customValue0;
         public float customValue1;
         public float customValue2;
@@ -372,7 +405,7 @@ public class RenderColoredShadows : ScriptableRenderPass
         public float customValue9;
         public float customValue10;
         public float customValue11;
-        public LightInformation(int index, int lightMode, Matrix4x4 lightMatrix, Matrix4x4 invLightMatrix, Vector3 lightPos, float fallOffRange, float farPlane, Vector3 cameraPos, int textureSizeX, int textureSizeY, int lightIDMultiplier, int shadowAtlasPosX, int shadowAtlasPosY, List<float> customValues) : this()
+        public LightInformation(int index, int lightMode, Matrix4x4 lightMatrix, Matrix4x4 invLightMatrix, Vector3 lightPos, float fallOffRange, float farPlane, Vector3 cameraPos, int textureSizeX, int textureSizeY, int lightIDMultiplier, int shadowAtlasPosX, int shadowAtlasPosY, bool passthroughShadows, bool blurredEdges, List<float> customValues) : this()
         {
             this.index = index;
             this.lightMode = lightMode;
@@ -387,6 +420,8 @@ public class RenderColoredShadows : ScriptableRenderPass
             this.lightIDMultiplier = lightIDMultiplier;
             this.shadowAtlasPosX = shadowAtlasPosX;
             this.shadowAtlasPosY = shadowAtlasPosY;
+            this.passthroughShadows = passthroughShadows ? 1 : 0;
+            this.blurredEdges = blurredEdges ? 1 : 0;
             customValue0 = customValues[0];
             customValue1 = customValues[1];
             customValue2 = customValues[2];

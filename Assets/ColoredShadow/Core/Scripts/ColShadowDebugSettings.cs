@@ -8,6 +8,9 @@ using UnityEngine.Serialization;
 [CreateAssetMenu(fileName = "ColShadowDebugSettings", menuName = "ColShadow/Debug Settings")]
 public class ColShadowDebugSettings : ScriptableObject
 {
+    [Header("Global Shadow Settings")] 
+    public int amountShadowBlur = 0;
+    
     [Header("Debug Settings")]
     public bool enableDebugMode = true;
     
@@ -90,6 +93,13 @@ public class ColShadowDebugWindow : EditorWindow
         
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
         
+        EditorGUILayout.LabelField("Global Shadow Settings", EditorStyles.boldLabel);
+        EditorGUILayout.Space();
+        
+        settings.amountShadowBlur = EditorGUILayout.IntField("Amount Shadow Blur", settings.amountShadowBlur);
+        
+        EditorGUILayout.Space();
+        
         // Header
         EditorGUILayout.LabelField("ColShadow Debug Settings", EditorStyles.boldLabel);
         EditorGUILayout.Space();
@@ -102,7 +112,6 @@ public class ColShadowDebugWindow : EditorWindow
         EditorGUILayout.Space();
         
         // Float settings
-        EditorGUILayout.LabelField("Float Values", EditorStyles.boldLabel);
         settings.customLightNumberSize = EditorGUILayout.FloatField("Custom Light Number Size", settings.customLightNumberSize);
         settings.casterNumberSize = EditorGUILayout.FloatField("Caster Number Size", settings.casterNumberSize);
         settings.shadowNumberSize = EditorGUILayout.FloatField("Shadow Number Size", settings.shadowNumberSize);
@@ -110,7 +119,6 @@ public class ColShadowDebugWindow : EditorWindow
         EditorGUILayout.Space();
         
         // Color settings
-        EditorGUILayout.LabelField("Color Settings", EditorStyles.boldLabel);
         settings.customLightNumberColor = EditorGUILayout.ColorField("Custom Light Number Color", settings.customLightNumberColor);
         settings.casterNumberColor = EditorGUILayout.ColorField("Caster Number Color", settings.casterNumberColor);
         settings.shadowNumberColor = EditorGUILayout.ColorField("Shadow Number Color", settings.shadowNumberColor);
@@ -158,90 +166,21 @@ public class ColShadowDebugWindow : EditorWindow
 }
 
 // Static utility class for easy access throughout the project
-public static class ColShadowDebug
+public static class ColShadowSettings
 {
-    public static bool IsEnabled
-    {
-        get
-        {
-#if UNITY_EDITOR
-            return ColShadowDebugSettings.Instance.enableDebugMode;
-#else
-            return false;
-#endif
-        }
-    }
-    
-    public static float CustomLightNumberSize
-    {
-        get
-        {
-#if UNITY_EDITOR
-            return ColShadowDebugSettings.Instance.customLightNumberSize;
-#else
-            return 1.0f;
-#endif
-        }
-    }
+    public static int AmountShadowBlur => ColShadowDebugSettings.Instance.amountShadowBlur;
+    public static bool IsEnabled => ColShadowDebugSettings.Instance.enableDebugMode;
 
-    public static float CasterNumberSize
-    {
-        get
-        {
-#if UNITY_EDITOR
-            return ColShadowDebugSettings.Instance.casterNumberSize;
-#else
-            return 1.0f;
-#endif
-        }
-    }
+    public static float CustomLightNumberSize => ColShadowDebugSettings.Instance.customLightNumberSize;
 
-    public static Color CasterNumberColor
-    {
-        get
-        {
-#if UNITY_EDITOR
-            return ColShadowDebugSettings.Instance.casterNumberColor;
-#else
-            return Color.magenta;
-#endif
-        }
-    }
+    public static float CasterNumberSize => ColShadowDebugSettings.Instance.casterNumberSize;
 
-    public static Color CustomLightNumberColor
-    {
-        get
-        {
-#if UNITY_EDITOR
-            return ColShadowDebugSettings.Instance.customLightNumberColor;
-#else
-            return Color.green;
-#endif
-        }
-    }
-    
-    public static Color ShadowNumberColor
-    {
-        get
-        {
-#if UNITY_EDITOR
-            return ColShadowDebugSettings.Instance.shadowNumberColor;
-#else
-            return Color.white;
-#endif
-        }
-    }
+    public static Color CasterNumberColor => ColShadowDebugSettings.Instance.casterNumberColor;
 
-    public static float ShadowNumberSize
-    {
-        get
-        {
-#if UNITY_EDITOR
-            return ColShadowDebugSettings.Instance.shadowNumberSize;
-#else
-            return 1.0f;
-#endif
-        }
-    }
+    public static Color CustomLightNumberColor => ColShadowDebugSettings.Instance.customLightNumberColor;
+
+    public static Color ShadowNumberColor => ColShadowDebugSettings.Instance.shadowNumberColor;
+
+    public static float ShadowNumberSize => ColShadowDebugSettings.Instance.shadowNumberSize;
 }
 #endif

@@ -10,6 +10,7 @@ namespace ColoredShadow.Core.Scripts
 
         public override void Create()
         {
+            Debug.Log(sizeof(bool));
             lightInformationBuffer = new GraphicsBuffer(
                 GraphicsBuffer.Target.Structured,
                 100,
@@ -19,7 +20,7 @@ namespace ColoredShadow.Core.Scripts
                 sizeof(float) * 3 +
                 sizeof(float) * 2 +
                 sizeof(float) * 3 +
-                sizeof(int) * 5 +
+                sizeof(int) * 7 +
                 sizeof(float) * 12
             );
         

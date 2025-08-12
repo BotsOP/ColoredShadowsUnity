@@ -30,6 +30,7 @@ namespace ColoredShadows.Scripts
         private SerializedProperty vfxSamplingSizeProp;
         private SerializedProperty vfxUVSizeProp;
         private SerializedProperty relativeUVSizeProp;
+        private SerializedProperty blockPassthroughShadowsProp;
         
         void OnEnable()
         {
@@ -53,6 +54,7 @@ namespace ColoredShadows.Scripts
             vfxSamplingSizeProp = serializedObject.FindProperty("vfxSamplingSize");
             vfxUVSizeProp = serializedObject.FindProperty("vfxUVSize");
             relativeUVSizeProp = serializedObject.FindProperty("relativeUVSize");
+            blockPassthroughShadowsProp = serializedObject.FindProperty("blockPassthroughShadows");
         }
         
         public override void OnInspectorGUI()
@@ -109,6 +111,7 @@ namespace ColoredShadows.Scripts
             {
                 EditorGUI.indentLevel++;
                 
+                EditorGUILayout.PropertyField(blockPassthroughShadowsProp);
                 EditorGUILayout.PropertyField(addShadowIDProp);
                 if (currentMode == LightMode.Point)
                 {

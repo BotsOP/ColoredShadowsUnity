@@ -19,7 +19,7 @@ namespace ColoredShadows.Scripts
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
             #if UNITY_EDITOR
-            if (renderingData.cameraData.cameraType != CameraType.SceneView || !ColShadowDebug.IsEnabled)
+            if (renderingData.cameraData.cameraType != CameraType.SceneView || !ColShadowSettings.IsEnabled)
                 return;
             
             renderShadowObjectsPassDebug.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
