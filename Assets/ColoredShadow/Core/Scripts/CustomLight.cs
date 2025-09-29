@@ -86,6 +86,7 @@ namespace ColoredShadows.Scripts
         }
 
         private int previousShadowTextureSize;
+        private LightMode cachedLightMode;
         
         private Mesh[] numberMeshes;
         private MeshRenderer[] meshRenderers;
@@ -294,10 +295,11 @@ namespace ColoredShadows.Scripts
 
         private void OnValidate()
         {
-            if (previousShadowTextureSize == shadowTextureSize)
+            if (previousShadowTextureSize == shadowTextureSize && cachedLightMode == lightMode)
                 return;
             
             previousShadowTextureSize = shadowTextureSize;
+            cachedLightMode = lightMode;
             CustomLightManager.RefreshShadowAtlas();
         }
 #endif
@@ -380,26 +382,44 @@ namespace ColoredShadows.Scripts
             }
         }
 
+        private Matrix4x4 cachedMatrix;
         public List<(Matrix4x4, Matrix4x4)> GetCullingMatrices()
         {
+            // if (Time.frameCount < 10)
+            // {
+            //     cachedMatrix = ViewMatrix;
+            // }
             Matrix4x4 viewMatrix = ViewMatrix;
+            Debug.Log(viewMatrix);
+            
             Matrix4x4 projectionMatrix = ProjectionMatrix;
             cullingMatrices.Clear();
             
             switch (lightMode)
             {
                 case LightMode.Point:
-                    viewMatrix = Matrix4x4.Rotate(Quaternion.Euler(0f, 180f, 0f));
-                    viewMatrix.m03 = transform.position.x;
-                    viewMatrix.m13 = transform.position.y;
-                    viewMatrix.m23 = transform.position.z;
-                    viewMatrix = viewMatrix.inverse;
-                    cullingMatrices.Add((projectionMatrix, viewMatrix));
-                    cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * viewMatrix));
-                    cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0)) * viewMatrix));
-                    cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(0, 270, 0)) * viewMatrix));
-                    cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(90, 0, 0)) * viewMatrix));
-                    cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(270, 0, 0)) * viewMatrix));
+                    Matrix4x4 newMatrix = Matrix4x4.identity;
+                    // for (int i = 0; i < 3; i++)
+                    // {
+                    //     for (int j = 0; j < 3; j++)
+                    //     {
+                    //         newMatrix[i, j] = 0;
+                    //     }
+                    // }
+                    newMatrix.m00 = 1;
+                    newMatrix.m11 = 1;
+                    newMatrix.m22 = -1;
+                    newMatrix.m33 = 1;
+                    newMatrix.m03 = -transform.position.x;
+                    newMatrix.m13 = -transform.position.y;
+                    newMatrix.m23 = transform.position.z;
+                    Debug.Log(newMatrix);
+                    cullingMatrices.Add((projectionMatrix, newMatrix));
+                    cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * newMatrix));
+                    cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0)) * newMatrix));
+                    cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(0, 270, 0)) * newMatrix));
+                    cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(90, 0, 0)) * newMatrix));
+                    cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(270, 0, 0)) * newMatrix));
                     break;
                 case LightMode.Spot:
                     cullingMatrices.Add((projectionMatrix, viewMatrix));

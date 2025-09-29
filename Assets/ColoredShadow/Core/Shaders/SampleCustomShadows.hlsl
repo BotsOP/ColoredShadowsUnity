@@ -101,11 +101,11 @@ void GetCubemapUV(float3 direction, out float2 uv, out int faceIndex)
     }
     else if (closestDir == left) // POSITIVE_X
     {
-        faceIndex = 1;
+        faceIndex = 3;
     }
     else if (closestDir == right) // NEGATIVE_X 
     {
-        faceIndex = 3;
+        faceIndex = 1;
     }
     else if (closestDir == down) // NEGATIVE_Y
     {
@@ -118,10 +118,10 @@ void GetCubemapUV(float3 direction, out float2 uv, out int faceIndex)
     
     switch(faceIndex)
     {
-    case 3: // POSITIVE_X
+    case 1: // POSITIVE_X
         uv = float2(-direction.z, -direction.y) / abs(direction.x);
         break;
-    case 1: // NEGATIVE_X 
+    case 3: // NEGATIVE_X 
         uv = float2(direction.z, -direction.y) / abs(direction.x);
         break;
     case 5: // POSITIVE_Y
@@ -392,7 +392,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             float3 dir = normalize(lightInformation.lightPos - worldPos);
             int faceIndex = 0;
             GetCubemapUV(dir, uv, faceIndex);
-            // uv.x = 1 - uv.x;
+            uv.x = 1 - uv.x;
             uv += uvOffset;
             float2 minCorner = float2(lightInformation.shadowAtlasPosX / _CustomShadowAtlasWidth, lightInformation.shadowAtlasPosY / _CustomShadowAtlasHeight);
             minCorner.x += (float)3072 / _CustomShadowAtlasWidth * (faceIndex % 3);

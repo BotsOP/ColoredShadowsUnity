@@ -91,7 +91,10 @@ public class RenderColoredShadows : ScriptableRenderPass
         foreach (ShadowPass shadowPass in passData.shadowPasses)
         {
             cmd.SetViewport(new Rect(shadowPass.texturePosX, shadowPass.texturePosY, shadowPass.textureWidth, shadowPass.textureHeight));
+            Matrix4x4 viewmatrix = shadowPass.viewMatrix;
+            // viewmatrix.m03 += 2;
             cmd.SetViewProjectionMatrices(shadowPass.viewMatrix, shadowPass.projectionMatrix);
+            // Debug.Log(shadowPass.viewMatrix + " execute");
             cmd.DrawRendererList(shadowPass.rendererList);
         }
     }
