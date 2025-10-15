@@ -155,8 +155,8 @@ float2 GetLocalShadowAtlasUV(float2 uv, LightInformation lightInformation)
     int shadowAtlasPosY = lightInformation.shadowAtlasPosY;
     int textureWidth = lightInformation.textureSizeX;
     int textureHeight = lightInformation.textureSizeY;
-    uv *= float2(textureWidth / (float)_CustomShadowAtlasWidth, textureHeight / (float)_CustomShadowAtlasHeight);
-    uv += float2(shadowAtlasPosX / (float)_CustomShadowAtlasWidth, shadowAtlasPosY / (float)_CustomShadowAtlasHeight);
+    uv *= float2(textureWidth, textureHeight);
+    uv += float2(shadowAtlasPosX, shadowAtlasPosY);
     return uv;
 }
 
@@ -347,6 +347,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             tempOutput = _ColoredShadowMap0.Sample(point_clamp_sampler, lightUv);
             tempOutput.r = UnpackFloatTo2Half_float(tempOutput.r).r;
             tempMask = lightInformation.blurredEdges == 1 ? _ColoredShadowMap0.Sample(trilinear_clamp_sampler, lightUv).a : tempOutput.r;
+            finalUV = lightUv;
             
             float3 newWorldPos = DepthToWorldPositionViewProj(lightInformation.invLightMatrix, lightUv, tempOutput.b);
 
