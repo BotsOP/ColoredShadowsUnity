@@ -220,8 +220,8 @@ float GetMask(float2 uv, float2 testUV, LightInformation lightInformation)
 
 bool CheckIsInBounds(LightInformation lightInformation, float2 lightUv)
 {
-    return lightUv.x < (lightInformation.shadowAtlasPosX + lightInformation.textureSizeX) / (float)_CustomShadowAtlasWidth && lightUv.x >  lightInformation.shadowAtlasPosX / (float)_CustomShadowAtlasWidth &&
-                lightUv.y < (lightInformation.shadowAtlasPosY + lightInformation.textureSizeY) / (float)_CustomShadowAtlasHeight && lightUv.y >  lightInformation.shadowAtlasPosY / (float)_CustomShadowAtlasHeight;
+    return lightUv.x < (lightInformation.shadowAtlasPosX + lightInformation.textureSizeX) && lightUv.x >  lightInformation.shadowAtlasPosX&&
+                lightUv.y < (lightInformation.shadowAtlasPosY + lightInformation.textureSizeY) && lightUv.y >  lightInformation.shadowAtlasPosY;
 }
 
 float4x4 InvertMatrix(float4x4 m)
@@ -394,20 +394,19 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             GetCubemapUV(dir, uv, faceIndex);
             uv.x = 1 - uv.x;
             uv += uvOffset;
-            float2 minCorner = float2(lightInformation.shadowAtlasPosX, lightInformation.shadowAtlasPosY);
-            minCorner.x += (float)lightInformation.textureSizeX * (faceIndex % 3);
-            minCorner.y += (float)lightInformation.textureSizeY * floor(faceIndex / 3);
-            float2 maxCorner = float2(minCorner.x + (float)lightInformation.textureSizeX, minCorner.y + (float)lightInformation.textureSizeY);
+            float2 minCorner = float2(lightInformation.shadowAtlasPosX, lightInformation.shadowAtlasPosY * 2);
+            minCorner.x += lightInformation.textureSizeX * (faceIndex % 3);
+            minCorner.y += lightInformation.textureSizeY * floor(faceIndex / 3);
+            float2 maxCorner = float2(minCorner.x + lightInformation.textureSizeX, minCorner.y + lightInformation.textureSizeY);
             float2 cubemapUV = float2(remap(uv.x, 0, 3, minCorner.x, maxCorner.x), remap(uv.y, 0, 2, minCorner.y, maxCorner.y));
-            if (i == 1)
-            {
-                finalUV = cubemapUV;
-            }
-            
 
             tempOutput = _ColoredShadowMap0.Sample(point_clamp_sampler, cubemapUV);
             tempOutput.r = UnpackFloatTo2Half_float(tempOutput.r).r;
             tempMask = GetMask(cubemapUV, uv, lightInformation);
+            if (i == 1)
+            {
+                finalUV = cubemapUV;
+            }
 
             if (tempMask > highestMask && dist < lowestDist && dist < 1 && CheckIsInBounds(lightInformation, cubemapUV))
             {

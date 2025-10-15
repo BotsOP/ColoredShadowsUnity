@@ -110,6 +110,7 @@ public class RenderColoredShadows : ScriptableRenderPass
         int shadowAtlasHeight = Mathf.Max(1, shadowAtlasSize.y);
         Shader.SetGlobalInt("_CustomShadowAtlasWidth", shadowAtlasWidth);
         Shader.SetGlobalInt("_CustomShadowAtlasHeight", shadowAtlasHeight);
+        Debug.Log($"shadow atlas size {shadowAtlasWidth} {shadowAtlasHeight}");
         Shader.SetGlobalInt("_CurrentAmountCustomLights", CustomLightManager.CustomLightCount);
     
         TextureDesc destinationDescColor = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
