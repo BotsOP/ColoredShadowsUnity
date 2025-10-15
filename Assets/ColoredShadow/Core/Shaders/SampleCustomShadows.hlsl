@@ -307,12 +307,12 @@ float2 GetLightUV(LightInformation lightInformation, float3 worldPos, float2 uvO
 int _CurrentAmountCustomLights;
 StructuredBuffer<LightInformation> _ColoredShadowLightInformation;
 
-float2 GetLocalShadowUV(float shadowUVMultiplier, bool relativeUVSize, float4 tempOutput, float2 lightUv)
+float2 GetLocalShadowUV(float shadowUVMultiplier, bool relativeUVSize, float shadowRelativeSize, float2 shadowSize, float2 lightUv)
 {
-    float shadowSize = relativeUVSize ? tempOutput.a : 1;
-    shadowSize *= shadowUVMultiplier;
-    float2 shadowUVX = float2(tempOutput.g - shadowSize, tempOutput.g + shadowSize);
-    float2 shadowUVY = float2(tempOutput.b - shadowSize, tempOutput.b + shadowSize);
+    float shadowSizeMultiplier = relativeUVSize ? shadowRelativeSize : 1;
+    shadowSizeMultiplier *= shadowUVMultiplier;
+    float2 shadowUVX = float2(shadowSize.r - shadowSizeMultiplier, shadowSize.r + shadowSizeMultiplier);
+    float2 shadowUVY = float2(shadowSize.g - shadowSizeMultiplier, shadowSize.g + shadowSizeMultiplier);
     return float2(remap(lightUv.x, shadowUVX.x, shadowUVX.y, 0, 1), remap(lightUv.y, shadowUVY.x, shadowUVY.y, 0, 1));
 }
 
@@ -352,7 +352,8 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
 
             if (tempMask > highestMask && dist <= lowestDist && dist < 1 && CheckIsInBounds(lightInformation, lightUv) && distance(newWorldPos, lightInformation.lightPos) + 0.1 > distance(worldPos, lightInformation.lightPos))
             {
-                shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, tempOutput, lightUv);
+                // shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, UnpackFloatTo2Half_float(tempOutput.r).g, tempOutput, lightUv);
+                shadowUV = UnpackFloatTo2Half_float(tempOutput.g);
             
                 tempMask = pow(tempMask, 4);
                 tempMask = step(0.5, pow(tempMask, 1));
@@ -375,7 +376,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
 
             if (tempMask > highestMask && dist <= lowestDist && dist < 1 && CheckIsInBounds(lightInformation, lightUv))
             {
-                shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, tempOutput, lightUv);
+                shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, UnpackFloatTo2Half_float(tempOutput.r).g, tempOutput, lightUv);
 
                 tempMask = step(0.5, pow(tempMask, 4));
                 fallOffRange = 1 - dist;
@@ -394,7 +395,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             GetCubemapUV(dir, uv, faceIndex);
             uv.x = 1 - uv.x;
             uv += uvOffset;
-            float2 minCorner = float2(lightInformation.shadowAtlasPosX, lightInformation.shadowAtlasPosY * 2);
+            float2 minCorner = float2(lightInformation.shadowAtlasPosX * 2, lightInformation.shadowAtlasPosY * 2);
             minCorner.x += lightInformation.textureSizeX * (faceIndex % 3);
             minCorner.y += lightInformation.textureSizeY * floor(faceIndex / 3);
             float2 maxCorner = float2(minCorner.x + lightInformation.textureSizeX, minCorner.y + lightInformation.textureSizeY);
@@ -403,14 +404,11 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             tempOutput = _ColoredShadowMap0.Sample(point_clamp_sampler, cubemapUV);
             tempOutput.r = UnpackFloatTo2Half_float(tempOutput.r).r;
             tempMask = GetMask(cubemapUV, uv, lightInformation);
-            if (i == 1)
-            {
-                finalUV = cubemapUV;
-            }
 
             if (tempMask > highestMask && dist < lowestDist && dist < 1 && CheckIsInBounds(lightInformation, cubemapUV))
             {
-                shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, tempOutput, cubemapUV);
+                shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, UnpackFloatTo2Half_float(tempOutput.r).g, UnpackFloatTo2Half_float(tempOutput.g), uv);
+                // shadowUV = UnpackFloatTo2Half_float(tempOutput.g);
                 
                 fallOffRange = 1 - dist;
                 highestMask = tempMask * fallOffRange;

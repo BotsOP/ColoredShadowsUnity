@@ -97,15 +97,15 @@
         {
             "m_OutputSlot": {
                 "m_Node": {
-                    "m_Id": "00814df5dfbf4a7a81e0157429b613ad"
+                    "m_Id": "2caa75180c214f50bcbd3ab3972f7850"
                 },
-                "m_SlotId": 2
+                "m_SlotId": 1
             },
             "m_InputSlot": {
                 "m_Node": {
-                    "m_Id": "8d4f7a11b58e404f92e11fbd1cdb95be"
+                    "m_Id": "716374d1f25140dd8f54919f1ea6aaa8"
                 },
-                "m_SlotId": 0
+                "m_SlotId": 2
             }
         },
         {
@@ -134,20 +134,6 @@
                     "m_Id": "cd5d3f5a564e47d4a38a29ce17f52e86"
                 },
                 "m_SlotId": 0
-            }
-        },
-        {
-            "m_OutputSlot": {
-                "m_Node": {
-                    "m_Id": "2caa75180c214f50bcbd3ab3972f7850"
-                },
-                "m_SlotId": 2
-            },
-            "m_InputSlot": {
-                "m_Node": {
-                    "m_Id": "716374d1f25140dd8f54919f1ea6aaa8"
-                },
-                "m_SlotId": 2
             }
         },
         {
@@ -258,6 +244,20 @@
             "m_InputSlot": {
                 "m_Node": {
                     "m_Id": "00814df5dfbf4a7a81e0157429b613ad"
+                },
+                "m_SlotId": 0
+            }
+        },
+        {
+            "m_OutputSlot": {
+                "m_Node": {
+                    "m_Id": "716374d1f25140dd8f54919f1ea6aaa8"
+                },
+                "m_SlotId": 0
+            },
+            "m_InputSlot": {
+                "m_Node": {
+                    "m_Id": "8d4f7a11b58e404f92e11fbd1cdb95be"
                 },
                 "m_SlotId": 0
             }
@@ -2907,7 +2907,7 @@
     "m_StageCapability": 3,
     "m_BareResource": false,
     "m_Texture": {
-        "m_SerializedTexture": "{\"texture\":{\"fileID\":2800000,\"guid\":\"b3d60163578e6314d935d9ab82899d37\",\"type\":3}}",
+        "m_SerializedTexture": "{\"texture\":{\"fileID\":2800000,\"guid\":\"7279c02191f8ac74c8bea5d260516825\",\"type\":3}}",
         "m_Guid": ""
     },
     "m_DefaultType": 0
@@ -3311,7 +3311,7 @@
     "m_Hidden": false,
     "m_ShaderOutputName": "_ShadowUVSize",
     "m_StageCapability": 3,
-    "m_Value": 10.0,
+    "m_Value": 5.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
 }
