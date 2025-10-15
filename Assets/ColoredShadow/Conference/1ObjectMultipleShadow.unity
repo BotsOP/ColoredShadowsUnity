@@ -995,6 +995,78 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &962337967
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 962337969}
+  - component: {fileID: 962337968}
+  m_Layer: 0
+  m_Name: customlight (3)
+  m_TagString: Untagged
+  m_Icon: {fileID: 2800000, guid: 7279c02191f8ac74c8bea5d260516825, type: 3}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &962337968
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 962337967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: afee8e9cf91d2a04d8f6732c4da11781, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lightIndex: 0
+  lightMode: 0
+  radius: 10
+  farPlane: 14.85
+  size: 3
+  fov: 90
+  aspectRatio: 1
+  fallOffRange: 100
+  addToShadowID: 0
+  shadowTextureSize: 1024
+  overrideShader: {fileID: -6465566751694194690, guid: 6039d6df7c451324fb3106631f7b6454, type: 3}
+  shadowCastingMask:
+    serializedVersion: 2
+    m_Bits: 191
+  shadowReceivingMask:
+    serializedVersion: 2
+    m_Bits: 2147483647
+  customValues: []
+  enableVFXSupport: 0
+  visualEffects: []
+  vfxSamplingSize: 256
+  vfxUVSize: 1
+  relativeUVSize: 1
+  blockPassthroughShadows: 1
+  shadowAtlasPosX: 1024
+  shadowAtlasPosY: 0
+  nearPlane: 0.1
+  vfxAppendCount: 0
+--- !u!4 &962337969
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 962337967}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.14245291, y: -0.24449566, z: -0.036339357, w: 0.95844066}
+  m_LocalPosition: {x: -1.67, y: 7.241, z: 2.24}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 14.791, y: -29.699, z: -8.285}
 --- !u!1001 &1028964075
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1009,7 +1081,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a64f741f632f5bd44a563edda065da39, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 6.32
+      value: 7.1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a64f741f632f5bd44a563edda065da39, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2255,11 +2327,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afee8e9cf91d2a04d8f6732c4da11781, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lightIndex: 0
+  lightIndex: 1
   lightMode: 0
   radius: 10
-  farPlane: 44.2
-  size: 10
+  farPlane: 10.14
+  size: 3
   fov: 90
   aspectRatio: 1
   fallOffRange: 100
@@ -2291,13 +2363,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2117116805}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.03822331, z: -0, w: 0.9992693}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -5.84, y: 6.29, z: 2.92}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: -4.381, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -2316,6 +2388,7 @@ SceneRoots:
   - {fileID: 1902577721}
   - {fileID: 330585546}
   - {fileID: 2117116807}
+  - {fileID: 962337969}
   - {fileID: 276351157}
   - {fileID: 1656981434}
   - {fileID: 352593957}

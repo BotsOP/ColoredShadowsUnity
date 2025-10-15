@@ -151,10 +151,10 @@ float BilinearSampleCompact(float bottomLeft, float bottomRight, float topLeft, 
 
 float2 GetLocalShadowAtlasUV(float2 uv, LightInformation lightInformation)
 {
-    int shadowAtlasPosX = lightInformation.shadowAtlasPosX;
-    int shadowAtlasPosY = lightInformation.shadowAtlasPosY;
-    int textureWidth = lightInformation.textureSizeX;
-    int textureHeight = lightInformation.textureSizeY;
+    float shadowAtlasPosX = lightInformation.shadowAtlasPosX;
+    float shadowAtlasPosY = lightInformation.shadowAtlasPosY;
+    float textureWidth = lightInformation.textureSizeX;
+    float textureHeight = lightInformation.textureSizeY;
     uv *= float2(textureWidth, textureHeight);
     uv += float2(shadowAtlasPosX, shadowAtlasPosY);
     return uv;
@@ -300,7 +300,7 @@ float2 GetLightUV(LightInformation lightInformation, float3 worldPos, float2 uvO
     lightUv *= 0.5;
     lightUv += 0.5;
     lightUv.xy += uvOffset;
-    return GetLocalShadowAtlasUV(lightUv.rg, lightInformation).xy;
+    return GetLocalShadowAtlasUV(lightUv.rg, lightInformation);
 }
 
 
@@ -343,11 +343,18 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
         {
         case 0: // Directional
             lightUv = GetLightUV(lightInformation, worldPos, uvOffset);
+            // if (i == 0)
+            // {
+            //     finalUV = lightUv;
+            // }
         
             tempOutput = _ColoredShadowMap0.Sample(point_clamp_sampler, lightUv);
             tempOutput.r = UnpackFloatTo2Half_float(tempOutput.r).r;
             tempMask = lightInformation.blurredEdges == 1 ? _ColoredShadowMap0.Sample(trilinear_clamp_sampler, lightUv).a : tempOutput.r;
-            finalUV = lightUv;
+            // if (i == 0)
+            // {
+            //     finalUV = lightUv;
+            // }
             
             float3 newWorldPos = DepthToWorldPositionViewProj(lightInformation.invLightMatrix, lightUv, tempOutput.b);
 
