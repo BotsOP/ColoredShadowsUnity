@@ -11,11 +11,11 @@ struct LightInformation
     float fallOffRange;
     float farPlane;
     float3 cameraPos;
-    int textureSizeX;
-    int textureSizeY;
+    float textureSizeX;
+    float textureSizeY;
     int lightIDMultiplier;
-    int shadowAtlasPosX;
-    int shadowAtlasPosY;
+    float shadowAtlasPosX;
+    float shadowAtlasPosY;
     int passthroughShadows;
     int blurredEdges;
     float customValue0;
@@ -394,12 +394,16 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             GetCubemapUV(dir, uv, faceIndex);
             uv.x = 1 - uv.x;
             uv += uvOffset;
-            float2 minCorner = float2(lightInformation.shadowAtlasPosX / _CustomShadowAtlasWidth, lightInformation.shadowAtlasPosY / _CustomShadowAtlasHeight);
-            minCorner.x += (float)3072 / _CustomShadowAtlasWidth * (faceIndex % 3);
-            minCorner.y += (float)2048 / _CustomShadowAtlasHeight * floor(faceIndex / 3);
-            float2 maxCorner = float2(minCorner.x + (float)3072 / _CustomShadowAtlasWidth, minCorner.y + (float)2048 / _CustomShadowAtlasHeight);
+            float2 minCorner = float2(lightInformation.shadowAtlasPosX, lightInformation.shadowAtlasPosY);
+            minCorner.x += (float)lightInformation.textureSizeX * (faceIndex % 3);
+            minCorner.y += (float)lightInformation.textureSizeY * floor(faceIndex / 3);
+            float2 maxCorner = float2(minCorner.x + (float)lightInformation.textureSizeX, minCorner.y + (float)lightInformation.textureSizeY);
             float2 cubemapUV = float2(remap(uv.x, 0, 3, minCorner.x, maxCorner.x), remap(uv.y, 0, 2, minCorner.y, maxCorner.y));
-            finalUV = cubemapUV;
+            if (i == 1)
+            {
+                finalUV = cubemapUV;
+            }
+            
 
             tempOutput = _ColoredShadowMap0.Sample(point_clamp_sampler, cubemapUV);
             tempOutput.r = UnpackFloatTo2Half_float(tempOutput.r).r;
@@ -408,7 +412,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             if (tempMask > highestMask && dist < lowestDist && dist < 1 && CheckIsInBounds(lightInformation, cubemapUV))
             {
                 shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, tempOutput, cubemapUV);
-                    
+                
                 fallOffRange = 1 - dist;
                 highestMask = tempMask * fallOffRange;
                 mask = tempMask;

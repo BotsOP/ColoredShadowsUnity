@@ -49,8 +49,6 @@ public class RenderColoredShadows : ScriptableRenderPass
         shadowMapID?.Release();
         shadowMapID = null;
     }
-
-
     
     static ShaderTagId[] s_ShaderTagValues = new ShaderTagId[1];
     static RenderStateBlock[] s_RenderStateBlocks = new RenderStateBlock[1];
@@ -319,6 +317,8 @@ public class RenderColoredShadows : ScriptableRenderPass
                 break;
             }
         }
+        
+        Vector2Int shadowAtlasSize = CustomLightManager.GetShadowAtlasSize();
                 
         return new LightInformation(
             light.lightIndex,
@@ -329,11 +329,11 @@ public class RenderColoredShadows : ScriptableRenderPass
             light.lightMode == LightMode.Directional ? float.MaxValue : light.fallOffRange,
             light.farPlane,
             light.transform.position,
-            light.TextureWidth,
-            light.TextureHeight,
+            light.TextureWidth / (float)shadowAtlasSize.x,
+            light.TextureHeight / (float)shadowAtlasSize.y,
             light.addToShadowID,
-            light.shadowAtlasPosX,
-            light.shadowAtlasPosY,
+            light.shadowAtlasPosX / (float)shadowAtlasSize.x,
+            light.shadowAtlasPosY / (float)shadowAtlasSize.y,
             light.blockPassthroughShadows,
             ColShadowSettings.AmountShadowBlur > 0,
             customValuesCopy
@@ -389,11 +389,11 @@ public class RenderColoredShadows : ScriptableRenderPass
         public float fallOffRange;
         public float farPlane;
         public Vector3 cameraPos;
-        public int textureSizeX; // up to 16.384 - 14 bit
-        public int textureSizeY; // up to 16.384 - 14 bit
+        public float textureSizeX; // up to 16.384 - 14 bit
+        public float textureSizeY; // up to 16.384 - 14 bit
         public int lightIDMultiplier;
-        public int shadowAtlasPosX; // up to 16.384 - 14 bit
-        public int shadowAtlasPosY; // up to 16.384 - 14 bit
+        public float shadowAtlasPosX; // up to 16.384 - 14 bit
+        public float shadowAtlasPosY; // up to 16.384 - 14 bit
         public int passthroughShadows; // 1 bit
         public int blurredEdges; // 1 bit
         public float customValue0;
@@ -408,7 +408,7 @@ public class RenderColoredShadows : ScriptableRenderPass
         public float customValue9;
         public float customValue10;
         public float customValue11;
-        public LightInformation(int index, int lightMode, Matrix4x4 lightMatrix, Matrix4x4 invLightMatrix, Vector3 lightPos, float fallOffRange, float farPlane, Vector3 cameraPos, int textureSizeX, int textureSizeY, int lightIDMultiplier, int shadowAtlasPosX, int shadowAtlasPosY, bool passthroughShadows, bool blurredEdges, List<float> customValues) : this()
+        public LightInformation(int index, int lightMode, Matrix4x4 lightMatrix, Matrix4x4 invLightMatrix, Vector3 lightPos, float fallOffRange, float farPlane, Vector3 cameraPos, float textureSizeX, float textureSizeY, int lightIDMultiplier, float shadowAtlasPosX, float shadowAtlasPosY, bool passthroughShadows, bool blurredEdges, List<float> customValues) : this()
         {
             this.index = index;
             this.lightMode = lightMode;

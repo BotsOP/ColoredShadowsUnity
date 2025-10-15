@@ -390,7 +390,6 @@ namespace ColoredShadows.Scripts
             //     cachedMatrix = ViewMatrix;
             // }
             Matrix4x4 viewMatrix = ViewMatrix;
-            Debug.Log(viewMatrix);
             
             Matrix4x4 projectionMatrix = ProjectionMatrix;
             cullingMatrices.Clear();
@@ -413,7 +412,7 @@ namespace ColoredShadows.Scripts
                     newMatrix.m03 = -transform.position.x;
                     newMatrix.m13 = -transform.position.y;
                     newMatrix.m23 = transform.position.z;
-                    Debug.Log(newMatrix);
+                    
                     cullingMatrices.Add((projectionMatrix, newMatrix));
                     cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * newMatrix));
                     cullingMatrices.Add((projectionMatrix, Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0)) * newMatrix));
