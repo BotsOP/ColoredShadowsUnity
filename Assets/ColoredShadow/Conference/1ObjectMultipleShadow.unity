@@ -1025,7 +1025,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lightIndex: 0
-  lightMode: 0
+  lightMode: 1
   radius: 10
   farPlane: 14.85
   size: 3
@@ -1049,7 +1049,7 @@ MonoBehaviour:
   relativeUVSize: 1
   blockPassthroughShadows: 1
   shadowAtlasPosX: 0
-  shadowAtlasPosY: 0
+  shadowAtlasPosY: 2048
   nearPlane: 0.1
   vfxAppendCount: 0
 --- !u!4 &962337969
@@ -1077,15 +1077,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: a64f741f632f5bd44a563edda065da39, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.185
+      value: -4.07
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a64f741f632f5bd44a563edda065da39, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 7.385
+      value: 5.54
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a64f741f632f5bd44a563edda065da39, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 5.92
+      value: 7.61
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a64f741f632f5bd44a563edda065da39, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2328,7 +2328,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lightIndex: 1
-  lightMode: 0
+  lightMode: 2
   radius: 10
   farPlane: 10.14
   size: 3
@@ -2351,7 +2351,7 @@ MonoBehaviour:
   vfxUVSize: 1
   relativeUVSize: 1
   blockPassthroughShadows: 1
-  shadowAtlasPosX: 1024
+  shadowAtlasPosX: 0
   shadowAtlasPosY: 0
   nearPlane: 0.1
   vfxAppendCount: 0

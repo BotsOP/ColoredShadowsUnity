@@ -1,58 +1,16 @@
 #ifndef SAMPLE_CUSTOM_SHADOW_INCLUDED
 #define SAMPLE_CUSTOM_SHADOW_INCLUDED
 
-struct LightInformation
-{
-    int index;
-    int lightMode;
-    float4x4 lightMatrix;
-    float4x4 invLightMatrix;
-    float3 lightPos;
-    float fallOffRange;
-    float farPlane;
-    float3 cameraPos;
-    float textureSizeX;
-    float textureSizeY;
-    int lightIDMultiplier;
-    float shadowAtlasPosX;
-    float shadowAtlasPosY;
-    int passthroughShadows;
-    int blurredEdges;
-    float customValue0;
-    float customValue1;
-    float customValue2;
-    float customValue3;
-    float customValue4;
-    float customValue5;
-    float customValue6;
-    float customValue7;
-    float customValue8;
-    float customValue9;
-    float customValue10;
-    float customValue11;
-};
-
-float Pack2HalfToFloat_float(float2 v)
-{
-    uint low  = f32tof16(v.x);     // float → half bits
-    uint high = f32tof16(v.y);
-    uint packed = (high << 16) | (low & 0xFFFF);
-    return asfloat(packed);       // reinterpret bits as float
-}
-
-float2 UnpackFloatTo2Half_float(float packed)
-{
-    uint bits = asuint(packed);
-    float x = f16tof32( bits & 0xFFFF );
-    float y = f16tof32( bits >> 16 );
-    return float2(x, y);
-}
+#include "CustomShadowsLibrary.hlsl"
 
 int _CustomShadowAtlasWidth;
 int _CustomShadowAtlasHeight;
 SamplerState trilinear_clamp_sampler;
 SamplerState point_clamp_sampler;
 Texture2D _ColoredShadowMap0;
+
+int _CurrentAmountCustomLights;
+StructuredBuffer<LightInformation> _ColoredShadowLightInformation;
 
 float4x2 GetSample(float2 uv)
 {
@@ -71,120 +29,6 @@ float4x2 GetSample(float2 uv)
     output[2][1] = unpackedA.r;
     output[3][1] = unpackedA.g;
     return output;
-}
-
-float remap(float value, float oldMin, float oldMax, float newMin, float newMax)
-{
-    float a = newMin + (value - oldMin) * (newMax - newMin);
-    float b = (oldMax - oldMin);
-    return a / b;
-}
-
-void GetCubemapUV(float3 direction, out float2 uv, out int faceIndex)
-{
-    uv = float2(-1, -1);
-    float forward = dot(direction, float3(0.0f, 0.0f, 1.0f));
-    float right = dot(direction, float3(1.0f, 0.0f, 0.0f));
-    float back = dot(direction, float3(0.0f, 0.0f, -1.0f));
-    float left = dot(direction, float3(-1.0f, 0.0f, 0.0f));
-    float down = dot(direction, float3(0.0f, -1.0f, 0.0f));
-    float up = dot(direction, float3(0.0f, 1.0f, 0.0f));
-    float closestDir = min(up,min(down,min(min(min(forward, right), back), left)));
-    faceIndex = -1;
-    if (closestDir == forward) // POSITIVE_Z
-    {
-        faceIndex = 0;
-    }
-    else if (closestDir == back) // NEGATIVE_Z
-    {
-        faceIndex = 2;
-    }
-    else if (closestDir == left) // POSITIVE_X
-    {
-        faceIndex = 3;
-    }
-    else if (closestDir == right) // NEGATIVE_X 
-    {
-        faceIndex = 1;
-    }
-    else if (closestDir == down) // NEGATIVE_Y
-    {
-        faceIndex = 4;
-    }
-    else if (closestDir == up) // POSITIVE_Y
-    {
-        faceIndex = 5;
-    }
-    
-    switch(faceIndex)
-    {
-    case 1: // POSITIVE_X
-        uv = float2(-direction.z, -direction.y) / abs(direction.x);
-        break;
-    case 3: // NEGATIVE_X 
-        uv = float2(direction.z, -direction.y) / abs(direction.x);
-        break;
-    case 5: // POSITIVE_Y
-        uv = float2(direction.x, direction.z) / abs(direction.y);
-        break;
-    case 4: // NEGATIVE_Y
-        uv = float2(direction.x, -direction.z) / abs(direction.y);
-        break;
-    case 0: // POSITIVE_Z
-        uv = float2(direction.x, -direction.y) / abs(direction.z);
-        break;
-    case 2: // NEGATIVE_Z
-        uv = float2(-direction.x, -direction.y) / abs(direction.z);
-        break;
-    }
-    uv = uv * 0.5 + 0.5;
-}
-
-float BilinearSampleCompact(float bottomLeft, float bottomRight, float topLeft, float topRight, float2 uv)
-{
-    return lerp(
-        lerp(bottomLeft, bottomRight, uv.x),  // Bottom edge interpolation
-        lerp(topLeft, topRight, uv.x),       // Top edge interpolation
-        uv.y                                 // Vertical interpolation
-    );
-}
-
-float2 GetLocalShadowAtlasUV(float2 uv, LightInformation lightInformation)
-{
-    float shadowAtlasPosX = lightInformation.shadowAtlasPosX;
-    float shadowAtlasPosY = lightInformation.shadowAtlasPosY;
-    float textureWidth = lightInformation.textureSizeX;
-    float textureHeight = lightInformation.textureSizeY;
-    uv *= float2(textureWidth, textureHeight);
-    uv += float2(shadowAtlasPosX, shadowAtlasPosY);
-    return uv;
-}
-
-float NinePointBlend(
-    float topLeft,    float topCenter,    float topRight,
-    float midLeft,    float center,       float midRight,
-    float bottomLeft, float bottomCenter, float bottomRight,
-    float2 localUV)
-{
-    float2 gridPos = localUV * 2.0; // Scale to 0-2 range
-    
-    if (gridPos.x <= 1.0 && gridPos.y <= 1.0)
-    {
-        float2 t = gridPos; // 0-1 within this quadrant
-        return BilinearSampleCompact(bottomLeft, bottomCenter, midLeft, center, t);
-    }
-    if (gridPos.x > 1.0 && gridPos.y <= 1.0)
-    {
-        float2 t = float2(gridPos.x - 1.0, gridPos.y); // 0-1 within this quadrant
-        return BilinearSampleCompact(bottomCenter, bottomRight, center, midRight, t);
-    }
-    if (gridPos.x <= 1.0 && gridPos.y > 1.0)
-    {
-        float2 t = float2(gridPos.x, gridPos.y - 1.0); // 0-1 within this quadrant
-        return BilinearSampleCompact(midLeft, center, topLeft, topCenter, t);
-    }
-    float2 t = float2(gridPos.x - 1.0, gridPos.y - 1.0); // 0-1 within this quadrant
-    return BilinearSampleCompact(center, midRight, topCenter, topRight, t);
 }
 
 float GetMask(float2 uv, float2 testUV, LightInformation lightInformation)
@@ -218,103 +62,6 @@ float GetMask(float2 uv, float2 testUV, LightInformation lightInformation)
     return mask;
 }
 
-bool CheckIsInBounds(LightInformation lightInformation, float2 lightUv)
-{
-    return lightUv.x < (lightInformation.shadowAtlasPosX + lightInformation.textureSizeX) && lightUv.x >  lightInformation.shadowAtlasPosX&&
-                lightUv.y < (lightInformation.shadowAtlasPosY + lightInformation.textureSizeY) && lightUv.y >  lightInformation.shadowAtlasPosY;
-}
-
-float4x4 InvertMatrix(float4x4 m)
-{
-    float4x4 inv;
-
-    inv[0][0] =  m[1][1]*m[2][2]*m[3][3] - m[1][1]*m[2][3]*m[3][2] - m[2][1]*m[1][2]*m[3][3]
-                + m[2][1]*m[1][3]*m[3][2] + m[3][1]*m[1][2]*m[2][3] - m[3][1]*m[1][3]*m[2][2];
-    inv[0][1] = -m[0][1]*m[2][2]*m[3][3] + m[0][1]*m[2][3]*m[3][2] + m[2][1]*m[0][2]*m[3][3]
-                - m[2][1]*m[0][3]*m[3][2] - m[3][1]*m[0][2]*m[2][3] + m[3][1]*m[0][3]*m[2][2];
-    inv[0][2] =  m[0][1]*m[1][2]*m[3][3] - m[0][1]*m[1][3]*m[3][2] - m[1][1]*m[0][2]*m[3][3]
-                + m[1][1]*m[0][3]*m[3][2] + m[3][1]*m[0][2]*m[1][3] - m[3][1]*m[0][3]*m[1][2];
-    inv[0][3] = -m[0][1]*m[1][2]*m[2][3] + m[0][1]*m[1][3]*m[2][2] + m[1][1]*m[0][2]*m[2][3]
-                - m[1][1]*m[0][3]*m[2][2] - m[2][1]*m[0][2]*m[1][3] + m[2][1]*m[0][3]*m[1][2];
-
-    inv[1][0] = -m[1][0]*m[2][2]*m[3][3] + m[1][0]*m[2][3]*m[3][2] + m[2][0]*m[1][2]*m[3][3]
-                - m[2][0]*m[1][3]*m[3][2] - m[3][0]*m[1][2]*m[2][3] + m[3][0]*m[1][3]*m[2][2];
-    inv[1][1] =  m[0][0]*m[2][2]*m[3][3] - m[0][0]*m[2][3]*m[3][2] - m[2][0]*m[0][2]*m[3][3]
-                + m[2][0]*m[0][3]*m[3][2] + m[3][0]*m[0][2]*m[2][3] - m[3][0]*m[0][3]*m[2][2];
-    inv[1][2] = -m[0][0]*m[1][2]*m[3][3] + m[0][0]*m[1][3]*m[3][2] + m[1][0]*m[0][2]*m[3][3]
-                - m[1][0]*m[0][3]*m[3][2] - m[3][0]*m[0][2]*m[1][3] + m[3][0]*m[0][3]*m[1][2];
-    inv[1][3] =  m[0][0]*m[1][2]*m[2][3] - m[0][0]*m[1][3]*m[2][2] - m[1][0]*m[0][2]*m[2][3]
-                + m[1][0]*m[0][3]*m[2][2] + m[2][0]*m[0][2]*m[1][3] - m[2][0]*m[0][3]*m[1][2];
-
-    inv[2][0] =  m[1][0]*m[2][1]*m[3][3] - m[1][0]*m[2][3]*m[3][1] - m[2][0]*m[1][1]*m[3][3]
-                + m[2][0]*m[1][3]*m[3][1] + m[3][0]*m[1][1]*m[2][3] - m[3][0]*m[1][3]*m[2][1];
-    inv[2][1] = -m[0][0]*m[2][1]*m[3][3] + m[0][0]*m[2][3]*m[3][1] + m[2][0]*m[0][1]*m[3][3]
-                - m[2][0]*m[0][3]*m[3][1] - m[3][0]*m[0][1]*m[2][3] + m[3][0]*m[0][3]*m[2][1];
-    inv[2][2] =  m[0][0]*m[1][1]*m[3][3] - m[0][0]*m[1][3]*m[3][1] - m[1][0]*m[0][1]*m[3][3]
-                + m[1][0]*m[0][3]*m[3][1] + m[3][0]*m[0][1]*m[1][3] - m[3][0]*m[0][3]*m[1][1];
-    inv[2][3] = -m[0][0]*m[1][1]*m[2][3] + m[0][0]*m[1][3]*m[2][1] + m[1][0]*m[0][1]*m[2][3]
-                - m[1][0]*m[0][3]*m[2][1] - m[2][0]*m[0][1]*m[1][3] + m[2][0]*m[0][3]*m[1][1];
-
-    inv[3][0] = -m[1][0]*m[2][1]*m[3][2] + m[1][0]*m[2][2]*m[3][1] + m[2][0]*m[1][1]*m[3][2]
-                - m[2][0]*m[1][2]*m[3][1] - m[3][0]*m[1][1]*m[2][2] + m[3][0]*m[1][2]*m[2][1];
-    inv[3][1] =  m[0][0]*m[2][1]*m[3][2] - m[0][0]*m[2][2]*m[3][1] - m[2][0]*m[0][1]*m[3][2]
-                + m[2][0]*m[0][2]*m[3][1] + m[3][0]*m[0][1]*m[2][2] - m[3][0]*m[0][2]*m[2][1];
-    inv[3][2] = -m[0][0]*m[1][1]*m[3][2] + m[0][0]*m[1][2]*m[3][1] + m[1][0]*m[0][1]*m[3][2]
-                - m[1][0]*m[0][2]*m[3][1] - m[3][0]*m[0][1]*m[1][2] + m[3][0]*m[0][2]*m[1][1];
-    inv[3][3] =  m[0][0]*m[1][1]*m[2][2] - m[0][0]*m[1][2]*m[2][1] - m[1][0]*m[0][1]*m[2][2]
-                + m[1][0]*m[0][2]*m[2][1] + m[2][0]*m[0][1]*m[1][2] - m[2][0]*m[0][2]*m[1][1];
-
-    float det = m[0][0]*inv[0][0] + m[0][1]*inv[1][0] + m[0][2]*inv[2][0] + m[0][3]*inv[3][0];
-
-    if (abs(det) < 1e-6)
-        return float4x4(0, 0, 0, 0,
-                        0, 0, 0, 0,
-                        0, 0, 0, 0,
-                        0, 0, 0, 0); // Or handle as error
-
-    return inv / det;
-}
-
-float UnlinearizeDepth(float zLinear, float nearPlane, float farPlane)
-{
-    return (farPlane + nearPlane - (2.0 * nearPlane * farPlane) / zLinear) / (farPlane - nearPlane);
-}
-
-float3 DepthToWorldPositionViewProj(float4x4 projViewMatrix, float2 screenUV, float depth)
-{
-    float2 ndcXY = screenUV * 2.0 - 1;
-    float worldZDistance = 0.1 + (depth * (100 - 0.1));
-    float ndcZ = (worldZDistance - 0.1) * 2.0f / (100 - 0.1) - 1.0f;
-    ndcZ *= -1;
-    float4 ndcPos = float4(ndcXY.x, ndcXY.y, ndcZ, 1.0);
-    float4 worldPos = mul(projViewMatrix, ndcPos);
-    worldPos.xyz /= worldPos.w;
-    
-    return worldPos.xyz;
-}
-
-float2 GetLightUV(LightInformation lightInformation, float3 worldPos)
-{
-    float4 lightSpace = mul(lightInformation.lightMatrix, float4(worldPos.x, worldPos.y, worldPos.z, 1));
-    float3 lightUv = lightSpace.rgb / lightSpace.a;
-    lightUv *= 0.5;
-    lightUv += 0.5;
-    return lightUv;
-}
-
-
-int _CurrentAmountCustomLights;
-StructuredBuffer<LightInformation> _ColoredShadowLightInformation;
-
-float2 GetLocalShadowUV(float shadowUVMultiplier, bool relativeUVSize, float shadowRelativeSize, float2 shadowSize, float2 lightUv)
-{
-    float shadowSizeMultiplier = relativeUVSize ? shadowRelativeSize : 1;
-    shadowSizeMultiplier *= shadowUVMultiplier;
-    float2 shadowUVX = float2(shadowSize.r - shadowSizeMultiplier, shadowSize.r + shadowSizeMultiplier);
-    float2 shadowUVY = float2(shadowSize.g - shadowSizeMultiplier, shadowSize.g + shadowSizeMultiplier);
-    return float2(remap(lightUv.x, shadowUVX.x, shadowUVX.y, 0, 1), remap(lightUv.y, shadowUVY.x, shadowUVY.y, 0, 1));
-}
-
 void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUVMultiplier, bool relativeUVSize, out float4 output, out float2 shadowUV, out float2 finalUV, out float3 lightPos, out float fallOffRange, out float mask, out float4 customValues1, out float4 customValues2, out float4 customValues3)
 {
     output = float4(0, 0, 0, 0);
@@ -337,21 +84,21 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
         float2 lightUv;
         float tempMask = 0;
         float dist = distance(worldPos, lightInformation.lightPos) / lightInformation.fallOffRange;
-        float2 lightUvOffset;
         float2 shadowAtlasMappedUV;
+        float3 newWorldPos;
 
         switch (lightInformation.lightMode)
         {
         case 0: // Directional
+        case 1: // Spot
             lightUv = GetLightUV(lightInformation, worldPos);
-            lightUvOffset = lightUv + uvOffset;
-            shadowAtlasMappedUV = GetLocalShadowAtlasUV(lightUv, lightInformation);
+            shadowAtlasMappedUV = GetLocalShadowAtlasUV(lightUv + uvOffset, lightInformation);
         
             tempOutput = _ColoredShadowMap0.Sample(point_clamp_sampler, shadowAtlasMappedUV);
             tempOutput.r = UnpackFloatTo2Half_float(tempOutput.r).r;
             tempMask = lightInformation.blurredEdges == 1 ? _ColoredShadowMap0.Sample(trilinear_clamp_sampler, shadowAtlasMappedUV).a : tempOutput.r;
             
-            float3 newWorldPos = DepthToWorldPositionViewProj(lightInformation.invLightMatrix, shadowAtlasMappedUV, tempOutput.b);
+            newWorldPos = DepthToWorldPositionViewProj(lightInformation.invLightMatrix, shadowAtlasMappedUV, tempOutput.b);
 
             if (tempMask > highestMask && dist <= lowestDist && dist < 1 && CheckIsInBounds(lightInformation, shadowAtlasMappedUV) && distance(newWorldPos, lightInformation.lightPos) + 0.1 > distance(worldPos, lightInformation.lightPos))
             {
@@ -359,30 +106,6 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             
                 tempMask = pow(tempMask, 4);
                 tempMask = step(0.5, pow(tempMask, 1));
-                fallOffRange = 1 - dist;
-                highestMask = tempMask;
-                mask = tempMask;
-                finalUV = lightUv;
-                lowestDist = dist;
-                output = tempOutput;
-                output.r += lightInformation.lightIDMultiplier;
-                lightPos = lightInformation.lightPos;
-            }
-            break;
-        case 1: // Spot
-            lightUv = GetLightUV(lightInformation, worldPos);
-            lightUvOffset = lightUv + uvOffset;
-            shadowAtlasMappedUV = GetLocalShadowAtlasUV(lightUvOffset, lightInformation);
-
-            tempOutput = _ColoredShadowMap0.Sample(point_clamp_sampler, shadowAtlasMappedUV);
-            tempOutput.r = UnpackFloatTo2Half_float(tempOutput.r).r;
-            tempMask = _ColoredShadowMap0.Sample(trilinear_clamp_sampler, shadowAtlasMappedUV).a * ceil(saturate(tempOutput.r));
-
-            if (tempMask > highestMask && dist <= lowestDist && dist < 1 && CheckIsInBounds(lightInformation, shadowAtlasMappedUV))
-            {
-                shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, UnpackFloatTo2Half_float(tempOutput.r).g, UnpackFloatTo2Half_float(tempOutput.g), lightUv);
-
-                tempMask = step(0.5, pow(tempMask, 4));
                 fallOffRange = 1 - dist;
                 highestMask = tempMask;
                 mask = tempMask;
