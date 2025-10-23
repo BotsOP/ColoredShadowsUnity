@@ -1048,7 +1048,7 @@ MonoBehaviour:
   vfxUVSize: 1
   relativeUVSize: 1
   blockPassthroughShadows: 1
-  shadowAtlasPosX: 1024
+  shadowAtlasPosX: 0
   shadowAtlasPosY: 0
   nearPlane: 0.1
   vfxAppendCount: 0
@@ -1077,11 +1077,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: a64f741f632f5bd44a563edda065da39, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.47
+      value: -5.185
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a64f741f632f5bd44a563edda065da39, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 7.1
+      value: 7.385
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a64f741f632f5bd44a563edda065da39, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2351,7 +2351,7 @@ MonoBehaviour:
   vfxUVSize: 1
   relativeUVSize: 1
   blockPassthroughShadows: 1
-  shadowAtlasPosX: 0
+  shadowAtlasPosX: 1024
   shadowAtlasPosY: 0
   nearPlane: 0.1
   vfxAppendCount: 0

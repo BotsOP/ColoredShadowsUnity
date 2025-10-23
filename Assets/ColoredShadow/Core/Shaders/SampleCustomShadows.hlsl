@@ -293,14 +293,13 @@ float3 DepthToWorldPositionViewProj(float4x4 projViewMatrix, float2 screenUV, fl
     return worldPos.xyz;
 }
 
-float2 GetLightUV(LightInformation lightInformation, float3 worldPos, float2 uvOffset)
+float2 GetLightUV(LightInformation lightInformation, float3 worldPos)
 {
     float4 lightSpace = mul(lightInformation.lightMatrix, float4(worldPos.x, worldPos.y, worldPos.z, 1));
     float3 lightUv = lightSpace.rgb / lightSpace.a;
     lightUv *= 0.5;
     lightUv += 0.5;
-    lightUv.xy += uvOffset;
-    return GetLocalShadowAtlasUV(lightUv.rg, lightInformation);
+    return lightUv;
 }
 
 
@@ -338,30 +337,25 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
         float2 lightUv;
         float tempMask = 0;
         float dist = distance(worldPos, lightInformation.lightPos) / lightInformation.fallOffRange;
+        float2 lightUvOffset;
+        float2 shadowAtlasMappedUV;
 
         switch (lightInformation.lightMode)
         {
         case 0: // Directional
-            lightUv = GetLightUV(lightInformation, worldPos, uvOffset);
-            // if (i == 0)
-            // {
-            //     finalUV = lightUv;
-            // }
+            lightUv = GetLightUV(lightInformation, worldPos);
+            lightUvOffset = lightUv + uvOffset;
+            shadowAtlasMappedUV = GetLocalShadowAtlasUV(lightUv, lightInformation);
         
-            tempOutput = _ColoredShadowMap0.Sample(point_clamp_sampler, lightUv);
+            tempOutput = _ColoredShadowMap0.Sample(point_clamp_sampler, shadowAtlasMappedUV);
             tempOutput.r = UnpackFloatTo2Half_float(tempOutput.r).r;
-            tempMask = lightInformation.blurredEdges == 1 ? _ColoredShadowMap0.Sample(trilinear_clamp_sampler, lightUv).a : tempOutput.r;
-            // if (i == 0)
-            // {
-            //     finalUV = lightUv;
-            // }
+            tempMask = lightInformation.blurredEdges == 1 ? _ColoredShadowMap0.Sample(trilinear_clamp_sampler, shadowAtlasMappedUV).a : tempOutput.r;
             
-            float3 newWorldPos = DepthToWorldPositionViewProj(lightInformation.invLightMatrix, lightUv, tempOutput.b);
+            float3 newWorldPos = DepthToWorldPositionViewProj(lightInformation.invLightMatrix, shadowAtlasMappedUV, tempOutput.b);
 
-            if (tempMask > highestMask && dist <= lowestDist && dist < 1 && CheckIsInBounds(lightInformation, lightUv) && distance(newWorldPos, lightInformation.lightPos) + 0.1 > distance(worldPos, lightInformation.lightPos))
+            if (tempMask > highestMask && dist <= lowestDist && dist < 1 && CheckIsInBounds(lightInformation, shadowAtlasMappedUV) && distance(newWorldPos, lightInformation.lightPos) + 0.1 > distance(worldPos, lightInformation.lightPos))
             {
-                // shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, UnpackFloatTo2Half_float(tempOutput.r).g, tempOutput, lightUv);
-                shadowUV = UnpackFloatTo2Half_float(tempOutput.g);
+                shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, UnpackFloatTo2Half_float(tempOutput.r).g, UnpackFloatTo2Half_float(tempOutput.g), lightUv);
             
                 tempMask = pow(tempMask, 4);
                 tempMask = step(0.5, pow(tempMask, 1));
@@ -376,15 +370,17 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             }
             break;
         case 1: // Spot
-            lightUv = GetLightUV(lightInformation, worldPos, uvOffset);
+            lightUv = GetLightUV(lightInformation, worldPos);
+            lightUvOffset = lightUv + uvOffset;
+            shadowAtlasMappedUV = GetLocalShadowAtlasUV(lightUvOffset, lightInformation);
 
-            tempOutput = _ColoredShadowMap0.Sample(point_clamp_sampler, lightUv);
+            tempOutput = _ColoredShadowMap0.Sample(point_clamp_sampler, shadowAtlasMappedUV);
             tempOutput.r = UnpackFloatTo2Half_float(tempOutput.r).r;
-            tempMask = _ColoredShadowMap0.Sample(trilinear_clamp_sampler, lightUv).a * ceil(saturate(tempOutput.r));
+            tempMask = _ColoredShadowMap0.Sample(trilinear_clamp_sampler, shadowAtlasMappedUV).a * ceil(saturate(tempOutput.r));
 
-            if (tempMask > highestMask && dist <= lowestDist && dist < 1 && CheckIsInBounds(lightInformation, lightUv))
+            if (tempMask > highestMask && dist <= lowestDist && dist < 1 && CheckIsInBounds(lightInformation, shadowAtlasMappedUV))
             {
-                shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, UnpackFloatTo2Half_float(tempOutput.r).g, tempOutput, lightUv);
+                shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, UnpackFloatTo2Half_float(tempOutput.r).g, UnpackFloatTo2Half_float(tempOutput.g), lightUv);
 
                 tempMask = step(0.5, pow(tempMask, 4));
                 fallOffRange = 1 - dist;
@@ -417,6 +413,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             {
                 shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, UnpackFloatTo2Half_float(tempOutput.r).g, UnpackFloatTo2Half_float(tempOutput.g), uv);
                 // shadowUV = UnpackFloatTo2Half_float(tempOutput.g);
+                shadowUV = uv;
                 
                 fallOffRange = 1 - dist;
                 highestMask = tempMask * fallOffRange;
