@@ -12,7 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64f8530bb6cf0ee47adba8233cbd15fd, type: 3}
   m_Name: ColShadowDebugSettings
   m_EditorClassIdentifier: 
-  amountShadowBlur: 1
+  amountShadowBlur: 3
+  useDepthMask: 1
+  useBlurMask: 1
+  useUVs: 1
+  use8bitID: 1
   enableDebugMode: 1
   customLightNumberSize: 4
   casterNumberSize: 3.85

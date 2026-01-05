@@ -57,7 +57,15 @@ void Blur2 (uint2 id : SV_DispatchThreadID)
         average += _ShadowAtlas[id + uint2(0, i)].b;
     }
     average /= sampleSize * 2 + 1;
-    output.a = average;
+    if (UnpackFloatTo2Half(output.r).r > 0)
+    {
+        output.a = (average - 0.5) * 2;
+    }
+    else
+    {
+        output.a = 0;
+    }
+    // output.a = average;
     
     _ShadowAtlas[id] = output;
 }

@@ -2583,7 +2583,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lightIndex: 0
-  lightMode: 2
+  lightMode: 1
   radius: 10
   farPlane: 10.14
   size: 3

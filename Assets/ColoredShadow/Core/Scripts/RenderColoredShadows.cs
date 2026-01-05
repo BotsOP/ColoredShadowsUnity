@@ -116,7 +116,7 @@ public class RenderColoredShadows : ScriptableRenderPass
     
         TextureDesc destinationDescColor = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
         destinationDescColor.format = ColShadowSettings.ShadowMapFormat;
-        destinationDescColor.format = GraphicsFormat.R32G32B32A32_UInt;
+        destinationDescColor.format = GraphicsFormat.R32G32B32A32_SFloat;
         destinationDescColor.name = "SOURCE_COLOR";
         destinationDescColor.width = shadowAtlasWidth;
         destinationDescColor.height = shadowAtlasHeight;
@@ -315,10 +315,6 @@ public class RenderColoredShadows : ScriptableRenderPass
         }
         
         Vector2Int shadowAtlasSize = CustomLightManager.GetShadowAtlasSize();
-        
-        // Debug.Log(Matrix4x4.Inverse(light.ProjectionMatrix * light.ViewMatrix));
-        // Debug.Log(light.ProjectionMatrix);
-        // Debug.Log(light.ViewMatrix);
         
         Debug.Log(Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)));
 
