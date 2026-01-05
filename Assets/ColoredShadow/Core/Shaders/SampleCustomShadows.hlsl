@@ -37,29 +37,9 @@ float GetMask(float2 uv, float2 testUV, LightInformation lightInformation)
     
     float2 subPixelOffset = ((frac(uv * int2(lightInformation.textureSizeX, lightInformation.textureSizeY)) - 0.5) * -1) / int2(lightInformation.textureSizeX, lightInformation.textureSizeY);
     float2 centerUV = uv;
-    float2 bottomLeft = uv + subPixelOffset - texelSize;
-    float2 topRight = uv + subPixelOffset + texelSize;
-    float2 localUV = float2(remap(uv.x, bottomLeft.x, topRight.x, 0, 1), remap(uv.y, bottomLeft.y, topRight.y, 0, 1));
 
     float midCenterSample = ceil(saturate(GetSample(centerUV)[0][0]));
     return midCenterSample;
-    if (testUV.x < texelSize.x * 3.0 || testUV.y < texelSize.x * 3.0 || testUV.x > 1 - texelSize.x * 3.0 || testUV.y > 1 - texelSize.x * 3.0)
-    {
-        return midCenterSample;
-    }
-    
-    float topLeftSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(-texelSize.x, texelSize.y), lightInformation).r));
-    float topCenterSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(0, texelSize.y), lightInformation).r));
-    float topRightSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(texelSize.x, texelSize.y), lightInformation).r));
-    float midLeftSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(-texelSize.x, 0), lightInformation).r));
-    float midRightSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(texelSize.x, 0), lightInformation).r));
-    float bottomLeftSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(-texelSize.x, -texelSize.y), lightInformation).r));
-    float bottomCenterSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(0, -texelSize.y), lightInformation).r));
-    float bottomRightSample = ceil(saturate(GetLocalShadowAtlasUV(centerUV + float2(texelSize.x, -texelSize.y), lightInformation).r));
-
-    float mask = NinePointBlend(topLeftSample, topCenterSample, topRightSample, midLeftSample, midCenterSample, midRightSample, bottomLeftSample, bottomCenterSample, bottomRightSample, localUV);
-
-    return mask;
 }
 
 void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUVMultiplier, bool relativeUVSize, out float4 output, out float2 shadowUV, out float2 finalUV, out float3 lightPos, out float fallOffRange, out float mask, out float4 customValues1, out float4 customValues2, out float4 customValues3)
@@ -87,25 +67,25 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
         float2 shadowAtlasMappedUV;
         float3 newWorldPos;
 
-        switch (lightInformation.lightMode)
+        if (lightInformation.lightMode == 0 || lightInformation.lightMode == 1) //Directional and Spot
         {
-        case 0: // Directional
-        case 1: // Spot
             lightUv = GetLightUV(lightInformation, worldPos);
             shadowAtlasMappedUV = GetLocalShadowAtlasUV(lightUv + uvOffset, lightInformation);
         
             tempOutput = _ColoredShadowMap0.Sample(point_clamp_sampler, shadowAtlasMappedUV);
+            float4 tempOutput2 = _ColoredShadowMap0.Sample(trilinear_clamp_sampler, shadowAtlasMappedUV);
             tempOutput.r = UnpackFloatTo2Half_float(tempOutput.r).r;
-            tempMask = lightInformation.blurredEdges == 1 ? _ColoredShadowMap0.Sample(trilinear_clamp_sampler, shadowAtlasMappedUV).a : tempOutput.r;
+            tempMask = tempOutput2.a;
             
-            newWorldPos = DepthToWorldPositionViewProj(lightInformation.invLightMatrix, shadowAtlasMappedUV, tempOutput.b);
+            newWorldPos = DepthToWorldPositionViewProj(lightInformation.invLightMatrix, lightUv, tempOutput.b);
 
-            if (tempMask > highestMask && dist <= lowestDist && dist < 1 && CheckIsInBounds(lightInformation, shadowAtlasMappedUV) && distance(newWorldPos, lightInformation.lightPos) + 0.1 > distance(worldPos, lightInformation.lightPos))
+            bool firstObjectHit = distance(newWorldPos, lightInformation.lightPos) + 0.1 > distance(worldPos, lightInformation.lightPos) || lightInformation.passthroughShadows == 0;
+            if (tempMask > highestMask && dist < lowestDist && dist < 1 && CheckIsInBounds(lightInformation, shadowAtlasMappedUV) && firstObjectHit)
             {
                 shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, UnpackFloatTo2Half_float(tempOutput.r).g, UnpackFloatTo2Half_float(tempOutput.g), lightUv);
             
-                tempMask = pow(tempMask, 4);
-                tempMask = step(0.5, pow(tempMask, 1));
+                // tempMask = pow(tempMask, 4);
+                // tempMask = step(0.5, pow(tempMask, 1));
                 fallOffRange = 1 - dist;
                 highestMask = tempMask;
                 mask = tempMask;
@@ -113,10 +93,11 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
                 lowestDist = dist;
                 output = tempOutput;
                 output.r += lightInformation.lightIDMultiplier;
-                lightPos = lightInformation.lightPos;
+                lightPos = newWorldPos;
             }
-            break;
-        case 2: //Point
+        }
+        else if (lightInformation.lightMode == 2) // Point
+        {
             float3 dir = normalize(lightInformation.lightPos - worldPos);
             int faceIndex = 0;
             GetCubemapUV(dir, uv, faceIndex);
@@ -132,23 +113,24 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             tempOutput.r = UnpackFloatTo2Half_float(tempOutput.r).r;
             tempMask = GetMask(cubemapUV, uv, lightInformation);
 
-            if (tempMask > highestMask && dist < lowestDist && dist < 1 && CheckIsInBounds(lightInformation, cubemapUV))
+            newWorldPos = DepthToWorldPositionViewProj(uv, tempOutput.b, lightInformation.nearPlane, lightInformation.farPlane, lightInformation.lightPos, faceIndex);
+
+            bool firstObjectHit = distance(newWorldPos, lightInformation.lightPos) + 0.1 > distance(worldPos, lightInformation.lightPos) || lightInformation.passthroughShadows == 0;
+            if (tempMask > highestMask && dist < lowestDist && dist < 1 && CheckIsInBounds(lightInformation, cubemapUV) && firstObjectHit)
             {
                 shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, UnpackFloatTo2Half_float(tempOutput.r).g, UnpackFloatTo2Half_float(tempOutput.g), uv);
-                // shadowUV = UnpackFloatTo2Half_float(tempOutput.g);
-                shadowUV = uv;
                 
                 fallOffRange = 1 - dist;
                 highestMask = tempMask * fallOffRange;
                 mask = tempMask;
-                finalUV = cubemapUV;
+                finalUV = uv;
+                // finalUV = cubemapUV;
                 lowestDist = dist;
                 output = tempOutput;
                 output.r += lightInformation.lightIDMultiplier;
-                lightPos = lightInformation.lightPos;
+                lightPos = newWorldPos;
+                // lightPos = lightInformation.lightPos;
             }
-            break;
-        default: break;
         }
     }
 }

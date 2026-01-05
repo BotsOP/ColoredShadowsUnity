@@ -26,7 +26,7 @@ public class RenderColoredShadows : ScriptableRenderPass
 
     public RenderColoredShadows(GraphicsBuffer lightInformationBuffer)
     {
-        profilingSampler = new ProfilingSampler("TEST_PROFILER");
+        profilingSampler = new ProfilingSampler("CAPTURE_COLORED_SHADOWS");
 
         this.lightInformationBuffer = lightInformationBuffer;
         
@@ -110,13 +110,13 @@ public class RenderColoredShadows : ScriptableRenderPass
         int shadowAtlasHeight = Mathf.Max(1, shadowAtlasSize.y);
         Shader.SetGlobalInt("_CustomShadowAtlasWidth", shadowAtlasWidth);
         Shader.SetGlobalInt("_CustomShadowAtlasHeight", shadowAtlasHeight);
-        Debug.Log($"shadow atlas size {shadowAtlasWidth} {shadowAtlasHeight}");
         Shader.SetGlobalInt("_CurrentAmountCustomLights", CustomLightManager.CustomLightCount);
+        
+        Debug.Log(ColShadowSettings.ShadowMapFormat);
     
         TextureDesc destinationDescColor = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
-        // destinationDescColor.format = GraphicsFormat.R16G16B16A16_SFloat;
-        // destinationDescColor.format = GraphicsFormat.R32G32B32A32_SInt;
-        destinationDescColor.format = GraphicsFormat.R32G32B32A32_SFloat;
+        destinationDescColor.format = ColShadowSettings.ShadowMapFormat;
+        destinationDescColor.format = GraphicsFormat.R32G32B32A32_UInt;
         destinationDescColor.name = "SOURCE_COLOR";
         destinationDescColor.width = shadowAtlasWidth;
         destinationDescColor.height = shadowAtlasHeight;
@@ -220,7 +220,7 @@ public class RenderColoredShadows : ScriptableRenderPass
                 passData.depthMap = destinationDepth;
                 passData.amountBlurEdges = ColShadowSettings.AmountShadowBlur;
                 
-                builder.UseTexture(destinationColor);
+                builder.UseTexture(destinationColor, AccessFlags.ReadWrite);
                 builder.UseTexture(destinationDepth);
                 
                 builder.AllowPassCulling(false);
@@ -307,27 +307,29 @@ public class RenderColoredShadows : ScriptableRenderPass
     }
     private static LightInformation GetLightInformation(CustomLight light)
     {
-        List<float> customValuesCopy = new List<float>(light.customValues);
+        float[] customValuesCopy = new float[12]; 
 
-        for (int j = 0; customValuesCopy.Count < 12; j++)
+        for (int j = 0; j < light.customValues.Count && j < 12; j++)
         {
-            customValuesCopy.Add(0);
-            if (j > 12)
-            {
-                Debug.LogError($"Cannot fill Custom Values list above 12 entries");
-                break;
-            }
+            customValuesCopy[j] = light.customValues[j];
         }
         
         Vector2Int shadowAtlasSize = CustomLightManager.GetShadowAtlasSize();
-                
+        
+        // Debug.Log(Matrix4x4.Inverse(light.ProjectionMatrix * light.ViewMatrix));
+        // Debug.Log(light.ProjectionMatrix);
+        // Debug.Log(light.ViewMatrix);
+        
+        Debug.Log(Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)));
+
         return new LightInformation(
             light.lightIndex,
             (int)light.lightMode,
-            GL.GetGPUProjectionMatrix(light.ProjectionMatrix, false) * light.ViewMatrix,
+            light.ProjectionMatrix * light.ViewMatrix,
             Matrix4x4.Inverse(light.ProjectionMatrix * light.ViewMatrix),
             light.transform.position,
             light.lightMode == LightMode.Directional ? float.MaxValue : light.fallOffRange,
+            light.nearPlane,
             light.farPlane,
             light.transform.position,
             light.TextureWidth / (float)shadowAtlasSize.x,
@@ -387,12 +389,13 @@ public class RenderColoredShadows : ScriptableRenderPass
         public Matrix4x4 lightMatrix;
         public Matrix4x4 invLightMatrix;
         public Vector3 lightPos;
-        public float fallOffRange;
-        public float farPlane;
+        public float fallOffRange; // 16 bit
+        public float nearPlane;
+        public float farPlane; // 16 bit
         public Vector3 cameraPos;
         public float textureSizeX; // up to 16.384 - 14 bit
         public float textureSizeY; // up to 16.384 - 14 bit
-        public int lightIDMultiplier;
+        public int lightIDMultiplier; // 16 bit
         public float shadowAtlasPosX; // up to 16.384 - 14 bit
         public float shadowAtlasPosY; // up to 16.384 - 14 bit
         public int passthroughShadows; // 1 bit
@@ -409,7 +412,7 @@ public class RenderColoredShadows : ScriptableRenderPass
         public float customValue9;
         public float customValue10;
         public float customValue11;
-        public LightInformation(int index, int lightMode, Matrix4x4 lightMatrix, Matrix4x4 invLightMatrix, Vector3 lightPos, float fallOffRange, float farPlane, Vector3 cameraPos, float textureSizeX, float textureSizeY, int lightIDMultiplier, float shadowAtlasPosX, float shadowAtlasPosY, bool passthroughShadows, bool blurredEdges, List<float> customValues) : this()
+        public LightInformation(int index, int lightMode, Matrix4x4 lightMatrix, Matrix4x4 invLightMatrix, Vector3 lightPos, float fallOffRange, float nearPlane, float farPlane, Vector3 cameraPos, float textureSizeX, float textureSizeY, int lightIDMultiplier, float shadowAtlasPosX, float shadowAtlasPosY, bool passthroughShadows, bool blurredEdges, float[] customValues) : this()
         {
             this.index = index;
             this.lightMode = lightMode;
@@ -417,6 +420,7 @@ public class RenderColoredShadows : ScriptableRenderPass
             this.invLightMatrix = invLightMatrix;
             this.lightPos = lightPos;
             this.fallOffRange = fallOffRange;
+            this.nearPlane = nearPlane;
             this.farPlane = farPlane;
             this.cameraPos = cameraPos;
             this.textureSizeX = textureSizeX;

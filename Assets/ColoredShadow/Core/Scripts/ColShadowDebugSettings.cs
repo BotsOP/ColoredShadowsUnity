@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Serialization;
 
 #if UNITY_EDITOR
@@ -10,6 +11,10 @@ public class ColShadowDebugSettings : ScriptableObject
 {
     [Header("Global Shadow Settings")] 
     public int amountShadowBlur = 0;
+    public bool useDepthMask = true;
+    public bool useBlurMask = true;
+    public bool useUVs = true;
+    public bool use8bitID = true;
     
     [Header("Debug Settings")]
     public bool enableDebugMode = true;
@@ -30,24 +35,24 @@ public class ColShadowDebugSettings : ScriptableObject
     {
         get
         {
+            if (_instance != null)
+                return _instance;
+            
+            _instance = Resources.Load<ColShadowDebugSettings>("ColShadowDebugSettings");
             if (_instance == null)
             {
-                _instance = Resources.Load<ColShadowDebugSettings>("ColShadowDebugSettings");
-                if (_instance == null)
+                // Create default settings if none exist
+                _instance = CreateInstance<ColShadowDebugSettings>();
+#if UNITY_EDITOR
+                // Save to Resources folder
+                string resourcesPath = "Assets/ColoredShadow/Core/Resources";
+                if (!AssetDatabase.IsValidFolder(resourcesPath))
                 {
-                    // Create default settings if none exist
-                    _instance = CreateInstance<ColShadowDebugSettings>();
-                    #if UNITY_EDITOR
-                    // Save to Resources folder
-                    string resourcesPath = "Assets/ColoredShadow/Core/Resources";
-                    if (!AssetDatabase.IsValidFolder(resourcesPath))
-                    {
-                        AssetDatabase.CreateFolder("Assets/ColoredShadow/Core", "Resources");
-                    }
-                    AssetDatabase.CreateAsset(_instance, "Assets/ColoredShadow/Core/Resources/ColShadowDebugSettings.asset");
-                    AssetDatabase.SaveAssets();
-                    #endif
+                    AssetDatabase.CreateFolder("Assets/ColoredShadow/Core", "Resources");
                 }
+                AssetDatabase.CreateAsset(_instance, "Assets/ColoredShadow/Core/Resources/ColShadowDebugSettings.asset");
+                AssetDatabase.SaveAssets();
+#endif
             }
             return _instance;
         }
@@ -182,5 +187,77 @@ public static class ColShadowSettings
     public static Color ShadowNumberColor => ColShadowDebugSettings.Instance.shadowNumberColor;
 
     public static float ShadowNumberSize => ColShadowDebugSettings.Instance.shadowNumberSize;
+
+    public static GraphicsFormat ShadowMapFormat
+    {
+        get
+        {
+            uint formatUint = GetFormatUint();
+
+            return graphicsFormats[formatUint];
+        }
+    }
+    
+    public static ShadowFormat shadowFormat
+    {
+        get
+        {
+            uint formatUint = GetFormatUint();
+
+            return (ShadowFormat)formatUint;
+        }
+    }
+    
+    private static uint GetFormatUint()
+    {
+        uint formatUint = 0;
+        formatUint |= (uint)(ColShadowDebugSettings.Instance.useUVs ? 1 : 0);
+        formatUint |= (uint)(ColShadowDebugSettings.Instance.useDepthMask ? 2 : 0);
+        formatUint |= (uint)(ColShadowDebugSettings.Instance.useBlurMask ? 4 : 0);
+        if (formatUint == 0)
+        {
+            formatUint |= (uint)(ColShadowDebugSettings.Instance.use8bitID ? 8 : 0);
+        }
+        return formatUint;
+    }
+
+    private static GraphicsFormat[] graphicsFormats = {
+        GraphicsFormat.R16_SFloat,
+        GraphicsFormat.R32G32_SFloat,
+        GraphicsFormat.R16G16_SFloat,
+        GraphicsFormat.R32G32B32_SFloat,
+        GraphicsFormat.R16G16_SFloat,
+        GraphicsFormat.R32G32B32_SFloat,
+        GraphicsFormat.R16G16B16_SFloat,
+        GraphicsFormat.R32G32B32_SFloat,
+        GraphicsFormat.R8_UInt,
+    };
 }
 #endif
+
+
+public enum ShadowFormat
+{
+    ID16, //0000
+    ID16UV48, //0001
+    ID16Depth16, //0010
+    ID16UV48Depth32, // 0011
+    ID16Blur16, // 0100
+    ID16UV48Blur32, // 0101
+    ID16Depth16Blur16, // 0110
+    ID16UV48Depth16Blur16, // 0111
+    ID8, // 1000
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

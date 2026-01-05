@@ -6,6 +6,7 @@ struct LightInformation
     float4x4 invLightMatrix;
     float3 lightPos;
     float fallOffRange;
+    float nearPlane;
     float farPlane;
     float3 cameraPos;
     float textureSizeX;
@@ -90,7 +91,7 @@ float NinePointBlend(
 
 bool CheckIsInBounds(LightInformation lightInformation, float2 lightUv)
 {
-    return lightUv.x < (lightInformation.shadowAtlasPosX + lightInformation.textureSizeX) && lightUv.x >  lightInformation.shadowAtlasPosX&&
+    return lightUv.x < (lightInformation.shadowAtlasPosX + lightInformation.textureSizeX) && lightUv.x >  lightInformation.shadowAtlasPosX &&
                 lightUv.y < (lightInformation.shadowAtlasPosY + lightInformation.textureSizeY) && lightUv.y >  lightInformation.shadowAtlasPosY;
 }
 
@@ -184,6 +185,174 @@ float3 DepthToWorldPositionViewProj(float4x4 projViewMatrix, float2 screenUV, fl
     float4 worldPos = mul(projViewMatrix, ndcPos);
     worldPos.xyz /= worldPos.w;
     
+    return worldPos.xyz;
+}
+
+
+
+static const float4x4 pointRotXNegMatrix = float4x4(
+0.00000, 0.00000, 1.00000, 0.00000,
+0.00000, 1.00000, 0.00000, 0.00000,
+-1.00000, 0.00000, 0.00000, 0.00000,
+0.00000, 0.00000, 0.00000, 1.00000
+);
+
+static const float4x4 pointRotZNegMatrix = float4x4(
+-1.00000, 0.00000, 0.00000, 0.00000,
+0.00000, 1.00000, 0.00000, 0.00000,
+0.00000, 0.00000, -1.00000, 0.00000,
+0.00000, 0.00000, 0.00000, 1.00000
+);
+
+static const float4x4 pointRotXPlusMatrix = float4x4(
+0.00000, 0.00000, -1.00000, 0.00000,
+0.00000, 1.00000, 0.00000, 0.00000,
+1.00000, 0.00000, 0.00000, 0.00000,
+0.00000, 0.00000, 0.00000, 1.00000
+);
+
+static const float4x4 pointRotYNegMatrix = float4x4(
+1.00000, 0.00000, 0.00000, 0.00000,
+0.00000, 0.00000, -1.00000, 0.00000,
+0.00000, 1.00000, 0.00000, 0.00000,
+0.00000, 0.00000, 0.00000, 1.00000
+);
+
+static const float4x4 pointRotYPlusMatrix = float4x4(
+1.00000, 0.00000, 0.00000, 0.00000,
+0.00000, 0.00000, 1.00000, 0.00000,
+0.00000, -1.00000, 0.00000, 0.00000,
+0.00000, 0.00000, 0.00000, 1.00000
+);
+
+float4x4 InverseMatrixCM(float4x4 m)
+{
+    float4x4 inv;
+
+    inv[0][0] =  m[1][1]*m[2][2]*m[3][3] - m[1][1]*m[2][3]*m[3][2]
+               - m[2][1]*m[1][2]*m[3][3] + m[2][1]*m[1][3]*m[3][2]
+               + m[3][1]*m[1][2]*m[2][3] - m[3][1]*m[1][3]*m[2][2];
+
+    inv[1][0] = -m[1][0]*m[2][2]*m[3][3] + m[1][0]*m[2][3]*m[3][2]
+               + m[2][0]*m[1][2]*m[3][3] - m[2][0]*m[1][3]*m[3][2]
+               - m[3][0]*m[1][2]*m[2][3] + m[3][0]*m[1][3]*m[2][2];
+
+    inv[2][0] =  m[1][0]*m[2][1]*m[3][3] - m[1][0]*m[2][3]*m[3][1]
+               - m[2][0]*m[1][1]*m[3][3] + m[2][0]*m[1][3]*m[3][1]
+               + m[3][0]*m[1][1]*m[2][3] - m[3][0]*m[1][3]*m[2][1];
+
+    inv[3][0] = -m[1][0]*m[2][1]*m[3][2] + m[1][0]*m[2][2]*m[3][1]
+               + m[2][0]*m[1][1]*m[3][2] - m[2][0]*m[1][2]*m[3][1]
+               - m[3][0]*m[1][1]*m[2][2] + m[3][0]*m[1][2]*m[2][1];
+
+    inv[0][1] = -m[0][1]*m[2][2]*m[3][3] + m[0][1]*m[2][3]*m[3][2]
+               + m[2][1]*m[0][2]*m[3][3] - m[2][1]*m[0][3]*m[3][2]
+               - m[3][1]*m[0][2]*m[2][3] + m[3][1]*m[0][3]*m[2][2];
+
+    inv[1][1] =  m[0][0]*m[2][2]*m[3][3] - m[0][0]*m[2][3]*m[3][2]
+               - m[2][0]*m[0][2]*m[3][3] + m[2][0]*m[0][3]*m[3][2]
+               + m[3][0]*m[0][2]*m[2][3] - m[3][0]*m[0][3]*m[2][2];
+
+    inv[2][1] = -m[0][0]*m[2][1]*m[3][3] + m[0][0]*m[2][3]*m[3][1]
+               + m[2][0]*m[0][1]*m[3][3] - m[2][0]*m[0][3]*m[3][1]
+               - m[3][0]*m[0][1]*m[2][3] + m[3][0]*m[0][3]*m[2][1];
+
+    inv[3][1] =  m[0][0]*m[2][1]*m[3][2] - m[0][0]*m[2][2]*m[3][1]
+               - m[2][0]*m[0][1]*m[3][2] + m[2][0]*m[0][2]*m[3][1]
+               + m[3][0]*m[0][1]*m[2][2] - m[3][0]*m[0][2]*m[2][1];
+
+    inv[0][2] =  m[0][1]*m[1][2]*m[3][3] - m[0][1]*m[1][3]*m[3][2]
+               - m[1][1]*m[0][2]*m[3][3] + m[1][1]*m[0][3]*m[3][2]
+               + m[3][1]*m[0][2]*m[1][3] - m[3][1]*m[0][3]*m[1][2];
+
+    inv[1][2] = -m[0][0]*m[1][2]*m[3][3] + m[0][0]*m[1][3]*m[3][2]
+               + m[1][0]*m[0][2]*m[3][3] - m[1][0]*m[0][3]*m[3][2]
+               - m[3][0]*m[0][2]*m[1][3] + m[3][0]*m[0][3]*m[1][2];
+
+    inv[2][2] =  m[0][0]*m[1][1]*m[3][3] - m[0][0]*m[1][3]*m[3][1]
+               - m[1][0]*m[0][1]*m[3][3] + m[1][0]*m[0][3]*m[3][1]
+               + m[3][0]*m[0][1]*m[1][3] - m[3][0]*m[0][3]*m[1][1];
+
+    inv[3][2] = -m[0][0]*m[1][1]*m[3][2] + m[0][0]*m[1][2]*m[3][1]
+               + m[1][0]*m[0][1]*m[3][2] - m[1][0]*m[0][2]*m[3][1]
+               - m[3][0]*m[0][1]*m[1][2] + m[3][0]*m[0][2]*m[1][1];
+
+    inv[0][3] = -m[0][1]*m[1][2]*m[2][3] + m[0][1]*m[1][3]*m[2][2]
+               + m[1][1]*m[0][2]*m[2][3] - m[1][1]*m[0][3]*m[2][2]
+               - m[2][1]*m[0][2]*m[1][3] + m[2][1]*m[0][3]*m[1][2];
+
+    inv[1][3] =  m[0][0]*m[1][2]*m[2][3] - m[0][0]*m[1][3]*m[2][2]
+               - m[1][0]*m[0][2]*m[2][3] + m[1][0]*m[0][3]*m[2][2]
+               + m[2][0]*m[0][2]*m[1][3] - m[2][0]*m[0][3]*m[1][2];
+
+    inv[2][3] = -m[0][0]*m[1][1]*m[2][3] + m[0][0]*m[1][3]*m[2][1]
+               + m[1][0]*m[0][1]*m[2][3] - m[1][0]*m[0][3]*m[2][1]
+               - m[2][0]*m[0][1]*m[1][3] + m[2][0]*m[0][3]*m[1][1];
+
+    inv[3][3] =  m[0][0]*m[1][1]*m[2][2] - m[0][0]*m[1][2]*m[2][1]
+               - m[1][0]*m[0][1]*m[2][2] + m[1][0]*m[0][2]*m[2][1]
+               + m[2][0]*m[0][1]*m[1][2] - m[2][0]*m[0][2]*m[1][1];
+
+    float det =
+        m[0][0] * inv[0][0] +
+        m[0][1] * inv[1][0] +
+        m[0][2] * inv[2][0] +
+        m[0][3] * inv[3][0];
+
+    return inv / det;
+}
+
+
+float3 DepthToWorldPositionViewProj(float2 screenUV, float depth, float nearPlane, float farPlane, float3 position, int faceIndex)
+{
+    float4x4 viewMatrix = float4x4(
+        1.0, 0.0, 0.0, -position.x,
+        0.0, 1.0, 0.0, -position.y,
+        0.0, 0.0, -1.0, position.z,
+        0, 0, 0, 1.0
+    );
+
+    switch (faceIndex)
+    {
+    case 1:
+        viewMatrix = mul(pointRotXNegMatrix, viewMatrix);
+        break;
+    case 2:
+        viewMatrix = mul(pointRotZNegMatrix, viewMatrix);
+        break;
+    case 3:
+        viewMatrix = mul(pointRotXPlusMatrix, viewMatrix);
+        break;
+    case 4:
+        viewMatrix = mul(pointRotYNegMatrix, viewMatrix);
+        break;
+    case 5:
+        viewMatrix = mul(pointRotYPlusMatrix, viewMatrix);
+        break;
+    default: break;
+    }
+
+    float deltaZ = farPlane - nearPlane;
+
+    float4x4 pointProjMatrix = float4x4(
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, -(farPlane + nearPlane) / deltaZ, -(2 * farPlane * nearPlane) / deltaZ,
+    0, 0, -1, 0
+    );
+    
+    float4x4 projViewMatrix = mul(pointProjMatrix, viewMatrix);
+
+    projViewMatrix = InverseMatrixCM(projViewMatrix);
+    
+    float2 ndcXY = screenUV * 2.0 - 1;
+    float worldZDistance = 0.1 + (depth * (100 - 0.1));
+    float ndcZ = (worldZDistance - 0.1) * 2.0f / (100 - 0.1) - 1.0f;
+    ndcZ *= -1;
+    float4 ndcPos = float4(ndcXY.x, ndcXY.y, ndcZ, 1.0);
+    float4 worldPos = mul(projViewMatrix, ndcPos);
+    worldPos.xyz /= worldPos.w;
+
     return worldPos.xyz;
 }
 

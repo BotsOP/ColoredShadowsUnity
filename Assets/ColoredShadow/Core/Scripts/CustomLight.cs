@@ -76,7 +76,15 @@ namespace ColoredShadows.Scripts
             {
                 Matrix4x4 rotationMatrix = Matrix4x4.Rotate(Quaternion.Inverse(transform.rotation));
                 Matrix4x4 translationMatrix = Matrix4x4.Translate(-transform.position);
-                Matrix4x4 viewMatrix = rotationMatrix * translationMatrix;
+                Matrix4x4 viewMatrix;
+                if (lightMode == LightMode.Point)
+                {
+                    viewMatrix = translationMatrix;
+                }
+                else
+                {
+                    viewMatrix = rotationMatrix * translationMatrix;
+                }
                 viewMatrix.m20 *= -1;
                 viewMatrix.m21 *= -1;
                 viewMatrix.m22 *= -1;
@@ -385,10 +393,6 @@ namespace ColoredShadows.Scripts
         private Matrix4x4 cachedMatrix;
         public List<(Matrix4x4, Matrix4x4)> GetCullingMatrices()
         {
-            // if (Time.frameCount < 10)
-            // {
-            //     cachedMatrix = ViewMatrix;
-            // }
             Matrix4x4 viewMatrix = ViewMatrix;
             
             Matrix4x4 projectionMatrix = ProjectionMatrix;
@@ -398,13 +402,6 @@ namespace ColoredShadows.Scripts
             {
                 case LightMode.Point:
                     Matrix4x4 newMatrix = Matrix4x4.identity;
-                    // for (int i = 0; i < 3; i++)
-                    // {
-                    //     for (int j = 0; j < 3; j++)
-                    //     {
-                    //         newMatrix[i, j] = 0;
-                    //     }
-                    // }
                     newMatrix.m00 = 1;
                     newMatrix.m11 = 1;
                     newMatrix.m22 = -1;

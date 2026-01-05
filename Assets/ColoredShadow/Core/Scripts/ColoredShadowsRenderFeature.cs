@@ -17,7 +17,7 @@ namespace ColoredShadow.Core.Scripts
                 sizeof(int) * 2 +
                 sizeof(float) * 16 +
                 sizeof(float) * 16 +
-                sizeof(float) * 3 +
+                sizeof(float) * 4 +
                 sizeof(float) * 2 +
                 sizeof(float) * 3 +
                 sizeof(int) * 7 +
