@@ -62,7 +62,6 @@ namespace ColoredShadow.Core.Scripts
 
                     foundSpot = true;
                     Square square = availableSpaces.Pop();
-                    Debug.Log($"{square.minX} {square.minY}");
                     
                     Square square1 = new Square(square.width, square.height - customLight.TextureHeight, square.minX, square.minY + customLight.TextureHeight);
                     if(square1.width > 0 && square1.height > 0)

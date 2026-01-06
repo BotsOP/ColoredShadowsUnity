@@ -112,11 +112,10 @@ public class RenderColoredShadows : ScriptableRenderPass
         Shader.SetGlobalInt("_CustomShadowAtlasHeight", shadowAtlasHeight);
         Shader.SetGlobalInt("_CurrentAmountCustomLights", CustomLightManager.CustomLightCount);
         
-        Debug.Log(ColShadowSettings.ShadowMapFormat);
-    
         TextureDesc destinationDescColor = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
-        destinationDescColor.format = ColShadowSettings.ShadowMapFormat;
-        destinationDescColor.format = GraphicsFormat.R32G32B32A32_SFloat;
+        destinationDescColor.format = GraphicsFormat.R32G32_SFloat;
+        // destinationDescColor.colorFormat = GraphicsFormat.R32G32_SFloat;
+        destinationDescColor.filterMode = FilterMode.Bilinear;
         destinationDescColor.name = "SOURCE_COLOR";
         destinationDescColor.width = shadowAtlasWidth;
         destinationDescColor.height = shadowAtlasHeight;
@@ -180,7 +179,6 @@ public class RenderColoredShadows : ScriptableRenderPass
             passData.color = destinationColor;
 
             builder.AllowPassCulling(false);
-            builder.AllowGlobalStateModification(true);
         
             builder.SetRenderFunc((PassData data, RasterGraphContext rgContext) =>
             {
@@ -193,24 +191,23 @@ public class RenderColoredShadows : ScriptableRenderPass
             using (var builder = renderGraph.AddRasterRenderPass<PassData>("GET_DEPTH_OF_SHADOW_RECEIVERS", out var passData, profilingSampler))
             {
                 builder.SetRenderAttachmentDepth(destinationDepth, AccessFlags.Write);
-
+        
                 foreach (ShadowPass shadowPass in shadowPassesReceivingDepth)
                 {
                     builder.UseRendererList(shadowPass.rendererList);
                 }
-
+        
                 passData.shadowPasses = shadowPassesReceivingDepth;
-
+        
                 builder.AllowPassCulling(false);
-                builder.AllowGlobalStateModification(true);
-
+        
                 builder.SetRenderFunc((PassData data, RasterGraphContext rgContext) =>
                 {
                     ExecutePass(data, rgContext.cmd, true);
                 });
             }
         }
-
+        
         if (anyVFXPass)
         {
             using (var builder = renderGraph.AddComputePass("PP_SHADOWMAP", out PassDataCompute passData))
@@ -224,27 +221,26 @@ public class RenderColoredShadows : ScriptableRenderPass
                 builder.UseTexture(destinationDepth);
                 
                 builder.AllowPassCulling(false);
-
+        
                 builder.SetRenderFunc((PassDataCompute data, ComputeGraphContext cgContext) =>
                 {
                     int threadGroupX = Mathf.CeilToInt(shadowAtlasWidth / 32.0f);
                     int threadGroupY = Mathf.CeilToInt(shadowAtlasHeight / 32.0f);
-
+        
                     if (data.amountBlurEdges > 0)
                     {
                         cgContext.cmd.SetComputeIntParam(data.cs, "sampleSize", data.amountBlurEdges);
                             
                         int blur1 = data.cs.FindKernel("Blur1");
                         cgContext.cmd.SetComputeTextureParam(data.cs, blur1, "_ShadowAtlas", data.shadowMap);
-                        cgContext.cmd.SetComputeTextureParam(data.cs, blur1, "_DepthMap", data.depthMap);
                         cgContext.cmd.DispatchCompute(data.cs, blur1, threadGroupX, threadGroupY, 1);
                     
-                        int blur2 = data.cs.FindKernel("Blur2");
-                        cgContext.cmd.SetComputeTextureParam(data.cs, blur2, "_ShadowAtlas", data.shadowMap);
-                        cgContext.cmd.SetComputeTextureParam(data.cs, blur2, "_DepthMap", data.depthMap);
-                        cgContext.cmd.DispatchCompute(data.cs, blur2, threadGroupX, threadGroupY, 1);
+                        // int blur2 = data.cs.FindKernel("Blur2");
+                        // cgContext.cmd.SetComputeTextureParam(data.cs, blur2, "_ShadowAtlas", data.shadowMap);
+                        // cgContext.cmd.SetComputeTextureParam(data.cs, blur2, "_DepthMap", data.depthMap);
+                        // cgContext.cmd.DispatchCompute(data.cs, blur2, threadGroupX, threadGroupY, 1);
                     }
-
+        
                     if (anyDepthMergePass)
                     {
                         int depthMerge = data.cs.FindKernel("DepthMerge");
@@ -316,8 +312,6 @@ public class RenderColoredShadows : ScriptableRenderPass
         
         Vector2Int shadowAtlasSize = CustomLightManager.GetShadowAtlasSize();
         
-        Debug.Log(Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)));
-
         return new LightInformation(
             light.lightIndex,
             (int)light.lightMode,
