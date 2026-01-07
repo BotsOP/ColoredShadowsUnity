@@ -97,10 +97,10 @@ bool CheckIsInBounds(LightInformation lightInformation, float2 lightUv)
 
 float2 GetLocalShadowUV(float shadowUVMultiplier, bool relativeUVSize, float shadowRelativeSize, float2 shadowSize, float2 lightUv)
 {
-    int clampAmount = 2048;
-    shadowSize.x = floor(shadowSize.x * clampAmount) / clampAmount;
-    shadowSize.y = floor(shadowSize.y * clampAmount) / clampAmount;
-    shadowRelativeSize = floor(shadowRelativeSize * clampAmount / 2) / clampAmount / 2;
+    int clampAmount = pow(2, 8);
+    // shadowSize.x = floor(shadowSize.x * clampAmount) / clampAmount;
+    // shadowSize.y = floor(shadowSize.y * clampAmount) / clampAmount;
+    // shadowRelativeSize = floor(shadowRelativeSize * clampAmount / 2) / clampAmount / 2;
     float shadowSizeMultiplier = relativeUVSize ? shadowRelativeSize : 1;
     shadowSizeMultiplier *= shadowUVMultiplier;
     float2 shadowUVX = float2(shadowSize.r - shadowSizeMultiplier, shadowSize.r + shadowSizeMultiplier);

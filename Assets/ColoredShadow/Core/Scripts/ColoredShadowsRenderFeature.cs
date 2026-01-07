@@ -25,6 +25,7 @@ namespace ColoredShadow.Core.Scripts
             );
         
             renderColoredShadows = new RenderColoredShadows(lightInformationBuffer);
+            renderColoredShadows.renderPassEvent = RenderPassEvent.AfterRendering;
         }
     
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)

@@ -113,8 +113,9 @@ public class RenderColoredShadows : ScriptableRenderPass
         Shader.SetGlobalInt("_CurrentAmountCustomLights", CustomLightManager.CustomLightCount);
         
         TextureDesc destinationDescColor = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
-        destinationDescColor.format = GraphicsFormat.R32G32_SFloat;
-        // destinationDescColor.colorFormat = GraphicsFormat.R32G32_SFloat;
+        destinationDescColor.format = GraphicsFormat.R32G32_UInt;
+        // destinationDescColor.useMipMap = true;
+        // destinationDescColor.autoGenerateMips = true;
         destinationDescColor.filterMode = FilterMode.Bilinear;
         destinationDescColor.name = "SOURCE_COLOR";
         destinationDescColor.width = shadowAtlasWidth;
@@ -130,8 +131,8 @@ public class RenderColoredShadows : ScriptableRenderPass
         TextureHandle destinationDepth = renderGraph.CreateTexture(destinationDescDepth);
         
         RenderTextureDescriptor shadowMapDepthDesc = cameraData.cameraTargetDescriptor;
-        shadowMapDepthDesc.depthStencilFormat = GraphicsFormat.D32_SFloat;
-        shadowMapDepthDesc.colorFormat = RenderTextureFormat.RFloat;
+        shadowMapDepthDesc.depthStencilFormat = GraphicsFormat.D16_UNorm;
+        shadowMapDepthDesc.colorFormat = RenderTextureFormat.R16;
         shadowMapDepthDesc.width = shadowAtlasWidth;
         shadowMapDepthDesc.height = shadowAtlasHeight;
         shadowMapDepthDesc.depthBufferBits = 0;
@@ -214,7 +215,6 @@ public class RenderColoredShadows : ScriptableRenderPass
             {
                 passData.cs = postProcessShadowMap;
                 passData.shadowMap = destinationColor;
-                passData.depthMap = destinationDepth;
                 passData.amountBlurEdges = ColShadowSettings.AmountShadowBlur;
                 
                 builder.UseTexture(destinationColor, AccessFlags.ReadWrite);
@@ -240,32 +240,28 @@ public class RenderColoredShadows : ScriptableRenderPass
                         // cgContext.cmd.SetComputeTextureParam(data.cs, blur2, "_DepthMap", data.depthMap);
                         // cgContext.cmd.DispatchCompute(data.cs, blur2, threadGroupX, threadGroupY, 1);
                     }
-        
-                    if (anyDepthMergePass)
-                    {
-                        int depthMerge = data.cs.FindKernel("DepthMerge");
-                        cgContext.cmd.SetComputeTextureParam(data.cs, depthMerge, "_ShadowAtlas", data.shadowMap);
-                        cgContext.cmd.SetComputeTextureParam(data.cs, depthMerge, "_DepthMap", data.depthMap);
-                        cgContext.cmd.DispatchCompute(data.cs, depthMerge, threadGroupX, threadGroupY, 1);
-                    }
                 });
             }
         }
         
         RenderGraphUtils.BlitMaterialParameters para2 = new(destinationDepth, destinationDepthRT, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
-        renderGraph.AddBlitPass(para2, "CaptureShadowsColor");
-        
+        renderGraph.AddBlitPass(para2, "BlitDepth");
+        // Shader.SetGlobalTexture("_DepthShadowMap", destinationDepthRT);
+
         lightInformationBuffer.SetData(lightInformations);
         Shader.SetGlobalBuffer("_ColoredShadowLightInformation", lightInformationBuffer);
         cameraData.camera.ResetCullingMatrix();
         
         using (var builder = renderGraph.AddRasterRenderPass<PassData>("SET_GLOBAL_TEX", out var pd2)) {
             pd2.color = destinationColor;
+            pd2.depth = destinationDepthRT;
             builder.AllowPassCulling(false);
             builder.AllowGlobalStateModification(true);
             builder.UseTexture(destinationColor);
+            builder.UseTexture(destinationDepthRT);
             builder.SetRenderFunc<PassData>((data, ctx) => {
                 ctx.cmd.SetGlobalTexture(Shader.PropertyToID("_ColoredShadowMap0"), data.color);
+                ctx.cmd.SetGlobalTexture(Shader.PropertyToID("_DepthShadowMap"), data.depth);
             });
         }
         return;
@@ -336,6 +332,7 @@ public class RenderColoredShadows : ScriptableRenderPass
     private class PassData
     {
         internal TextureHandle color;
+        internal TextureHandle depth;
         internal List<ShadowPass> shadowPasses;
     }
 

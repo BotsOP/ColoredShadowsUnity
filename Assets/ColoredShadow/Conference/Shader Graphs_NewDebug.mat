@@ -40,12 +40,13 @@ Material:
     m_Floats:
     - _Boolean: 0
     - _Index: 1
+    - _LOD: 1
     - _QueueControl: 0
     - _QueueOffset: 0
     - _TexSize: 1024
     m_Colors:
     - _AtlasSize: {r: 3072, g: 3072, b: 0, a: 0}
-    - _Color: {r: 0.2015563, g: 0.2015563, b: 0.2015563, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _MinCorner: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

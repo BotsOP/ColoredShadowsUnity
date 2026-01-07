@@ -8,17 +8,19 @@ int _CustomShadowAtlasWidth;
 int _CustomShadowAtlasHeight;
 SamplerState trilinear_clamp_sampler;
 SamplerState point_clamp_sampler;
-Texture2D _ColoredShadowMap0;
 SamplerState linear_clamp_sampler;
+Texture2D _ColoredShadowMap0;
+Texture2D _DepthShadowMap;
 
 int _CurrentAmountCustomLights;
 StructuredBuffer<LightInformation> _ColoredShadowLightInformation;
 
 void GetShadowMapValues(float2 uv, out float shadowID, out float blur, out float depth, out float2 shadowUVPos, out float shadowUVSize)
 {
-    float2 input = _ColoredShadowMap0.Sample(point_clamp_sampler, uv);
+    uint2 input = _ColoredShadowMap0.Sample(point_clamp_sampler, uv);
+    depth = _DepthShadowMap.Sample(point_clamp_sampler, uv);
     
-    UnpackCustomShadowValues_float(input, shadowID, blur, depth, shadowUVPos.x, shadowUVPos.y, shadowUVSize);
+    UnpackCustomShadowValues_float(input, shadowID, blur, shadowUVPos.x, shadowUVPos.y, shadowUVSize);
 }
 
 void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUVMultiplier, bool relativeUVSize, out float shadowID, out float2 shadowUV, out float2 finalUV, out float3 lightPos, out float fallOffRange, out float mask, out float4 customValues1, out float4 customValues2, out float4 customValues3)
@@ -48,7 +50,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             float shadowIDTemp, blur, depth, shadowUVSize;
             float2 shadowUVPos;
             GetShadowMapValues(shadowAtlasMappedUV, shadowIDTemp, blur, depth, shadowUVPos, shadowUVSize);
-            tempMask = blur;
+            tempMask = saturate(shadowIDTemp);
             
             float3 newWorldPos = DepthToWorldPositionViewProj(lightInformation.invLightMatrix, lightUv, depth);
 

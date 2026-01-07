@@ -1,0 +1,80 @@
+// #pragma kernel DepthMerge
+#pragma kernel Blur1
+#pragma kernel Blur2
+
+#include "PackCustomShadowValues.hlsl"
+
+RWTexture2D<half4> _ShadowAtlas;
+Texture2D<float> _DepthMap;
+int sampleSize;
+
+float Pack2HalfToFloat(float2 v)
+{
+    uint low  = f32tof16(v.x);     // float → half bits
+    uint high = f32tof16(v.y);
+    uint packed = (high << 16) | (low & 0xFFFF);
+    return asfloat(packed);       // reinterpret bits as float
+}
+
+float2 UnpackFloatTo2Half(float packed)
+{
+    uint bits = asuint(packed);
+    float x = f16tof32( bits & 0xFFFF );
+    float y = f16tof32( bits >> 16 );
+    return float2(x, y);
+}
+
+// [numthreads(32,32,1)]
+// void DepthMerge (uint2 id : SV_DispatchThreadID)
+// {
+//     float2 output = _ShadowAtlas[id];
+//     _ShadowAtlas[id] = SetDepth(output, _DepthMap[id]);
+// }
+
+
+[numthreads(32,32,1)]
+void Blur1 (uint2 id : SV_DispatchThreadID)
+{
+    // float2 output = _ShadowAtlas[id];
+    // float average = 0;
+    //
+    // for (int i = -sampleSize; i <= sampleSize; ++i)
+    // {
+    //     for (int j = -sampleSize; j <= sampleSize; ++j)
+    //     {
+    //         float2 tempOutput = _ShadowAtlas[id + uint2(i, j)];
+    //         average += saturate(ceil(GetShadowID(tempOutput)));
+    //     }
+    // }
+    // average /= sampleSize * sampleSize * 6;
+    // average = saturate(average);
+    //
+    // if (GetShadowID(output) > 0)
+    // {
+    //     _ShadowAtlas[id] = SetBlur(output, average);
+    // }
+}
+
+[numthreads(32,32,1)]
+void Blur2 (uint2 id : SV_DispatchThreadID)
+{
+    // float2 output = _ShadowAtlas[id];
+    // float average = 0;
+    // for (int i = -sampleSize; i <= sampleSize; ++i)
+    // {
+    //     average += _ShadowAtlas[id + uint2(0, i)].b;
+    // }
+    // average /= sampleSize * 2 + 1;
+    // if (UnpackFloatTo2Half(output.r).r > 0)
+    // {
+    //     output.a = (average - 0.5) * 2;
+    // }
+    // else
+    // {
+    //     output.a = 0;
+    // }
+    // // output.a = average;
+    //
+    // _ShadowAtlas[id] = output;
+}
+
