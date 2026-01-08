@@ -1,53 +1,22 @@
 #ifndef CUSTOM_SHADOW_PACKER_INCLUDED
 #define CUSTOM_SHADOW_PACKER_INCLUDED
 
-void PackCustomShadowValues_float(float shadowID, float blur, float shadowUVPosX, float shadowUVPosY, float shadowUVSize, out uint2 output)
-{
-    // Convert normalized [0,1] values to integer bit ranges
-    uint shadowID_bits = uint(shadowID);      // 10 bits (0-1023)
-    uint blur_bits = uint(blur * 63.0);                // 6 bits (0-63)
-    uint shadowUVSize_bits = min(uint(shadowUVSize * 65535.0), 65535);           // 16 bits (0-65535)
-
-    // Pack into two 32-bit uints
-    uint packed1 = (shadowID_bits << 22) | (blur_bits << 16) | shadowUVSize_bits;
-
-    uint shadowUVPosX_bits  = shadowUVPosX * 65535;     // float → half bits
-    // uint shadowUVPosX_bits  = min(65535, uint(shadowUVPosX * 65535));     // float → half bits
-    uint shadowUVPosY_bits = min(65535, uint(shadowUVPosY * 65535));
-    uint packed2 = shadowUVPosX_bits & 65535;
-    // uint packed2 = (shadowUVPosY_bits << 16) | shadowUVPosX_bits;
-    
-    // Convert uint to float for output
-    output.x = (packed1);
-    output.y = (packed2);
-}
-
-void UnpackCustomShadowValues_float(uint2 input, out float shadowID, out float blur, out float shadowUVPosX, out float shadowUVPosY, out float shadowUVSize)
-{
-    // Convert float back to uint
-    uint packed1 = (input.x);
-    uint packed2 = (input.y);
-    
-    // Unpack first uint (32 bits)
-    uint shadowID_bits = (packed1 >> 22);      // Extract 10 bits (mask: 1023)
-    uint blur_bits = (packed1 >> 16) & 0x3F;           // Extract 6 bits (mask: 63)
-    uint shadowUVSize_bits = packed1 & 0xFFFF;          // Extract 16 bits (mask: 65535)
-    
-    // Convert back to normalized [0,1] values
-    shadowID = float(shadowID_bits);
-    blur = float(blur_bits) / 63.0;
-    shadowUVSize = float(shadowUVSize_bits) / 65535.0;
-    shadowUVPosY = 1;
-    // shadowUVPosY = float(packed2 >> 16) / 65535.0;
-    shadowUVPosX = float(packed2) / 65535;
-    // shadowUVPosX = float(packed2 & 65535) / 65535.0;
-}
-
-
 uint GetShadowID(float2 input)
 {
     uint packed1 = (input.x);
     return (packed1 >> 22) & 0x3FF;
+}
+
+float GetShadowUVSize(float2 input)
+{
+    uint packed1 = input.x;
+    return float(packed1 & 0xFFFF) / 65535.0;
+}
+
+float2 GetShadowUVPos(float2 input)
+{
+    uint packed2 = input.y;
+    return float2(float(packed2 & 4095) / 4095, float((packed2 >> 12) & 4095) / 4095.0);
 }
 
 float2 SetBlur(float2 input, float blur)
@@ -59,13 +28,34 @@ float2 SetBlur(float2 input, float blur)
     return float2((packed1 | (blurBits << 16)), input.y);
 }
 
-float2 SetDepth(float2 input, float depth)
+void PackCustomShadowValues_float(float shadowID, float blur, float shadowUVPosX, float shadowUVPosY, float shadowUVSize, out uint2 output)
 {
-    uint packed1 = (input.x);
-    uint depthBits = uint(depth * 65535);
-    // uint mask = 65535; //00000000000000001111111111111111
-    // packed1 |= ~mask;
-    return float2((packed1 | depthBits), input.y);
+    // Convert normalized [0,1] values to integer bit ranges
+    uint shadowID_bits = uint(shadowID);      // 10 bits (0-1023)
+    uint blur_bits = uint(blur * 63.0);                // 6 bits (0-63)
+    uint shadowUVSize_bits = min(uint(shadowUVSize * 65535.0), 65535);           // 16 bits (0-65535)
+
+    // Pack into two 32-bit uints 
+    uint packed1 = (shadowID_bits << 22) | (blur_bits << 16) | shadowUVSize_bits;
+
+    uint shadowUVPosX_bits  = min(65535, uint(shadowUVPosX * 4095));     // float → half bits
+    uint shadowUVPosY_bits = min(65535, uint(shadowUVPosY * 4095));
+    uint packed2 = (shadowUVPosY_bits << 12) | shadowUVPosX_bits;
+    
+    output.x = (packed1);
+    output.y = (packed2);
+}
+
+void UnpackCustomShadowValues_float(uint2 input, out float shadowID, out float blur, out float shadowUVPosX, out float shadowUVPosY, out float shadowUVSize)
+{
+    uint blur_bits = (input.x >> 16) & 0x3F;           
+    
+    shadowID = float(GetShadowID(input));
+    blur = float(blur_bits) / 63.0;
+    shadowUVSize = GetShadowUVSize(input);
+    float2 pos = GetShadowUVPos(input);
+    shadowUVPosY = pos.y;
+    shadowUVPosX = pos.x;
 }
 
 void PackCustomShadowValues_half(float shadowID, float blur, float shadowUVPosX, float shadowUVPosY, float shadowUVSize, out float2 output)

@@ -1,7 +1,7 @@
 #ifndef SAMPLE_CUSTOM_SHADOW_INCLUDED
 #define SAMPLE_CUSTOM_SHADOW_INCLUDED
 
-#include "CustomShadowsLibrary.hlsl"
+#include "Resources/CustomShadowsLibrary.hlsl"
 #include "Resources/PackCustomShadowValues.hlsl"
 
 int _CustomShadowAtlasWidth;
@@ -17,7 +17,8 @@ StructuredBuffer<LightInformation> _ColoredShadowLightInformation;
 
 void GetShadowMapValues(float2 uv, out float shadowID, out float blur, out float depth, out float2 shadowUVPos, out float shadowUVSize)
 {
-    uint2 input = _ColoredShadowMap0.Sample(point_clamp_sampler, uv);
+    uint2 input = _ColoredShadowMap0.Load(int3(uv.x * _CustomShadowAtlasWidth, uv.y * _CustomShadowAtlasHeight,0));
+    // uint2 input = _ColoredShadowMap0.Sample(point_clamp_sampler, uv);
     depth = _DepthShadowMap.Sample(point_clamp_sampler, uv);
     
     UnpackCustomShadowValues_float(input, shadowID, blur, shadowUVPos.x, shadowUVPos.y, shadowUVSize);
@@ -52,7 +53,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             GetShadowMapValues(shadowAtlasMappedUV, shadowIDTemp, blur, depth, shadowUVPos, shadowUVSize);
             tempMask = saturate(shadowIDTemp);
             
-            float3 newWorldPos = DepthToWorldPositionViewProj(lightInformation.invLightMatrix, lightUv, depth);
+            float3 newWorldPos = DepthToWorldPositionViewProj(lightInformation.invLightMatrix, lightUv, lightInformation.nearPlane, lightInformation.farPlane, depth);
 
             bool firstObjectHit = distance(newWorldPos, lightInformation.lightPos) + 0.1 > distance(worldPos, lightInformation.lightPos) || lightInformation.passthroughShadows == 0;
             if (tempMask > highestMask && dist < lowestDist && dist < 1 && CheckIsInBounds(lightInformation, shadowAtlasMappedUV) && firstObjectHit)

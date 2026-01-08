@@ -5,7 +5,7 @@ using UnityEngine.VFX;
 [VFXType(VFXTypeAttribute.Usage.GraphicsBuffer)]
 #endif
 [System.Serializable]
-struct ShadowBufferStruct2
+struct ShadowBufferStruct
 {
     public Vector3 position;
     public Vector3 normal;

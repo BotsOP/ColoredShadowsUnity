@@ -1,36 +1,150 @@
-// #pragma kernel DepthMerge
 #pragma kernel Blur1
 #pragma kernel Blur2
+#pragma kernel SampleShadowMap
+#pragma kernel SampleShadowCubeMap
 
 #include "PackCustomShadowValues.hlsl"
+#include "CustomShadowsLibrary.hlsl"
 
-RWTexture2D<half4> _ShadowAtlas;
-Texture2D<float> _DepthMap;
+struct ShadowData
+{
+    float3 pos;
+    float3 normal;
+    float2 uv;
+    float shadowID;
+};
+
+Texture2D<float2> _ShadowMap;
+Texture2D<half> _DepthMap;
+AppendStructuredBuffer<ShadowData> _OutputBuffer;
+
+float4x4 _InvProjViewMatrix1;
+float4x4 _InvProjViewMatrix2;
+float4x4 _InvProjViewMatrix3;
+float4x4 _InvProjViewMatrix4;
+float4x4 _InvProjViewMatrix5;
+float4x4 _InvProjViewMatrix6;
+float _NearPlane;
+float _FarPlane;
+float _ShadowUVMultiplier;
+int _RelativeUVSize;
+int _AmountPixelsToSkipPerSampleX;
+int _AmountPixelsToSkipPerSampleY;
+int _ShadowUVMinPosX, _ShadowUVMinPosY, _ShadowUVMaxPosX, _ShadowUVMaxPosY, _ShadowMapSizeX, _ShadowMapSizeY;
+
 int sampleSize;
 
-float Pack2HalfToFloat(float2 v)
+[numthreads(32,32,1)] 
+void SampleShadowMap (uint2 id : SV_DispatchThreadID)
 {
-    uint low  = f32tof16(v.x);     // float → half bits
-    uint high = f32tof16(v.y);
-    uint packed = (high << 16) | (low & 0xFFFF);
-    return asfloat(packed);       // reinterpret bits as float
+    id *= uint2(_AmountPixelsToSkipPerSampleX, _AmountPixelsToSkipPerSampleY);
+    float2 shadow = _ShadowMap[id];
+    float depth = _DepthMap[id];
+    int shadowID = GetShadowID(shadow);
+    float2 shadowUVPos = GetShadowUVPos(shadow);
+    float shadowUVSize = GetShadowUVSize(shadow);
+
+    //the + 1 for id is to check if the depthX will not be out of bounds
+    if (depth == 0 || shadowID == 0 || id.x + 1 > _ShadowUVMaxPosX || id.y + 1 > _ShadowUVMaxPosY)
+        return;
+
+    float depthX = _DepthMap[id + uint2(1, 0)];
+    float depthY = _DepthMap[id + uint2(0, 1)];
+    float2 uv = float2((float)(id.x - _ShadowUVMinPosX) / _ShadowMapSizeX, (float)(id.y - _ShadowUVMinPosY) / _ShadowMapSizeY);
+    float3 worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv, _NearPlane, _FarPlane, depth);
+    float3 worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
+    float3 worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
+
+    ShadowData shadowData;
+    shadowData.pos = worldPos;
+    shadowData.normal = CalculateWorldNormal(worldPos, worldPosY, worldPosX);
+    shadowData.shadowID = shadowID;
+
+    //Particle UV
+    float shadowSize = _RelativeUVSize == 1 ? shadowUVSize : 1;
+    shadowSize *= _ShadowUVMultiplier;
+    float2 shadowUVX = float2(shadowUVPos.x - shadowSize, shadowUVPos.x + shadowSize);
+    float2 shadowUVY = float2(shadowUVPos.y - shadowSize, shadowUVPos.y + shadowSize);
+    float2 shadowUV = float2(remap(uv.x, shadowUVX.x, shadowUVX.y, 0, 1), remap(uv.y, shadowUVY.x, shadowUVY.y, 0, 1));
+    shadowData.uv = shadowUV;
+        
+    _OutputBuffer.Append(shadowData);
 }
 
-float2 UnpackFloatTo2Half(float packed)
+[numthreads(32,32,1)]
+void SampleShadowCubeMap (uint2 id : SV_DispatchThreadID)
 {
-    uint bits = asuint(packed);
-    float x = f16tof32( bits & 0xFFFF );
-    float y = f16tof32( bits >> 16 );
-    return float2(x, y);
+    id *= uint2(_AmountPixelsToSkipPerSampleX, _AmountPixelsToSkipPerSampleY);
+    float2 shadow = _ShadowMap[id];
+    float depth = _DepthMap[id];
+    uint shadowID = GetShadowID(shadow);
+    float2 shadowUVPos = GetShadowUVPos(shadow);
+    float shadowUVSize = GetShadowUVSize(shadow);
+
+    //the + 1 for id is to check if the depthX will not be out of bounds
+    if (depth == 0 || shadowID == 0 || id.x + 1 > _ShadowUVMaxPosX || id.y + 1 > _ShadowUVMaxPosY)
+        return;
+
+    float depthX = _DepthMap[id + uint2(1, 0)];
+    float depthY = _DepthMap[id + uint2(0, 1)];
+    float2 uv = float2((float)(id.x - _ShadowUVMinPosX) / _ShadowMapSizeX, (float)(id.y - _ShadowUVMinPosY) / _ShadowMapSizeY);
+    int faceIndex = 0;
+    
+    float3 worldPos;
+    float3 worldPosX;
+    float3 worldPosY;
+
+    switch (faceIndex)
+    {
+    case 0 :
+        worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv, _NearPlane, _FarPlane, depth);
+        worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
+        worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
+        break;
+    case 1 :
+        worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix2, uv, _NearPlane, _FarPlane, depth);
+        worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix2, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
+        worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix2, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
+        break;
+    case 2 :
+        worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix3, uv, _NearPlane, _FarPlane, depth);
+        worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix3, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
+        worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix3, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
+        break;
+    case 3 :
+        worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix4, uv, _NearPlane, _FarPlane, depth);
+        worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix4, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
+        worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix4, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
+        break;
+    case 4 :
+        worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix5, uv, _NearPlane, _FarPlane, depth);
+        worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix5, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
+        worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix5, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
+        break;
+    case 5 :
+        worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix6, uv, _NearPlane, _FarPlane, depth);
+        worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix6, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
+        worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix6, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
+        break;
+    default:
+        break;
+    }
+
+    ShadowData shadowData;
+    shadowData.pos = worldPos;
+    shadowData.normal = CalculateWorldNormal(worldPos, worldPosY, worldPosX);
+    shadowData.shadowID = shadowID;
+
+    //Particle UV
+    float shadowSize = _RelativeUVSize == 1 ? shadowUVSize : 1;
+    shadowSize *= _ShadowUVMultiplier;
+    float2 shadowUVX = float2(shadowUVPos.x - shadowSize, shadowUVPos.x + shadowSize);
+    float2 shadowUVY = float2(shadowUVPos.y - shadowSize, shadowUVPos.y + shadowSize);
+    float2 shadowUV = float2(remap(uv.x, shadowUVX.x, shadowUVX.y, 0, 1), remap(uv.y, shadowUVY.x, shadowUVY.y, 0, 1));
+    shadowData.uv = shadowUV;
+        
+    _OutputBuffer.Append(shadowData);
 }
-
-// [numthreads(32,32,1)]
-// void DepthMerge (uint2 id : SV_DispatchThreadID)
-// {
-//     float2 output = _ShadowAtlas[id];
-//     _ShadowAtlas[id] = SetDepth(output, _DepthMap[id]);
-// }
-
 
 [numthreads(32,32,1)]
 void Blur1 (uint2 id : SV_DispatchThreadID)

@@ -62,6 +62,14 @@ float BilinearSampleCompact(float bottomLeft, float bottomRight, float topLeft, 
     );
 }
 
+float3 CalculateWorldNormal(float3 pos1, float3 pos2, float3 pos3)
+{
+    float3 edge1 = pos2 - pos1;
+    float3 edge2 = pos3 - pos1;
+    float3 normal = cross(edge1, edge2);
+    return normalize(normal);
+}
+
 float NinePointBlend(
     float topLeft,    float topCenter,    float topRight,
     float midLeft,    float center,       float midRight,
@@ -179,11 +187,11 @@ void GetCubemapUV(float3 direction, out float2 uv, out int faceIndex)
     uv = uv * 0.5 + 0.5;
 }
 
-float3 DepthToWorldPositionViewProj(float4x4 projViewMatrix, float2 screenUV, float depth)
+float3 DepthToWorldPositionViewProj(float4x4 projViewMatrix, float2 screenUV, float nearPlane, float farPlane, float depth)
 {
     float2 ndcXY = screenUV * 2.0 - 1;
-    float worldZDistance = 0.1 + (depth * (100 - 0.1));
-    float ndcZ = (worldZDistance - 0.1) * 2.0f / (100 - 0.1) - 1.0f;
+    float worldZDistance = nearPlane + (depth * (farPlane - nearPlane));
+    float ndcZ = (worldZDistance - nearPlane) * 2.0f / (farPlane - nearPlane) - 1.0f;
     ndcZ *= -1;
     float4 ndcPos = float4(ndcXY.x, ndcXY.y, ndcZ, 1.0);
     float4 worldPos = mul(projViewMatrix, ndcPos);
@@ -191,8 +199,6 @@ float3 DepthToWorldPositionViewProj(float4x4 projViewMatrix, float2 screenUV, fl
     
     return worldPos.xyz;
 }
-
-
 
 static const float4x4 pointRotXNegMatrix = float4x4(
 0.00000, 0.00000, 1.00000, 0.00000,
@@ -349,16 +355,9 @@ float3 DepthToWorldPositionViewProj(float2 screenUV, float depth, float nearPlan
 
     projViewMatrix = InverseMatrixCM(projViewMatrix);
     
-    float2 ndcXY = screenUV * 2.0 - 1;
-    float worldZDistance = 0.1 + (depth * (100 - 0.1));
-    float ndcZ = (worldZDistance - 0.1) * 2.0f / (100 - 0.1) - 1.0f;
-    ndcZ *= -1;
-    float4 ndcPos = float4(ndcXY.x, ndcXY.y, ndcZ, 1.0);
-    float4 worldPos = mul(projViewMatrix, ndcPos);
-    worldPos.xyz /= worldPos.w;
-
-    return worldPos.xyz;
+    return DepthToWorldPositionViewProj(projViewMatrix, screenUV, nearPlane, farPlane, depth);
 }
+
 
 float2 GetLightUV(LightInformation lightInformation, float3 worldPos)
 {
@@ -366,7 +365,7 @@ float2 GetLightUV(LightInformation lightInformation, float3 worldPos)
     float3 lightUv = lightSpace.rgb / lightSpace.a;
     lightUv *= 0.5;
     lightUv += 0.5;
-    return lightUv;
+    return lightUv.xy;
 }
 
 

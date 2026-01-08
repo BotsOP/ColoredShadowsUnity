@@ -7,6 +7,7 @@ namespace ColoredShadow.Core.Scripts
     {
         private RenderColoredShadows renderColoredShadows;
         private GraphicsBuffer lightInformationBuffer;
+        private GraphicsBuffer counterBuffer;
 
         public override void Create()
         {
@@ -23,9 +24,10 @@ namespace ColoredShadow.Core.Scripts
                 sizeof(int) * 7 +
                 sizeof(float) * 12
             );
+            counterBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, sizeof(int));
         
-            renderColoredShadows = new RenderColoredShadows(lightInformationBuffer);
-            renderColoredShadows.renderPassEvent = RenderPassEvent.AfterRendering;
+            renderColoredShadows = new RenderColoredShadows(lightInformationBuffer, counterBuffer);
+            renderColoredShadows.renderPassEvent = RenderPassEvent.BeforeRendering;
         }
     
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -39,6 +41,8 @@ namespace ColoredShadow.Core.Scripts
         
         protected override void Dispose(bool disposing)
         {
+            counterBuffer?.Release();
+            counterBuffer = null;
             lightInformationBuffer?.Release();
             lightInformationBuffer = null;
             renderColoredShadows?.Dispose();

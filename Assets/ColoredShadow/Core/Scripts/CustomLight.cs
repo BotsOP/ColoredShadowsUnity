@@ -46,11 +46,33 @@ namespace ColoredShadows.Scripts
         public int shadowAtlasPosX;
         public int shadowAtlasPosY;
         public float nearPlane = 0.1f;
-        public GraphicsBuffer vfxAppendBuffer;
-        public int vfxAppendCount;
+        private GraphicsBuffer vfxAppendBuffer;
+        public GraphicsBuffer VFXAppendBuffer
+        {
+            get
+            {
+                if (vfxAppendBuffer == null)
+                {
+                    vfxAppendBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Append, vfxSamplingSize * vfxSamplingSize, sizeof(float) * 9);
+                }
+                return vfxAppendBuffer;
+            }
+        }
+        public GraphicsBuffer vfxAppendCountBuffer;
+        private int VFXAppendCount
+        {
+            get
+            {
+                int[] count = new int[1];
+                vfxAppendCountBuffer?.GetData(count);
+                return count[0];
+            }
+        }
         
         public int TextureWidth => lightMode == LightMode.Point ? shadowTextureSize * 3 : shadowTextureSize;
         public int TextureHeight => lightMode == LightMode.Point ? shadowTextureSize * 2 : shadowTextureSize;
+        public int VFXSamplingSizeX => lightMode == LightMode.Point ? vfxSamplingSize * 3 : vfxSamplingSize;
+        public int VFXSamplingSizeY => lightMode == LightMode.Point ? vfxSamplingSize * 2 : vfxSamplingSize;
         public int TextureSurfaceArea => lightMode == LightMode.Point ? shadowTextureSize * 6 * shadowTextureSize : shadowTextureSize * shadowTextureSize;
         public Matrix4x4 ProjectionMatrix
         {
@@ -99,6 +121,7 @@ namespace ColoredShadows.Scripts
         private Mesh[] numberMeshes;
         private MeshRenderer[] meshRenderers;
         private List<(Matrix4x4, Matrix4x4)> cullingMatrices;
+        
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
@@ -309,8 +332,32 @@ namespace ColoredShadows.Scripts
             previousShadowTextureSize = shadowTextureSize;
             cachedLightMode = lightMode;
             CustomLightManager.RefreshShadowAtlas();
+
+            if (enableVFXSupport)
+            {
+                Debug.Log("Created vfx append buffer");
+                CreateBuffers();
+            }
+            else
+            {
+                Debug.Log("Released vfx append buffer");
+                ReleaseBuffers();
+            }
         }
 #endif
+        private void CreateBuffers()
+        {
+            vfxAppendBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Append, vfxSamplingSize * vfxSamplingSize, sizeof(float) * 9);
+            vfxAppendCountBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Raw, 1, sizeof(int));
+        }
+
+        private void ReleaseBuffers()
+        {
+            vfxAppendBuffer?.Release();
+            vfxAppendBuffer = null;
+            vfxAppendCountBuffer?.Release();
+            vfxAppendCountBuffer = null;
+        }
 
         private void Update()
         {
@@ -319,11 +366,14 @@ namespace ColoredShadows.Scripts
                 foreach (VisualEffect visualEffect in visualEffects)
                 {
                     // Debug.Log($"{!visualEffect.HasGraphicsBuffer("_ShadowPositions")} {!visualEffect.HasInt("_ShadowPositionsCount")}");
-                    if (!visualEffect.HasGraphicsBuffer("_ShadowPositions") || !visualEffect.HasInt("_ShadowPositionsCount"))
+                    if (!visualEffect.HasGraphicsBuffer("ShadowData") || !visualEffect.HasInt("AmountShadowData") || vfxAppendBuffer == null)
+                    {
+                        Debug.LogWarning($"{visualEffect.gameObject.name} doesn't have a ShadowData graphics buffer and/or doesn't have an AmountShadowData int in the VFX graph");
                         continue;
+                    } 
                     
-                    visualEffect.SetGraphicsBuffer("_ShadowPositions", vfxAppendBuffer);
-                    visualEffect.SetInt("_ShadowPositionsCount", vfxAppendCount);
+                    visualEffect.SetGraphicsBuffer("ShadowData", vfxAppendBuffer);
+                    visualEffect.SetInt("AmountShadowData", VFXAppendCount);
                 }
             }
         }
@@ -359,6 +409,8 @@ namespace ColoredShadows.Scripts
             SceneView.duringSceneGui -= SceneViewGUI;
 #endif
             UpdateLightIndices();
+            vfxAppendBuffer?.Release();
+            vfxAppendBuffer = null;
         }
         
         private static void UpdateLightIndices()
