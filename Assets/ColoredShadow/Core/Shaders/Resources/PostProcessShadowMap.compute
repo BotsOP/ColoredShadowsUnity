@@ -18,12 +18,12 @@ Texture2D<float2> _ShadowMap;
 Texture2D<half> _DepthMap;
 AppendStructuredBuffer<ShadowData> _OutputBuffer;
 
+float4x4 _InvProjViewMatrix0;
 float4x4 _InvProjViewMatrix1;
 float4x4 _InvProjViewMatrix2;
 float4x4 _InvProjViewMatrix3;
 float4x4 _InvProjViewMatrix4;
 float4x4 _InvProjViewMatrix5;
-float4x4 _InvProjViewMatrix6;
 float _NearPlane;
 float _FarPlane;
 float _ShadowUVMultiplier;
@@ -51,9 +51,9 @@ void SampleShadowMap (uint2 id : SV_DispatchThreadID)
     float depthX = _DepthMap[id + uint2(1, 0)];
     float depthY = _DepthMap[id + uint2(0, 1)];
     float2 uv = float2((float)(id.x - _ShadowUVMinPosX) / _ShadowMapSizeX, (float)(id.y - _ShadowUVMinPosY) / _ShadowMapSizeY);
-    float3 worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv, _NearPlane, _FarPlane, depth);
-    float3 worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
-    float3 worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
+    float3 worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix0, uv, _NearPlane, _FarPlane, depth);
+    float3 worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix0, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
+    float3 worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix0, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
 
     ShadowData shadowData;
     shadowData.pos = worldPos;
@@ -87,8 +87,9 @@ void SampleShadowCubeMap (uint2 id : SV_DispatchThreadID)
 
     float depthX = _DepthMap[id + uint2(1, 0)];
     float depthY = _DepthMap[id + uint2(0, 1)];
-    float2 uv = float2((float)(id.x - _ShadowUVMinPosX) / _ShadowMapSizeX, (float)(id.y - _ShadowUVMinPosY) / _ShadowMapSizeY);
-    int faceIndex = 0;
+    int faceIndex = floor(((id.x - _ShadowUVMinPosX) / (float)_ShadowMapSizeX) * 3) + floor(((id.y - _ShadowUVMinPosY) / (float)_ShadowMapSizeY) * 2) * 3;
+    float2 uv = float2((float)(id.x - _ShadowUVMinPosX) / (float)_ShadowMapSizeX, (float)(id.y - _ShadowUVMinPosY) / (float)_ShadowMapSizeY);
+    uv = GetLocalCubeMapUV(uv);
     
     float3 worldPos;
     float3 worldPosX;
@@ -97,34 +98,34 @@ void SampleShadowCubeMap (uint2 id : SV_DispatchThreadID)
     switch (faceIndex)
     {
     case 0 :
+        worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix0, uv, _NearPlane, _FarPlane, depth);
+        worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix0, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
+        worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix0, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
+        break;
+    case 1 :
         worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv, _NearPlane, _FarPlane, depth);
         worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
         worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix1, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
         break;
-    case 1 :
+    case 2 :
         worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix2, uv, _NearPlane, _FarPlane, depth);
         worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix2, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
         worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix2, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
         break;
-    case 2 :
+    case 3 :
         worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix3, uv, _NearPlane, _FarPlane, depth);
         worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix3, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
         worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix3, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
         break;
-    case 3 :
+    case 4 :
         worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix4, uv, _NearPlane, _FarPlane, depth);
         worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix4, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
         worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix4, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
         break;
-    case 4 :
+    case 5 :
         worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix5, uv, _NearPlane, _FarPlane, depth);
         worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix5, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
         worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix5, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
-        break;
-    case 5 :
-        worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix6, uv, _NearPlane, _FarPlane, depth);
-        worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix6, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
-        worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix6, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
         break;
     default:
         break;

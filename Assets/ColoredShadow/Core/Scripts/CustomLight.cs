@@ -25,7 +25,7 @@ namespace ColoredShadows.Scripts
         [SerializeField] public int lightIndex = 0;
         [SerializeField] public LightMode lightMode;
         [SerializeField] public float radius = 10;
-        [SerializeField] public float farPlane = 50;
+        [SerializeField] private float farPlane = 50;
         [SerializeField] public float size = 10;
         [SerializeField] public float fov = 60;
         [SerializeField] public float aspectRatio = 1;
@@ -59,16 +59,28 @@ namespace ColoredShadows.Scripts
             }
         }
         public GraphicsBuffer vfxAppendCountBuffer;
-        private int VFXAppendCount
+        public GraphicsBuffer VFXAppendCountBuffer
         {
             get
             {
-                int[] count = new int[1];
-                vfxAppendCountBuffer?.GetData(count);
+                if (vfxAppendCountBuffer == null)
+                {
+                    vfxAppendCountBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Raw, 1, sizeof(uint));
+                }
+                return vfxAppendCountBuffer;
+            }
+        }
+        private uint VFXAppendCount
+        {
+            get
+            {
+                uint[] count = new uint[1];
+                VFXAppendCountBuffer.GetData(count);
                 return count[0];
             }
         }
-        
+
+        public float FarPlane => lightMode == LightMode.Point ? radius : farPlane;
         public int TextureWidth => lightMode == LightMode.Point ? shadowTextureSize * 3 : shadowTextureSize;
         public int TextureHeight => lightMode == LightMode.Point ? shadowTextureSize * 2 : shadowTextureSize;
         public int VFXSamplingSizeX => lightMode == LightMode.Point ? vfxSamplingSize * 3 : vfxSamplingSize;
@@ -92,6 +104,7 @@ namespace ColoredShadows.Scripts
                 }
             }
         }
+        
         public Matrix4x4 ViewMatrix
         {
             get
@@ -101,7 +114,7 @@ namespace ColoredShadows.Scripts
                 Matrix4x4 viewMatrix;
                 if (lightMode == LightMode.Point)
                 {
-                    viewMatrix = translationMatrix;
+                    viewMatrix = rotationMatrix * translationMatrix;
                 }
                 else
                 {
@@ -359,6 +372,18 @@ namespace ColoredShadows.Scripts
             vfxAppendCountBuffer = null;
         }
 
+        public Matrix4x4 GetViewMatrixWithRot(Vector3 rot)
+        {
+            Matrix4x4 rotationMatrix = Matrix4x4.Rotate(Quaternion.Inverse(Quaternion.Euler(rot)));
+            Matrix4x4 translationMatrix = Matrix4x4.Translate(-transform.position);
+            Matrix4x4 viewMatrix = rotationMatrix * translationMatrix;
+            viewMatrix.m20 *= -1;
+            viewMatrix.m21 *= -1;
+            viewMatrix.m22 *= -1;
+            viewMatrix.m23 *= -1;
+            return viewMatrix;
+        }
+
         private void Update()
         {
             if (enableVFXSupport)
@@ -373,7 +398,9 @@ namespace ColoredShadows.Scripts
                     } 
                     
                     visualEffect.SetGraphicsBuffer("ShadowData", vfxAppendBuffer);
-                    visualEffect.SetInt("AmountShadowData", VFXAppendCount);
+                    uint vfxAppendCount = VFXAppendCount;
+                    visualEffect.SetInt("AmountShadowData", (int)vfxAppendCount);
+                    Debug.Log(vfxAppendCount);
                 }
             }
         }

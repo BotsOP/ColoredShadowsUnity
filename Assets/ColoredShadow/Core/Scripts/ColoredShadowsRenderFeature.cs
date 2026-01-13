@@ -27,7 +27,7 @@ namespace ColoredShadow.Core.Scripts
             counterBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, sizeof(int));
         
             renderColoredShadows = new RenderColoredShadows(lightInformationBuffer, counterBuffer);
-            renderColoredShadows.renderPassEvent = RenderPassEvent.BeforeRendering;
+            renderColoredShadows.renderPassEvent = RenderPassEvent.AfterRendering;
         }
     
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)

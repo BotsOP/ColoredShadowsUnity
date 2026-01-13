@@ -127,6 +127,17 @@ float2 GetLocalShadowAtlasUV(float2 uv, LightInformation lightInformation)
     return uv;
 }
 
+//micro optimization skip 1/3
+static const float oneThird = 0.333333333333333333333333;
+float2 GetLocalCubeMapUV(float2 uv)
+{
+    float xOffset = floor(uv.x * 3);
+    float yOffset = floor(uv.y * 2);
+    float x = remap(uv.x, xOffset * oneThird, (xOffset + 1) * oneThird, 0, 1);
+    float y = remap(uv.y, yOffset * 0.5, (yOffset + 1) * 0.5, 0, 1);
+    return float2(x, y);
+}
+
 void GetCubemapUV(float3 direction, out float2 uv, out int faceIndex)
 {
     uv = float2(-1, -1);

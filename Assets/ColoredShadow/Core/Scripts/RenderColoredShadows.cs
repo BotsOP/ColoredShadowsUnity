@@ -144,7 +144,6 @@ public class RenderColoredShadows : ScriptableRenderPass
         List<ShadowPass> shadowPasses = new List<ShadowPass>();
         List<ShadowPass> shadowPassesReceivingDepth = new List<ShadowPass>();
         List<CustomLight> shadowVFXPass = new List<CustomLight>();
-        List<CustomLight> shadowBlurPass = new List<CustomLight>();
         bool anyPostPass = false;
         bool anyDepthMergePass = false;
         LightInformation[] lightInformations = new LightInformation[CustomLightManager.CustomLightCount];
@@ -156,15 +155,15 @@ public class RenderColoredShadows : ScriptableRenderPass
             {
                 shadowPasses.AddRange(tempShadowPasses);
                 
-                if(light.blockPassthroughShadows)
+                if(light.blockPassthroughShadows || light.enableVFXSupport)
                 {
                     anyDepthMergePass = true;
                     shadowPassesReceivingDepth.AddRange(tempShadowPassesReceivingDepth);
                 }
-            }
-            if (light.enableVFXSupport)
-            {
-                shadowVFXPass.Add(light);
+                if (light.enableVFXSupport)
+                {
+                    shadowVFXPass.Add(light);
+                }
             }
 
             lightInformations[i] = GetLightInformation(light);
@@ -267,26 +266,38 @@ public class RenderColoredShadows : ScriptableRenderPass
                         cgContext.cmd.SetComputeIntParam(data.cs, "_ShadowMapSizeY", vfxLight.TextureHeight);
                         cgContext.cmd.SetComputeIntParam(data.cs, "_ShadowUVMaxPosX", vfxLight.shadowAtlasPosX + vfxLight.TextureWidth);
                         cgContext.cmd.SetComputeIntParam(data.cs, "_ShadowUVMaxPosY", vfxLight.shadowAtlasPosY + vfxLight.TextureHeight);
-                        cgContext.cmd.SetComputeIntParam( data.cs, "_AmountPixelsToSkipPerSampleX", vfxLight.TextureWidth / vfxLight.VFXSamplingSizeX );
-                        cgContext.cmd.SetComputeIntParam( data.cs, "_AmountPixelsToSkipPerSampleY", vfxLight.TextureHeight / vfxLight.VFXSamplingSizeY );
+                        cgContext.cmd.SetComputeIntParam( data.cs, "_AmountPixelsToSkipPerSampleX", vfxLight.TextureWidth / vfxLight.VFXSamplingSizeX); //these are both the same when point light doesnt have square texture ratio
+                        cgContext.cmd.SetComputeIntParam( data.cs, "_AmountPixelsToSkipPerSampleY", vfxLight.TextureHeight / vfxLight.VFXSamplingSizeY);
                         cgContext.cmd.SetComputeIntParam(data.cs, "_RelativeUVSize", vfxLight.relativeUVSize ? 1 : 0);
                         cgContext.cmd.SetComputeFloatParam(data.cs, "_ShadowUVMultiplier", vfxLight.vfxUVSize);
                         cgContext.cmd.SetComputeFloatParam(data.cs, "_NearPlane", vfxLight.nearPlane);
-                        cgContext.cmd.SetComputeFloatParam(data.cs, "_FarPlane", vfxLight.farPlane);
-                        cgContext.cmd.SetComputeMatrixParam( data.cs, "_InvProjViewMatrix1", Matrix4x4.Inverse(vfxLight.ProjectionMatrix * vfxLight.ViewMatrix));
+                        cgContext.cmd.SetComputeFloatParam(data.cs, "_FarPlane", vfxLight.FarPlane);
+                        Matrix4x4 test = vfxLight.ViewMatrix;
+                        Vector3 angle = new Vector3(0, 90, 0);
+                        Matrix4x4 test2 = vfxLight.GetViewMatrixWithRot(angle);
+                        cgContext.cmd.SetComputeMatrixParam( data.cs, "_InvProjViewMatrix0", Matrix4x4.Inverse(vfxLight.ProjectionMatrix * vfxLight.ViewMatrix));
+                        
+                        cgContext.cmd.SetBufferCounterValue(vfxLight.VFXAppendBuffer, 0);
+
                         if (vfxLight.lightMode == LightMode.Point)
                         {
-                            cgContext.cmd.SetComputeMatrixParam( data.cs, "_InvProjViewMatrix2", Matrix4x4.Inverse(vfxLight.ProjectionMatrix * Matrix4x4.Rotate(Quaternion.Euler(0, 90, 0)) * vfxLight.ViewMatrix));
-                            cgContext.cmd.SetComputeMatrixParam( data.cs, "_InvProjViewMatrix3", Matrix4x4.Inverse(vfxLight.ProjectionMatrix * Matrix4x4.Rotate(Quaternion.Euler(0, 180, 0)) * vfxLight.ViewMatrix));
-                            cgContext.cmd.SetComputeMatrixParam( data.cs, "_InvProjViewMatrix4", Matrix4x4.Inverse(vfxLight.ProjectionMatrix * Matrix4x4.Rotate(Quaternion.Euler(0, 270, 0)) * vfxLight.ViewMatrix));
-                            cgContext.cmd.SetComputeMatrixParam( data.cs, "_InvProjViewMatrix5", Matrix4x4.Inverse(vfxLight.ProjectionMatrix * Matrix4x4.Rotate(Quaternion.Euler(90, 0, 0)) * vfxLight.ViewMatrix));
-                            cgContext.cmd.SetComputeMatrixParam( data.cs, "_InvProjViewMatrix6", Matrix4x4.Inverse(vfxLight.ProjectionMatrix * Matrix4x4.Rotate(Quaternion.Euler(270, 0, 0)) * vfxLight.ViewMatrix));
+                            List<(Matrix4x4, Matrix4x4)> matrices = vfxLight.GetCullingMatrices();
+                            cgContext.cmd.SetComputeMatrixParam( data.cs, "_InvProjViewMatrix0", Matrix4x4.Inverse(vfxLight.ProjectionMatrix * matrices[0].Item2));
+                            cgContext.cmd.SetComputeMatrixParam( data.cs, "_InvProjViewMatrix1", Matrix4x4.Inverse(vfxLight.ProjectionMatrix * matrices[1].Item2));
+                            cgContext.cmd.SetComputeMatrixParam( data.cs, "_InvProjViewMatrix2", Matrix4x4.Inverse(vfxLight.ProjectionMatrix * matrices[2].Item2));
+                            cgContext.cmd.SetComputeMatrixParam( data.cs, "_InvProjViewMatrix3", Matrix4x4.Inverse(vfxLight.ProjectionMatrix * matrices[3].Item2));
+                            cgContext.cmd.SetComputeMatrixParam( data.cs, "_InvProjViewMatrix4", Matrix4x4.Inverse(vfxLight.ProjectionMatrix * matrices[4].Item2));
+                            cgContext.cmd.SetComputeMatrixParam( data.cs, "_InvProjViewMatrix5", Matrix4x4.Inverse(vfxLight.ProjectionMatrix * matrices[5].Item2));
+                            cgContext.cmd.SetComputeBufferParam(data.cs, sampleShadowCubeMap, "_OutputBuffer", vfxLight.VFXAppendBuffer);
+                            
+                            cgContext.cmd.DispatchCompute(data.cs, sampleShadowCubeMap, threadGroupX, threadGroupY, 1);
                         }
-
-                        cgContext.cmd.SetBufferCounterValue(vfxLight.VFXAppendBuffer, 0);
-                        cgContext.cmd.SetComputeBufferParam(data.cs, sampleShadowMap, "_OutputBuffer", vfxLight.VFXAppendBuffer);
-
-                        cgContext.cmd.DispatchCompute(data.cs, sampleShadowMap, threadGroupX, threadGroupY, 1);
+                        else
+                        {
+                            cgContext.cmd.SetComputeBufferParam(data.cs, sampleShadowMap, "_OutputBuffer", vfxLight.VFXAppendBuffer);
+                            
+                            cgContext.cmd.DispatchCompute(data.cs, sampleShadowMap, threadGroupX, threadGroupY, 1);
+                        }
                         
                         cgContext.cmd.CopyCounterValue(vfxLight.VFXAppendBuffer, vfxLight.vfxAppendCountBuffer, 0);
                     }
@@ -296,7 +307,6 @@ public class RenderColoredShadows : ScriptableRenderPass
         
         RenderGraphUtils.BlitMaterialParameters para2 = new(destinationDepth, destinationDepthRT, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0);
         renderGraph.AddBlitPass(para2, "BlitDepth");
-        // Shader.SetGlobalTexture("_DepthShadowMap", destinationDepthRT);
 
         lightInformationBuffer.SetData(lightInformations);
         Shader.SetGlobalBuffer("_ColoredShadowLightInformation", lightInformationBuffer);
@@ -366,7 +376,7 @@ public class RenderColoredShadows : ScriptableRenderPass
             light.transform.position,
             light.lightMode == LightMode.Directional ? float.MaxValue : light.fallOffRange,
             light.nearPlane,
-            light.farPlane,
+            light.FarPlane,
             light.transform.position,
             light.TextureWidth / (float)shadowAtlasSize.x,
             light.TextureHeight / (float)shadowAtlasSize.y,
