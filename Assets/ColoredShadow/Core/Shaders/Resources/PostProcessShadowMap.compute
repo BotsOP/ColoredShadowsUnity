@@ -14,7 +14,7 @@ struct ShadowData
     float shadowID;
 };
 
-Texture2D<float2> _ShadowMap;
+RWTexture2D<float2> _ShadowMap;
 Texture2D<half> _DepthMap;
 AppendStructuredBuffer<ShadowData> _OutputBuffer;
 
@@ -45,7 +45,7 @@ void SampleShadowMap (uint2 id : SV_DispatchThreadID)
     float shadowUVSize = GetShadowUVSize(shadow);
 
     //the + 1 for id is to check if the depthX will not be out of bounds
-    if (depth == 0 || shadowID == 0 || id.x + 1 > _ShadowUVMaxPosX || id.y + 1 > _ShadowUVMaxPosY)
+    if (depth == 0.0 || shadowID == 0 || (int)id.x + 1 > _ShadowUVMaxPosX || (int)id.y + 1 > _ShadowUVMaxPosY)
         return;
 
     float depthX = _DepthMap[id + uint2(1, 0)];
@@ -82,7 +82,7 @@ void SampleShadowCubeMap (uint2 id : SV_DispatchThreadID)
     float shadowUVSize = GetShadowUVSize(shadow);
 
     //the + 1 for id is to check if the depthX will not be out of bounds
-    if (depth == 0 || shadowID == 0 || id.x + 1 > _ShadowUVMaxPosX || id.y + 1 > _ShadowUVMaxPosY)
+    if (depth == 0 || shadowID == 0 || (int)id.x + 1 > _ShadowUVMaxPosX || (int)id.y + 1 > _ShadowUVMaxPosY)
         return;
 
     float depthX = _DepthMap[id + uint2(1, 0)];
@@ -150,24 +150,27 @@ void SampleShadowCubeMap (uint2 id : SV_DispatchThreadID)
 [numthreads(32,32,1)]
 void Blur1 (uint2 id : SV_DispatchThreadID)
 {
-    // float2 output = _ShadowAtlas[id];
-    // float average = 0;
-    //
-    // for (int i = -sampleSize; i <= sampleSize; ++i)
-    // {
-    //     for (int j = -sampleSize; j <= sampleSize; ++j)
-    //     {
-    //         float2 tempOutput = _ShadowAtlas[id + uint2(i, j)];
-    //         average += saturate(ceil(GetShadowID(tempOutput)));
-    //     }
-    // }
-    // average /= sampleSize * sampleSize * 6;
-    // average = saturate(average);
-    //
-    // if (GetShadowID(output) > 0)
-    // {
-    //     _ShadowAtlas[id] = SetBlur(output, average);
-    // }
+    float2 output = _ShadowMap[id];
+    float average = 0;
+    
+    for (int i = -sampleSize; i <= sampleSize; ++i)
+    {
+        for (int j = -sampleSize; j <= sampleSize; ++j)
+        {
+            float2 tempOutput = _ShadowMap[id + uint2(i, j)];
+            average += saturate(ceil(GetShadowID(tempOutput)));
+        }
+    }
+    average /= sampleSize * sampleSize * 5;
+    average = remap(average, 0.5, 1, 0, 1);
+    average = saturate(average);
+    // _ShadowMap[id] = SetBlur(output, 1);
+    
+    if (GetShadowID(output) > 0)
+    {
+        // _ShadowMap[id] = SetBlur(output, 1);
+        _ShadowMap[id] = SetBlur(output, average);
+    }
 }
 
 [numthreads(32,32,1)]

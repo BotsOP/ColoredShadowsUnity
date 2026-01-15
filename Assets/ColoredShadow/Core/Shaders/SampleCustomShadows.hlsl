@@ -51,7 +51,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             float shadowIDTemp, blur, depth, shadowUVSize;
             float2 shadowUVPos;
             GetShadowMapValues(shadowAtlasMappedUV, shadowIDTemp, blur, depth, shadowUVPos, shadowUVSize);
-            tempMask = saturate(shadowIDTemp);
+            tempMask = blur;
             
             float3 newWorldPos = DepthToWorldPositionViewProj(lightInformation.invLightMatrix, lightUv, lightInformation.nearPlane, lightInformation.farPlane, depth);
 
@@ -86,7 +86,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             float shadowIDTemp, blur, depth, shadowUVSize;
             float2 shadowUVPos;
             GetShadowMapValues(cubemapUV, shadowIDTemp, blur, depth, shadowUVPos, shadowUVSize);
-            tempMask = saturate(shadowIDTemp);
+            tempMask = blur;
 
             float3 newWorldPos = DepthToWorldPositionViewProj(lightUv, depth, lightInformation.nearPlane, lightInformation.farPlane, lightInformation.lightPos, faceIndex);
 

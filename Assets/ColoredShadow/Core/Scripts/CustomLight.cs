@@ -130,6 +130,7 @@ namespace ColoredShadows.Scripts
 
         private int previousShadowTextureSize;
         private LightMode cachedLightMode;
+        private Material cachedDebugMat;
         
         private Mesh[] numberMeshes;
         private MeshRenderer[] meshRenderers;
@@ -316,15 +317,17 @@ namespace ColoredShadows.Scripts
             
             float crossSection = Vector2.Distance(Vector2.zero, new Vector2(sceneView.cameraViewport.width, sceneView.cameraViewport.height));
             int textureSize = (int)(crossSection / 10.0f);
-            Texture shadowMap = Shader.GetGlobalTexture("_ColoredShadowMap" + lightIndex);
+            Texture shadowMap = Shader.GetGlobalTexture("_ColoredShadowMap0");
+            Texture2D test = new Texture2D(shadowMap.width, shadowMap.height);
             if(shadowMap == null)
                 return;
             
             if (lightMode != LightMode.Point)
             {
                 Rect rect = new Rect(sceneView.cameraViewport.width - textureSize, sceneView.cameraViewport.height - textureSize, textureSize, textureSize);
-                EditorGUI.DrawRect(rect, Color.black);
-                GUI.DrawTexture(rect, shadowMap);
+                // EditorGUI.DrawRect(rect, Color.black);
+                // GUI.DrawTexture(rect, shadowMap);
+                EditorGUI.DrawPreviewTexture(rect, test, cachedDebugMat);
             }
             else
             {
@@ -400,7 +403,7 @@ namespace ColoredShadows.Scripts
                     visualEffect.SetGraphicsBuffer("ShadowData", vfxAppendBuffer);
                     uint vfxAppendCount = VFXAppendCount;
                     visualEffect.SetInt("AmountShadowData", (int)vfxAppendCount);
-                    Debug.Log(vfxAppendCount);
+                    // Debug.Log(vfxAppendCount);
                 }
             }
         }
@@ -423,6 +426,7 @@ namespace ColoredShadows.Scripts
 
             
 #if UNITY_EDITOR
+            cachedDebugMat = Resources.Load<Material>("Custom_test");
             SetNumberMeshes();
             SceneView.duringSceneGui += SceneViewGUI;
 #endif

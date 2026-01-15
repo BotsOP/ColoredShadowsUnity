@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Shader Graphs_NewDebug
+  m_Name: Shader Graphs_DebugCustomShadow
   m_Shader: {fileID: -6465566751694194690, guid: 805a05eae17425740884bd689553529c, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -38,19 +38,14 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Boolean: 0
-    - _Index: 1
-    - _LOD: 1
+    - _LOD: 0
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _TexSize: 1024
     m_Colors:
-    - _AtlasSize: {r: 3072, g: 3072, b: 0, a: 0}
-    - _Color: {r: 0.06301003, g: 0.06301003, b: 0.06301003, a: 1}
-    - _MinCorner: {r: 0, g: 0, b: 0, a: 0}
+    - _Color: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!114 &6795418256594468280
+--- !u!114 &4039419770828970617
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
@@ -61,5 +56,5 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Editor::UnityEditor.Rendering.Universal.AssetVersion
   version: 10
