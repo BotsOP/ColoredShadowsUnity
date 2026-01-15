@@ -1,4 +1,4 @@
-Shader "Custom/ColorOnlyNoDepth"
+Shader "CustomShadows/ColorOnlyNoDepth"
 {
     Properties
     {

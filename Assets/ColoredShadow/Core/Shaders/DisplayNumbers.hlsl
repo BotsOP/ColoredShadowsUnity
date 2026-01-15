@@ -45,7 +45,7 @@ float PrintValue(const in float2 fragCoord, const in float2 vPixelCoords, const 
     return PrintValue( vStringCharCoords, fValue, fMaxDigits, fDecimalPlaces );
 }
 
-void DoDebug_float(float val, float2 uv, out float4 res)
+void PrintNumber_float(float val, float2 uv, out float3 res)
 {
     res = float4(0.3,0.2,0.1,1);
     res = PrintValue(uv*200, float2(10,100), float2(8,15), val, 10, 1);

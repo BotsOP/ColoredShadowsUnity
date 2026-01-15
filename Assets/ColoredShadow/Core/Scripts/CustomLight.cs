@@ -1,16 +1,9 @@
-using System;
 using System.Collections.Generic;
-using System.Reflection;
-using ColoredShadow.Core.Scripts;
-using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
-using UnityEngine.Serialization;
 using UnityEngine.VFX;
 
-namespace ColoredShadows.Scripts
+namespace ColoredShadow.Core.Scripts
 {
     public enum LightMode
     {

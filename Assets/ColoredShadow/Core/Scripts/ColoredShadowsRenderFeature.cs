@@ -26,7 +26,7 @@ namespace ColoredShadow.Core.Scripts
             );
             counterBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 1, sizeof(int));
         
-            renderColoredShadows = new RenderColoredShadows(lightInformationBuffer, counterBuffer);
+            renderColoredShadows = new RenderColoredShadows(lightInformationBuffer);
             renderColoredShadows.renderPassEvent = RenderPassEvent.AfterRendering;
         }
     
@@ -35,6 +35,8 @@ namespace ColoredShadow.Core.Scripts
             if (renderingData.cameraData.cameraType == CameraType.Preview
                 || UniversalRenderer.IsOffscreenDepthTexture(ref renderingData.cameraData))
                 return;
+
+            renderColoredShadows.renderingToSceneView = renderingData.cameraData.cameraType == CameraType.Preview;
         
             renderer.EnqueuePass(renderColoredShadows);
         }

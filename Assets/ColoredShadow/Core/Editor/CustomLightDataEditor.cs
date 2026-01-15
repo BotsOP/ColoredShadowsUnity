@@ -1,3 +1,4 @@
+using ColoredShadow.Core.Scripts;
 using ColoredShadows.Scripts;
 using UnityEngine;
 using UnityEditor;
