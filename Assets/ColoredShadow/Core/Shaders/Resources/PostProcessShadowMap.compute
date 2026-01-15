@@ -37,6 +37,7 @@ int sampleSize;
 [numthreads(32,32,1)] 
 void SampleShadowMap (uint2 id : SV_DispatchThreadID)
 {
+    id += uint2(_ShadowUVMinPosX, _ShadowUVMinPosY);
     id *= uint2(_AmountPixelsToSkipPerSampleX, _AmountPixelsToSkipPerSampleY);
     float2 shadow = _ShadowMap[id];
     float depth = _DepthMap[id];
@@ -50,7 +51,8 @@ void SampleShadowMap (uint2 id : SV_DispatchThreadID)
 
     float depthX = _DepthMap[id + uint2(1, 0)];
     float depthY = _DepthMap[id + uint2(0, 1)];
-    float2 uv = float2((float)(id.x - _ShadowUVMinPosX) / _ShadowMapSizeX, (float)(id.y - _ShadowUVMinPosY) / _ShadowMapSizeY);
+    float2 uv = float2((float)(id.x - _ShadowUVMinPosX) / 1024, (float)(id.y - _ShadowUVMinPosY) / 1024);
+    // float2 uv = float2((float)(id.x - _ShadowUVMinPosX) / _ShadowMapSizeX, (float)(id.y - _ShadowUVMinPosY) / _ShadowMapSizeY);
     float3 worldPos = DepthToWorldPositionViewProj(_InvProjViewMatrix0, uv, _NearPlane, _FarPlane, depth);
     float3 worldPosX = DepthToWorldPositionViewProj(_InvProjViewMatrix0, uv + float2(1.0 / _ShadowMapSizeX, 0), _NearPlane, _FarPlane, depthX);
     float3 worldPosY = DepthToWorldPositionViewProj(_InvProjViewMatrix0, uv + float2(0, 1.0 / _ShadowMapSizeY), _NearPlane, _FarPlane, depthY);
@@ -74,6 +76,7 @@ void SampleShadowMap (uint2 id : SV_DispatchThreadID)
 [numthreads(32,32,1)]
 void SampleShadowCubeMap (uint2 id : SV_DispatchThreadID)
 {
+    id += uint2(_ShadowUVMinPosX, _ShadowUVMinPosY);
     id *= uint2(_AmountPixelsToSkipPerSampleX, _AmountPixelsToSkipPerSampleY);
     float2 shadow = _ShadowMap[id];
     float depth = _DepthMap[id];

@@ -45,7 +45,8 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
 
         if (lightInformation.lightMode == 0 || lightInformation.lightMode == 1) //Directional and Spot
         {
-            float2 lightUv = GetLightUV(lightInformation, worldPos);
+            bool inFront;
+            float2 lightUv = GetLightUV(lightInformation, worldPos, inFront);
             float2 shadowAtlasMappedUV = GetLocalShadowAtlasUV(lightUv + uvOffset, lightInformation);
 
             float shadowIDTemp, blur, depth, shadowUVSize;
@@ -56,7 +57,7 @@ void SampleColoredShadows_float(float3 worldPos, float2 uvOffset, float shadowUV
             float3 newWorldPos = DepthToWorldPositionViewProj(lightInformation.invLightMatrix, lightUv, lightInformation.nearPlane, lightInformation.farPlane, depth);
 
             bool firstObjectHit = distance(newWorldPos, lightInformation.lightPos) + 0.1 > distance(worldPos, lightInformation.lightPos) || lightInformation.passthroughShadows == 0;
-            if (tempMask > highestMask && dist < lowestDist && dist < 1 && CheckIsInBounds(lightInformation, shadowAtlasMappedUV) && firstObjectHit)
+            if (tempMask > highestMask && dist < lowestDist && dist < 1 && CheckIsInBounds(lightInformation, shadowAtlasMappedUV) && firstObjectHit && inFront)
             {
                 shadowUV = GetLocalShadowUV(shadowUVMultiplier, relativeUVSize, shadowUVSize, shadowUVPos, lightUv);
             

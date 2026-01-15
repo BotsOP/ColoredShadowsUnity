@@ -272,9 +272,6 @@ public class RenderColoredShadows : ScriptableRenderPass
                         cgContext.cmd.SetComputeFloatParam(data.cs, "_ShadowUVMultiplier", vfxLight.vfxUVSize);
                         cgContext.cmd.SetComputeFloatParam(data.cs, "_NearPlane", vfxLight.nearPlane);
                         cgContext.cmd.SetComputeFloatParam(data.cs, "_FarPlane", vfxLight.FarPlane);
-                        Matrix4x4 test = vfxLight.ViewMatrix;
-                        Vector3 angle = new Vector3(0, 90, 0);
-                        Matrix4x4 test2 = vfxLight.GetViewMatrixWithRot(angle);
                         cgContext.cmd.SetComputeMatrixParam( data.cs, "_InvProjViewMatrix0", Matrix4x4.Inverse(vfxLight.ProjectionMatrix * vfxLight.ViewMatrix));
                         
                         cgContext.cmd.SetBufferCounterValue(vfxLight.VFXAppendBuffer, 0);
@@ -347,7 +344,7 @@ public class RenderColoredShadows : ScriptableRenderPass
                 RendererListHandle rendererList = InitRendererLists(renderingData, lightData, renderGraph, cullingResults, cameraData, light.overrideShader);
                 shadowPases.Add(new ShadowPass(light.GetLocalShadowAtlasPos(i), light.shadowTextureSize, light.shadowTextureSize, rendererList, projViewMatrix.Item2, projViewMatrix.Item1));
                 
-                if(!light.enableVFXSupport)
+                if(!light.enableVFXSupport && !light.blockPassthroughShadows)
                     continue;
                 
                 rendererList = InitRendererLists(renderingData, lightData, renderGraph, cullingResults, cameraData, depthShader);

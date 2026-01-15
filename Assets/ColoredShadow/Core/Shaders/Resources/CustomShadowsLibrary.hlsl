@@ -370,12 +370,13 @@ float3 DepthToWorldPositionViewProj(float2 screenUV, float depth, float nearPlan
 }
 
 
-float2 GetLightUV(LightInformation lightInformation, float3 worldPos)
+float2 GetLightUV(LightInformation lightInformation, float3 worldPos, out bool infront)
 {
     float4 lightSpace = mul(lightInformation.lightMatrix, float4(worldPos.x, worldPos.y, worldPos.z, 1));
     float3 lightUv = lightSpace.rgb / lightSpace.a;
     lightUv *= 0.5;
     lightUv += 0.5;
+    infront = lightSpace.a > 0;
     return lightUv.xy;
 }
 

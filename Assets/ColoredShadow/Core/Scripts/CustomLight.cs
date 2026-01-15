@@ -318,23 +318,24 @@ namespace ColoredShadows.Scripts
             float crossSection = Vector2.Distance(Vector2.zero, new Vector2(sceneView.cameraViewport.width, sceneView.cameraViewport.height));
             int textureSize = (int)(crossSection / 10.0f);
             Texture shadowMap = Shader.GetGlobalTexture("_ColoredShadowMap0");
-            Texture2D test = new Texture2D(shadowMap.width, shadowMap.height);
-            if(shadowMap == null)
+            if(shadowMap == null || cachedDebugMat == null)
                 return;
+            
+            Vector2Int shadowAtlasSize = CustomLightManager.GetShadowAtlasSize();
+            cachedDebugMat.SetFloat("_ShadowAtlasUVX", (float)shadowAtlasPosX / shadowAtlasSize.x);
+            cachedDebugMat.SetFloat("_ShadowAtlasUVY", (float)shadowAtlasPosY / shadowAtlasSize.y);
+            cachedDebugMat.SetFloat("_ShadowMapSizeX", (float)TextureWidth / shadowAtlasSize.x);
+            cachedDebugMat.SetFloat("_ShadowMapSizeY", (float)TextureHeight / shadowAtlasSize.y);
             
             if (lightMode != LightMode.Point)
             {
                 Rect rect = new Rect(sceneView.cameraViewport.width - textureSize, sceneView.cameraViewport.height - textureSize, textureSize, textureSize);
-                // EditorGUI.DrawRect(rect, Color.black);
-                // GUI.DrawTexture(rect, shadowMap);
-                EditorGUI.DrawPreviewTexture(rect, test, cachedDebugMat);
+                EditorGUI.DrawPreviewTexture(rect, shadowMap, cachedDebugMat);
             }
             else
             {
-                Rect rect = new Rect(sceneView.cameraViewport.width - textureSize * 1.5f, sceneView.cameraViewport.height - textureSize, Mathf.Ceil(textureSize * 1.5f), Mathf.Ceil(textureSize / 2.0f));
-                Rect rect2 = new Rect(sceneView.cameraViewport.width - textureSize * 1.5f, sceneView.cameraViewport.height - textureSize / 2, Mathf.Ceil(textureSize * 1.5f), Mathf.Ceil(textureSize / 2.0f));
-                GUI.DrawTextureWithTexCoords(rect2, shadowMap, new Rect(0, 0, 0.5f, 1), false);
-                GUI.DrawTextureWithTexCoords(rect, shadowMap, new Rect(0.5f, 0, 0.5f, 1), false);
+                Rect rect = new Rect(sceneView.cameraViewport.width - textureSize * 1.5f, sceneView.cameraViewport.height - textureSize, Mathf.Ceil(textureSize * 1.5f), Mathf.Ceil(textureSize));
+                EditorGUI.DrawPreviewTexture(rect, shadowMap, cachedDebugMat);
             }
 
             Handles.EndGUI();
